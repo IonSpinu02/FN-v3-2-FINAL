@@ -1,7 +1,5 @@
 import { isDatabaseConfigured, getSql } from "@/lib/db/neon";
 
-export const instant = false;
-
 export async function GET() {
   if (!isDatabaseConfigured()) {
     return Response.json({

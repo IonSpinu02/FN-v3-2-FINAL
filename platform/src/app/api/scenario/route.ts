@@ -18,8 +18,6 @@ import {
 import type { Region } from "@/lib/engine/constants";
 import type { EuRegion, FnConfig } from "@/lib/engine/types";
 
-export const instant = false;
-
 export async function POST(req: Request) {
   const session = await requireSession();
   if (!session) {

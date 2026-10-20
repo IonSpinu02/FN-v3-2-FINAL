@@ -7,8 +7,6 @@ import { loadJson } from "@/lib/engine/loadData";
 import type { LocalRegistryEntry } from "@/lib/engine/localiTypes";
 import type { FnConfig } from "@/lib/engine/types";
 
-export const instant = false;
-
 export async function POST(req: Request) {
   const session = await requireSession();
   if (!session) return unauthorizedResponse();

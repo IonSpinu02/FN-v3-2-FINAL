@@ -9,8 +9,6 @@ import {
 } from "@/lib/engine/regionalPoll";
 import type { ScenarioResult } from "@/lib/engine/types";
 
-export const instant = false;
-
 export async function POST(req: Request) {
   const session = await requireSession();
   if (!session) {

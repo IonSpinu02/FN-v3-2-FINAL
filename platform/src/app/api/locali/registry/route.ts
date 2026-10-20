@@ -12,8 +12,6 @@ import type {
   LocalRegistryEntry,
 } from "@/lib/engine/localiTypes";
 
-export const instant = false;
-
 export async function GET() {
   const session = await requireSession();
   if (!session) return unauthorizedResponse();

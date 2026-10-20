@@ -25,10 +25,21 @@ import type { FnConfig, ScenarioResult } from "@/lib/engine/types";
 import { LocaliPanel } from "./LocaliPanel";
 import { pesiFromUi, SensitivityControls, uiFromPesi } from "@/components/SensitivityControls";
 import { Btn, Panel, Segmented, StatusDot } from "@/components/ui/FnUi";
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DisclaimerBanner } from "./DisclaimerBanner";
 import { HistoryPanel } from "./HistoryPanel";
-import { ItalyMap, type MapColorMode } from "./ItalyMap";
+import type { MapColorMode } from "./ItalyMap";
+
+const ItalyMap = dynamic(
+  () => import("./ItalyMap").then((m) => m.ItalyMap),
+  {
+    ssr: false,
+    loading: () => (
+      <Panel className="p-6 text-sm text-fn-text-muted">Caricamento mappa…</Panel>
+    ),
+  },
+);
 import { MetricCards } from "./MetricCards";
 import { PostVotePanel } from "./PostVotePanel";
 import { exportNotaPdf, PrintNotaReport } from "./PrintNotaReport";

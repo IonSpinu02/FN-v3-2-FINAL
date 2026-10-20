@@ -13,7 +13,6 @@ import {
 } from "@/lib/engine/newsIngest";
 import type { LocalRegistryEntry } from "@/lib/engine/localiTypes";
 
-export const instant = false;
 /** Molti feed in parallelo: timeout generoso su Vercel. */
 export const maxDuration = 60;
 
