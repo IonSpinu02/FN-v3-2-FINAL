@@ -1,7 +1,6 @@
 "use client";
 
-import { evaluatePostVoteWithPoll } from "@/lib/engine/historyAndEval";
-import { DEFAULT_POLL_CONFIG } from "@/lib/engine/regionalPoll";
+import type { PostVoteResultExtended } from "@/lib/engine/historyAndEval";
 import type { ScenarioResult } from "@/lib/engine/types";
 import { pct } from "@/lib/format";
 import { Kpi, KpiGrid } from "@/components/ui/FnUi";
@@ -13,10 +12,31 @@ export function PostVotePanel({
 }: {
   snapshot: ScenarioResult;
 }) {
-  const [result, setResult] = useState<ReturnType<
-    typeof evaluatePostVoteWithPoll
-  > | null>(null);
+  const [result, setResult] = useState<PostVoteResultExtended | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
+  async function runEval(csvContent: string) {
+    setPending(true);
+    setErr(null);
+    try {
+      const res = await fetch("/api/post-vote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ snapshot, csvContent }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error ?? `HTTP ${res.status}`);
+      }
+      setResult(data as PostVoteResultExtended);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Errore");
+      setResult(null);
+    } finally {
+      setPending(false);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-5">
@@ -36,17 +56,13 @@ export function PostVotePanel({
       <CsvDropzone
         label="CSV esiti (regione, voti_validi, voti_fn) — 20 righe"
         onText={(text) => {
-          try {
-            setErr(null);
-            setResult(
-              evaluatePostVoteWithPoll(snapshot, text, DEFAULT_POLL_CONFIG),
-            );
-          } catch (e) {
-            setErr(e instanceof Error ? e.message : "Errore");
-            setResult(null);
-          }
+          void runEval(text);
         }}
       />
+
+      {pending && (
+        <p className="text-sm text-fn-text-muted">Calcolo validazione…</p>
+      )}
 
       {err && (
         <p className="text-sm text-fn-danger" role="alert">
@@ -78,48 +94,40 @@ export function PostVotePanel({
               value={`${(result.validazione_predittiva.copertura_regioni_sensibilita * 100).toFixed(0)}%`}
             />
             <Kpi
-              label="Copertura forbice sond."
-              value={`${((result.validazione_predittiva.copertura_forbice_sondaggio ?? 0) * 100).toFixed(0)}%`}
-            />
-            <Kpi
-              label="RMSE scenario"
-              value={result.validazione_predittiva.rmse_punti_scenario.toFixed(3)}
-            />
-            <Kpi
-              label="S osservato"
-              value={pct(result.validazione_predittiva.s_observato)}
+              label="Copertura forbice sondaggio"
+              value={
+                result.validazione_predittiva.copertura_forbice_sondaggio != null
+                  ? `${(result.validazione_predittiva.copertura_forbice_sondaggio * 100).toFixed(0)}%`
+                  : "n/d"
+              }
             />
           </KpiGrid>
-          <p className="text-xs text-fn-text-muted">
-            {result.validazione_predittiva.avvertenza}
-          </p>
-          <div className="fn-table-wrap">
-            <table className="fn-table">
+
+          <div className="overflow-x-auto">
+            <table className="fn-table w-full text-sm">
               <thead>
                 <tr>
                   <th>Regione</th>
-                  <th>Stima ex ante</th>
-                  <th>Voto osservato</th>
-                  <th>Errore (pp)</th>
-                  <th>Sens. pesi</th>
-                  <th>Forbice sond.</th>
+                  <th>Voto oss.</th>
+                  <th>Stima</th>
+                  <th>Benchmark</th>
+                  <th>In forbice sond.</th>
+                  <th>In sens. pesi</th>
                 </tr>
               </thead>
               <tbody>
-                {result.righe.map((r) => (
-                  <tr key={r.regione}>
-                    <td>{r.regione}</td>
-                    <td className="font-mono">{pct(r.stima)}</td>
-                    <td className="font-mono">
-                      {r.voto_osservato != null ? pct(r.voto_osservato) : "—"}
-                    </td>
-                    <td className="font-mono">
-                      {r.errore_punti != null
-                        ? r.errore_punti.toFixed(2)
+                {result.righe.map((row) => (
+                  <tr key={row.regione}>
+                    <td>{row.regione}</td>
+                    <td>
+                      {row.voto_osservato != null
+                        ? pct(row.voto_osservato)
                         : "—"}
                     </td>
-                    <td>{r.in_sensibilita_pesi ? "Sì" : "No"}</td>
-                    <td>{r.in_forbice_sondaggio ? "Sì" : "No"}</td>
+                    <td>{pct(row.stima)}</td>
+                    <td>{pct(row.benchmark)}</td>
+                    <td>{row.in_forbice_sondaggio ? "Sì" : "No"}</td>
+                    <td>{row.in_sensibilita_pesi ? "Sì" : "No"}</td>
                   </tr>
                 ))}
               </tbody>

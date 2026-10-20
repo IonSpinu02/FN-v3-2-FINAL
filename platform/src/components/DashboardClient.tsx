@@ -18,23 +18,34 @@ import {
   DEFAULT_POLL_CONFIG,
   type RegionPollResult,
   type RegionalPollConfig,
-} from "@/lib/engine/regionalPoll";
+} from "@/lib/engine/regionalPollShared";
 import type { CalculateOverrides } from "@/lib/engine/calculate";
 import type { IstituzioniDeltaSummary } from "@/lib/engine/localiTypes";
 import type { FnConfig, ScenarioResult } from "@/lib/engine/types";
-import { LocaliPanel } from "./LocaliPanel";
 import { pesiFromUi, SensitivityControls, uiFromPesi } from "@/components/SensitivityControls";
 import { Btn, Panel, Segmented, StatusDot } from "@/components/ui/FnUi";
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DisclaimerBanner } from "./DisclaimerBanner";
-import { HistoryPanel } from "./HistoryPanel";
 import { ItalyMap, type MapColorMode } from "./ItalyMap";
 import { MetricCards } from "./MetricCards";
-import { PostVotePanel } from "./PostVotePanel";
 import { exportNotaPdf, PrintNotaReport } from "./PrintNotaReport";
 import { RegionPollDrawer } from "./RegionPollDrawer";
 import { RegionalPollControls } from "./RegionalPollControls";
 import { RegionalPollTable } from "./RegionalPollTable";
+
+const LocaliPanel = dynamic(
+  () => import("./LocaliPanel").then((m) => m.LocaliPanel),
+  { ssr: false, loading: () => <p className="text-sm text-fn-text-muted">Caricamento tab…</p> },
+);
+const HistoryPanel = dynamic(
+  () => import("./HistoryPanel").then((m) => m.HistoryPanel),
+  { ssr: false, loading: () => <p className="text-sm text-fn-text-muted">Caricamento tab…</p> },
+);
+const PostVotePanel = dynamic(
+  () => import("./PostVotePanel").then((m) => m.PostVotePanel),
+  { ssr: false, loading: () => <p className="text-sm text-fn-text-muted">Caricamento tab…</p> },
+);
 
 type Tab = "scenario" | "storico" | "postvoto" | "locali";
 

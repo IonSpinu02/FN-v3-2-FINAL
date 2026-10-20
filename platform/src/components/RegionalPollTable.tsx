@@ -1,6 +1,6 @@
 "use client";
 
-import type { RegionPollResult } from "@/lib/engine/regionalPoll";
+import type { RegionPollResult } from "@/lib/engine/regionalPollShared";
 import type { ScenarioResult } from "@/lib/engine/types";
 import { pct } from "@/lib/format";
 import { Btn } from "@/components/ui/FnUi";

@@ -2,7 +2,7 @@
 
 import type { InstitutionalRow } from "@/lib/engine/calculate";
 import type { Region } from "@/lib/engine/constants";
-import type { RegionPollResult } from "@/lib/engine/regionalPoll";
+import type { RegionPollResult } from "@/lib/engine/regionalPollShared";
 import type { FnConfig, ScenarioRow } from "@/lib/engine/types";
 import { pct } from "@/lib/format";
 import { Btn } from "@/components/ui/FnUi";

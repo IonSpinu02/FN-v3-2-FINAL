@@ -8,7 +8,7 @@ import {
 import type {
   RegionPollResult,
   RegionalPollConfig,
-} from "@/lib/engine/regionalPoll";
+} from "@/lib/engine/regionalPollShared";
 import type { FnConfig, ScenarioResult } from "@/lib/engine/types";
 import { pct, pp } from "@/lib/format";
 

@@ -1,11 +1,11 @@
 "use client";
 
-import type {
-  ConfidenceLevel,
-  RegionalPollConfig,
-  SampleMode,
-} from "@/lib/engine/regionalPoll";
-import { DEFAULT_POLL_CONFIG } from "@/lib/engine/regionalPoll";
+import {
+  DEFAULT_POLL_CONFIG,
+  type ConfidenceLevel,
+  type RegionalPollConfig,
+  type SampleMode,
+} from "@/lib/engine/regionalPollShared";
 import { Panel, PanelTitle } from "@/components/ui/FnUi";
 
 export function RegionalPollControls({

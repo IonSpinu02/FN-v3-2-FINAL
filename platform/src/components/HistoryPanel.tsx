@@ -1,6 +1,6 @@
 "use client";
 
-import { parseHistory } from "@/lib/engine/historyAndEval";
+import { parseHistory } from "@/lib/engine/parseHistory";
 import type { ScenarioResult } from "@/lib/engine/types";
 import { Btn } from "@/components/ui/FnUi";
 import { useState } from "react";
