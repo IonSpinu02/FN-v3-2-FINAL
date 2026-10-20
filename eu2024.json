@@ -1,0 +1,105 @@
+{
+ "D": {
+  "Piemonte": {
+   "valid": 1871934,
+   "FdI": 569893,
+   "Lega": 192757
+  },
+  "Valle d'Aosta": {
+   "valid": 39927,
+   "FdI": 9704,
+   "Lega": 3534
+  },
+  "Liguria": {
+   "valid": 625621,
+   "FdI": 167508,
+   "Lega": 55560
+  },
+  "Lombardia": {
+   "valid": 4203327,
+   "FdI": 1336243,
+   "Lega": 550171
+  },
+  "Trentino-Alto Adige": {
+   "valid": 401701,
+   "FdI": 78553,
+   "Lega": 30248
+  },
+  "Veneto": {
+   "valid": 2061188,
+   "FdI": 774624,
+   "Lega": 271142
+  },
+  "Friuli-Venezia Giulia": {
+   "valid": 483388,
+   "FdI": 164336,
+   "Lega": 72156
+  },
+  "Emilia-Romagna": {
+   "valid": 1984071,
+   "FdI": 555981,
+   "Lega": 128579
+  },
+  "Toscana": {
+   "valid": 1654430,
+   "FdI": 453928,
+   "Lega": 102750
+  },
+  "Umbria": {
+   "valid": 392700,
+   "FdI": 128114,
+   "Lega": 26818
+  },
+  "Marche": {
+   "valid": 657675,
+   "FdI": 216396,
+   "Lega": 53846
+  },
+  "Lazio": {
+   "valid": 2078310,
+   "FdI": 688227,
+   "Lega": 137926
+  },
+  "Abruzzo": {
+   "valid": 505577,
+   "FdI": 168493,
+   "Lega": 40177
+  },
+  "Molise": {
+   "valid": 127370,
+   "FdI": 34114,
+   "Lega": 21831
+  },
+  "Campania": {
+   "valid": 1979746,
+   "FdI": 384277,
+   "Lega": 114288
+  },
+  "Puglia": {
+   "valid": 1366397,
+   "FdI": 368182,
+   "Lega": 84601
+  },
+  "Basilicata": {
+   "valid": 206237,
+   "FdI": 52594,
+   "Lega": 11192
+  },
+  "Calabria": {
+   "valid": 642590,
+   "FdI": 132167,
+   "Lega": 59062
+  },
+  "Sicilia": {
+   "valid": 1499044,
+   "FdI": 302644,
+   "Lega": 111976
+  },
+  "Sardegna": {
+   "valid": 475829,
+   "FdI": 117857,
+   "Lega": 26426
+  }
+ },
+ "nota": "Voti validi, FdI e Lega per regione, europee 2024. Fonte: Ministero dell Interno (via Sky TG24; Sicilia e Sardegna via Repubblica). Rinominare in eu2024.json per usare lo script."
+}

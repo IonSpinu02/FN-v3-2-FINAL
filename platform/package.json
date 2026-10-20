@@ -1,0 +1,38 @@
+{
+  "name": "platform",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "deploy": "vercel deploy",
+    "deploy:prod": "vercel deploy --prod"
+  },
+  "dependencies": {
+    "d3-scale": "^4.0.2",
+    "next": "16.4.2",
+    "next-auth": "^5.0.0-beta.32",
+    "python-random": "^1.0.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-simple-maps": "^5.0.5",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/turbopack": "^4",
+    "@types/d3-scale": "^4.0.9",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.2",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vercel": "^64.5.0",
+    "vitest": "^2.1.9"
+  }
+}

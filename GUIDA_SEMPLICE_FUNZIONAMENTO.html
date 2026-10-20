@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <title>Futuro Nazionale v3.2 — Guida per chi parte da zero</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      font-size: 11.5pt;
+      line-height: 1.55;
+      color: #1a1a1a;
+      max-width: 175mm;
+      margin: 0 auto;
+      padding: 12mm 14mm;
+    }
+    h1 { font-size: 17pt; margin: 0 0 8pt; line-height: 1.25; font-weight: 700; }
+    h2 {
+      font-size: 13pt;
+      margin: 18pt 0 8pt;
+      padding-bottom: 4pt;
+      border-bottom: 2px solid #1e40af;
+      color: #1e3a8a;
+      page-break-after: avoid;
+    }
+    h3 { font-size: 11.5pt; margin: 12pt 0 6pt; color: #374151; }
+    p { margin: 0 0 10pt; }
+    ul, ol { margin: 0 0 10pt; padding-left: 22pt; }
+    li { margin-bottom: 6pt; }
+    .box {
+      border: 1px solid #64748b;
+      padding: 10pt 12pt;
+      margin: 12pt 0;
+      background: #f8fafc;
+      border-radius: 4pt;
+    }
+    .warn {
+      border-color: #c2410c;
+      background: #fff7ed;
+    }
+    .step {
+      border-left: 4px solid #2563eb;
+      padding-left: 12pt;
+      margin: 10pt 0 14pt;
+    }
+    .step-num {
+      font-weight: 700;
+      color: #1d4ed8;
+      font-size: 10pt;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10pt;
+      margin: 10pt 0;
+    }
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 6pt 8pt;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #e2e8f0; }
+    .meta { font-size: 9.5pt; color: #64748b; margin-bottom: 14pt; }
+    .glossary dt { font-weight: 600; margin-top: 8pt; }
+    .glossary dd { margin: 4pt 0 0 0; color: #334155; }
+    @media print {
+      body { padding: 0; max-width: none; }
+      .no-print { display: none; }
+      h2 { page-break-after: avoid; }
+      .box, .step { break-inside: avoid; }
+    }
+    @page { size: A4; margin: 14mm; }
+  </style>
+</head>
+<body>
+
+  <p class="no-print meta">
+    <strong>PDF già pronto:</strong> apri <code>GUIDA_SEMPLICE_FUNZIONAMENTO.pdf</code> nella stessa cartella.
+    Da questo HTML: Ctrl+P → Salva come PDF.
+  </p>
+
+  <h1>Futuro Nazionale — Come funziona tutto (guida lenta, parole semplici)</h1>
+  <p class="meta">Scenario territoriale versione 3.2 · Uso interno · Ottobre 2026</p>
+
+  <div class="box warn">
+    <strong>Prima di tutto — leggi questo</strong><br />
+    Questo documento <strong>non</strong> dice chi vincerà le elezioni e <strong>non</strong> è un sondaggio ufficiale
+    di un istituto esterno. È uno <strong>schema ipotetico</strong>: «se a livello nazionale FN avesse circa il 7,2%,
+    come potrebbe distribuirsi sulle varie zone d’Italia?». Il sistema lo segnala chiaramente:
+    <em>predizione validata: no</em>.
+  </div>
+
+  <h2>0. Per chi è scritta questa guida</h2>
+  <p>
+    Puoi leggere anche se <strong>non segui la politica</strong> e <strong>non conosci</strong> statistiche o informatica.
+    Ogni passaggio è spiegato dall’inizio. Se un termine ti sembra difficile, cerca la sezione
+    <strong>«Piccolo dizionario»</strong> a metà documento.
+  </p>
+
+  <h2>1. Idee base (politica e numeri, spiegate piano)</h2>
+
+  <div class="step">
+    <p class="step-num">Idea 1 — Elezioni e voti</p>
+    <p>
+      In Italia, periodicamente le persone vanno a votare. Ogni persona sceglie un partito o un candidato.
+      Si contano i <strong>voti validi</strong> (schede accettate) e si calcola la <strong>percentuale</strong>:
+      ad esempio «su 100 voti, 7 hanno scelto il partito X» → 7%.
+    </p>
+  </div>
+
+  <div class="step">
+    <p class="step-num">Idea 2 — L’Italia è divisa in regioni</p>
+    <p>
+      Non tutti votano allo stesso modo ovunque. Ci sono <strong>20 regioni</strong> (Piemonte, Lombardia, Sicilia, …).
+      In una regione un partito può essere più forte, in un’altra più debole. Il nostro lavoro guarda proprio
+      queste <strong>differenze territoriali</strong>.
+    </p>
+  </div>
+
+  <div class="step">
+    <p class="step-num">Idea 3 — Partito e nome «Futuro Nazionale (FN)»</p>
+    <p>
+      <strong>FN</strong> è il partito politico oggetto di questo scenario. I numeri su iscritti, organizzazione
+      e preferenze interne sono quelli <strong>comunicati dal committente</strong>, non verificati da un ente esterno
+      in questo documento.
+    </p>
+  </div>
+
+  <div class="step">
+    <p class="step-num">Idea 4 — Cosa è un «sondaggio»</p>
+    <p>
+      Un sondaggio chiede a un campione di persone «per chi voteresti?» e stima il consenso nazionale.
+      Qui usiamo un numero fisso di partenza: circa <strong>7,2%</strong> a livello Italia (lettera <strong>S</strong>).
+      <strong>Il programma non calcola quel 7,2% da solo</strong>: lo prende come dato di partenza, come se qualcuno
+      avesse già detto «a livello nazionale FN è intorno al 7%».
+    </p>
+  </div>
+
+  <h2>2. La domanda a cui risponde il sistema</h2>
+  <p>In una sola frase:</p>
+  <div class="box">
+    <strong>«Se FN avesse ~7,2% in tutta Italia, in ciascuna delle 20 regioni quanto potrebbe essere circa,
+    secondo quattro indizi territoriali che mescoliamo insieme?»</strong>
+  </div>
+  <p>La risposta è una <strong>tabella e una mappa</strong> con percentuali per regione — sempre ipotetiche.</p>
+
+  <h2>3. Cosa il sistema NON fa (importante)</h2>
+  <ul>
+    <li>Non promette l’esito delle prossime elezioni.</li>
+    <li>Non sostituisce SWG, Ixè o altri istituti di ricerca.</li>
+    <li>Non «dimostra» che FN avrà esattamente il 7,2%.</li>
+    <li>Il confronto con <strong>FdI + Lega nel 2024</strong> serve solo a capire la <strong>forma</strong> del territorio
+      (dove siamo più alti o più bassi rispetto a quella traccia), non a misurare un errore di previsione.</li>
+  </ul>
+
+  <h2>4. I quattro «ingredienti» (da capire uno per uno)</h2>
+  <p>
+    Per ogni regione il computer calcola quattro numeri (tutti resi comparabili, poi mescolati).
+    Pensali come quattro opinioni diverse su «quanto FN è radicato lì».
+  </p>
+
+  <table>
+    <tr><th>Ingrediente</th><th>Peso nel mix</th><th>In parole semplici</th></tr>
+    <tr>
+      <td><strong>Flussi</strong></td><td>35% (la fetta più grande)</td>
+      <td>Guarda come ha votato il territorio nel 2024 (partiti come FdI e Lega, astensione, altri)
+          e un’ipotesi su come potrebbero spostarsi i voti (dati tipo Ipsos). È la «geografia del voto».</td>
+    </tr>
+    <tr>
+      <td><strong>Preferenze</strong></td><td>25%</td>
+      <td>Segnali dalle primarie o circoscrizioni interne al partito. In Lombardia e Sardegna ci sono dati
+          misurati; altrove il modello li ricostruisce in modo prudente.</td>
+    </tr>
+    <tr>
+      <td><strong>Iscritti</strong></td><td>25%</td>
+      <td>Quante persone risultano iscritte a FN in quella regione rispetto alle altre — indice di presenza sul campo.</td>
+    </tr>
+    <tr>
+      <td><strong>Istituzioni</strong></td><td>15%</td>
+      <td>Presenza in cariche elettive (es. consiglieri, sindaci): quanto il partito è già visibile nelle istituzioni locali.</td>
+    </tr>
+  </table>
+
+  <h2>5. Passo per passo — cosa fa il computer (modello v3.2)</h2>
+
+  <div class="step">
+    <p class="step-num">Passo A</p>
+    <p>Legge i file di configurazione: iscritti per regione, pesi, dati elettorali 2024 (<code>eu2024.json</code>), ecc.</p>
+  </div>
+  <div class="step">
+    <p class="step-num">Passo B</p>
+    <p>Per ogni regione calcola <strong>q</strong>: che fetta dell’elettorato italiano rappresenta (in base ai voti validi del 2024).</p>
+  </div>
+  <div class="step">
+    <p class="step-num">Passo C</p>
+    <p>Calcola i quattro ingredienti (flussi, preferenze, iscritti, istituzioni) e li normalizza così che, sommati bene,
+       descrivano una «ripartizione» relativa tra regioni.</p>
+  </div>
+  <div class="step">
+    <p class="step-num">Passo D — Il mix</p>
+    <p>
+      Mescola: 35% flussi + 25% preferenze + 25% iscritti + 15% istituzioni → ottieni <strong>p</strong>
+      (quota scenario per quella regione).
+    </p>
+  </div>
+  <div class="step">
+    <p class="step-num">Passo E — La percentuale che vedi</p>
+    <p>
+      Formula semplificata: <strong>stima regione ≈ S × (p ÷ q)</strong>, dove <strong>S = 7,2%</strong>.
+      Così, se una regione ha molti elettori (<strong>q</strong> grande) ma il mix dice che FN lì è relativamente debole,
+      la percentuale può essere diversa dalla media nazionale.
+    </p>
+  </div>
+  <div class="step">
+    <p class="step-num">Passo F — Benchmark (solo confronto)</p>
+    <p>
+      In parallelo calcola «se applicassimo lo stesso S alla somma FdI+Lega del 2024, regione per regione, che forma avrebbe?».
+      È la linea di <strong>benchmark</strong>, non una previsione su FN.
+    </p>
+  </div>
+
+  <h2>6. Monte Carlo — cos’è, senza formule spaventose</h2>
+  <p>
+    Oltre al risultato centrale, il modello ripete il calcolo migliaia di volte (20.000) cambiando leggermente
+    i pesi e il valore S, con una regola casuale sempre uguale se riparti (<strong>seme 42</strong>).
+  </p>
+  <ul>
+    <li><strong>lo10</strong> e <strong>hi90</strong>: due estremi tra cui cade spesso la stima se «tremi» un po’ i pesi.</li>
+    <li>Significato: <strong>sensibilità</strong> («quanto cambia se non fossimo sicuri al 100% dei pesi?»).</li>
+    <li>Non significa: «il voto reale starà sicuramente in questo intervallo».</li>
+  </ul>
+
+  <h2>7. File nella cartella del progetto (senza aprire il codice)</h2>
+  <table>
+    <tr><th>File / cartella</th><th>A cosa serve</th></tr>
+    <tr><td><code>modello_fn_v3_2.py</code></td><td>Programma originale in Python che fa i calcoli.</td></tr>
+    <tr><td><code>config_v3_2.json</code></td><td>Tutti i numeri di input (iscritti, pesi, S=7,2%, …).</td></tr>
+    <tr><td><code>risultati_v3_2.json</code></td><td>Output già calcolato (20 regioni).</td></tr>
+    <tr><td><code>scenario_congelato_18-10-2026.json</code></td><td>Fotografia fissa prima del voto: per confronti dopo le elezioni.</td></tr>
+    <tr><td><code>platform/</code></td><td>Sito web con mappa, slider e strumenti extra (vedi sotto).</td></tr>
+  </table>
+
+  <h2>8. La piattaforma web — cos’è e cosa aggiunge</h2>
+  <p>
+    È un <strong>sito riservato</strong> (login) che mostra gli stessi calcoli del Python, verificati con un test
+    «golden» (i numeri devono coincidere). In più:
+  </p>
+  <ul>
+    <li><strong>Mappa cliccabile</strong> dell’Italia (colori per regione).</li>
+    <li><strong>Slider</strong>: puoi provare un S diverso dal 7,2% o cambiare i pesi (poi «Ripristina v3.2»).</li>
+    <li><strong>Esporta report PDF</strong> dalla dashboard (stampa del browser).</li>
+    <li><strong>Simulatore sondaggio regionale</strong> (simulazione interna, non sondaggio vero).</li>
+  </ul>
+
+  <h2>9. Le tre schede (tab) del sito</h2>
+  <h3>Tab 1 — Scenario e sondaggio regionale</h3>
+  <p>Numeri nazionali, mappa, tabella delle 20 regioni. Clic su una regione → dettaglio. Qui usi slider e simulatore.</p>
+  <h3>Tab 2 — Storico iscritti</h3>
+  <p>Carichi un file CSV (mese, regione, iscritti). Se un mese ha tutte e 20 le regioni, vedi come cambia la «dispersione» territoriale (indice H).</p>
+  <h3>Tab 3 — Validazione post-voto</h3>
+  <p>Dopo le elezioni, carichi voti reali (CSV). Il sito confronta con lo <strong>snapshot congelato</strong> del 18/10/2026 e mostra errori medi e altre metriche — sempre con avvertenze sulla comparabilità del voto.</p>
+
+  <h2>10. Simulatore «sondaggio regionale» (solo sul sito)</h2>
+  <p>
+    Un sondaggio vero intervista migliaia di persone. Qui il computer <strong>immagina</strong>: «se in quella regione
+    intervistassi 600 o 1000 persone e FN fosse vicino alla nostra stima, quanto potrebbe oscillare il risultato
+    per caso?» — e aggiunge l’incertezza del modello.
+  </p>
+  <ul>
+    <li><strong>Forbice ±</strong>: intervallo largo/stretto attorno alla stima.</li>
+    <li><strong>Probabilità soglia</strong> (es. 3%): quanto è probabile superare quel minimo in simulazione.</li>
+    <li>Etichette tipo Sicura / Contesa / Critica: solo per orientamento interno.</li>
+  </ul>
+  <div class="box warn">
+    Non pubblicare queste cifre come se fossero un sondaggio SWG/Ixè. Sono esercizi statistici sullo scenario.
+  </div>
+
+  <h2>11. Piccolo dizionario</h2>
+  <dl class="glossary">
+    <dt>Percentuale (S = 7,2%)</dt>
+    <dd>7 voti su 100 (circa) a livello nazionale, usato come ipotesi di partenza.</dd>
+    <dt>Regione</dt>
+    <dd>Una delle 20 grandi aree in cui si divide l’Italia per amministrazione e statistiche.</dd>
+    <dt>Mix / pesi</dt>
+    <dd>Come si combinano i quattro ingredienti (35+25+25+15 = 100%).</dd>
+    <dt>Snapshot congelato</dt>
+    <dd>File salvato in una data fissa; non lo cambi quando rifai calcoli, così dopo il voto sai cosa avevi «ex ante».</dd>
+    <dt>H (entropia)</dt>
+    <dd>Numero che dice se FN è concentrato in poche regioni o spread più uniforme — solo descrittivo.</dd>
+    <dt>Golden test</dt>
+    <dd>Controllo automatico: la versione web deve dare gli stessi numeri del pacchetto ufficiale v3.2.</dd>
+  </dl>
+
+  <h2>12. Riassunto finale in 6 punti</h2>
+  <ol>
+    <li>Partiamo da <strong>S ≈ 7,2%</strong> nazionale (dato esterno al motore).</li>
+    <li>Per ogni regione mescoliamo <strong>quattro indizi</strong> con pesi fissi.</li>
+    <li>Otteniamo percentuali ipotetiche per regione + confronto con traccia FdI+Lega 2024.</li>
+    <li>Monte Carlo mostra <strong>quanto è sensibile</strong> il risultato ai pesi, non «chi vince».</li>
+    <li>Il sito <strong>platform</strong> visualizza e permette di sperimentare, senza cambiare la logica ufficiale di default.</li>
+    <li>Tutto resta uno <strong>scenario descrittivo</strong>, non una predizione certificata.</li>
+  </ol>
+
+  <p class="meta" style="margin-top: 20pt;">
+    Futuro Nazionale · Guida lenta v3.2 · File PDF: <code>GUIDA_SEMPLICE_FUNZIONAMENTO.pdf</code> ·
+    Dettagli tecnici: <code>RECAP_FUNZIONAMENTO.md</code>
+  </p>
+
+</body>
+</html>

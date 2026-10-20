@@ -1,0 +1,56 @@
+FUTURO NAZIONALE | STUDIO TERRITORIALE DEL CONSENSO
+VERSIONE 3.2 - REVISIONE TECNICA DEL 18 OTTOBRE 2026
+
+QUALIFICAZIONE
+Ricerca descrittiva e modello sperimentale di scenario, NON previsione elettorale validata.
+I dati del partito sono forniti dal committente, non certificati in modo indipendente.
+La ripartizione geografica simulata non rappresenta un sondaggio regionale.
+
+DOCUMENTI
+1_Nota_Dirigenza_FN_v3.2.pdf              10 pagine: nota per la dirigenza; sostituite le sezioni interpretative che attribuivano voti recuperabili.
+2_Dossier_Tecnico_FN_v3.2.pdf              23 pagine: dossier storico v3.1 più due appendici metodologiche v3.2 prevalenti.
+3_Guida_Tecnica_Relatore_FN_v3.2.pdf       18 pagine: guida storica v3.1 più due appendici metodologiche v3.2 prevalenti.
+6_Scheda_Entropia_Relatore_FN_v3.2.pdf      1 pagina: scheda completamente rivista, chiara distinzione descrizione/previsione.
+
+FOGLI DI CALCOLO
+4_Modello_FN_Scenario_Territoriale_v3.2.xlsx
+  QUADRO / PARAMETRI / DATI / SCENARIO / SENSIBILITA / VALIDAZIONE / ISCRITTI_STORICO / QUOTE_STORICO
+  H_STORICO / STORICO / FONTI / JS_STORICO / P_STORICO / P_H_STORICO / BASELINE_FISSA / CONTROLLO_FORMULE.
+  STORICO F: divergenza JS tra mesi COMPLETI; G: H scenario condizionato alla base congelata del 18 ottobre.
+  VALIDAZIONE colonna M: completezza e coerenza per regione di ENTRAMBI i valori (voti validi + FN).
+  Non modificare i valori B/C congelati in VALIDAZIONE né il file snapshot.
+5_Analisi_Iscritti_Regioni_v3.2.xlsx
+  Analisi di supporto, serie degli iscritti, entropia mensile e foglio tecnico dei contributi (nessun #VALUE!).
+
+RIPRODUCIBILITA
+Eseguire da questa cartella con Python standard:
+  python modello_fn_v3_2.py --output risultati_ricalcolati.json
+  python modello_fn_v3_2.py --storico storico_iscritti_TEMPLATE.csv --output storico.json
+Dopo il voto (solo con esiti completi e COMPARABILI per tutte le 20 regioni):
+  python modello_fn_v3_2.py --snapshot scenario_congelato_18-10-2026.json --esiti esiti_finali.csv --output validazione_post_voto.json
+Inserire esiti_finali.csv usando esiti_futuri_TEMPLATE.csv, senza risultati provvisori parziali.
+
+DATI CONGELATI
+scenario_congelato_18-10-2026.json mantiene gli identici valori ex ante del pacchetto v3.1.
+SHA256_CHECKSUM.txt verifica che i file coincidano byte-per-byte col pacchetto distribuito.
+ATTENZIONE: un hash privo di marca temporale indipendente NON certifica che un file esistesse alla data dichiarata.
+
+VALORI BASE DICHIARATI
+158.320 iscritti, 156.456 assegnati a regioni; 2.331 comitati (dati comunicati come ufficiali del partito).
+Entropia iscritti = 0,898449; entropia scenario = 0,884337; H elettorato = 0,886090.
+Distanza media ponderata modello/benchmark = 0,975986 punti percentuali: NON errore predittivo.
+
+NOVITA' v3.2
+- Sistemate due anomalie di validazione e monitoraggio dell'Excel.
+- Corrette formule che potevano produrre #VALUE! nei riepiloghi, nelle sensibilita' e nel file iscritti.
+- Introduzione di JS mese-mese e H del modello con base storica congelata, senza modificare retroattivamente i valori.
+- Nota dirigenza: sostituiti i conteggi etichettati come voti recuperabili o difendibili; ora confronto diagnostico.
+- Guida, dossier e scheda: interpretazione predittiva limitata a futura validazione su risultati indipendenti.
+- Documentazione e codice aggiornati; nessuna revisione delle stime congelate al 18 ottobre.
+
+COSA NON E' STATO VALIDATO
+L'accuratezza predittiva, la copertura nominale degli intervalli e la completezza delle fonti non sono ancora certificate.
+Monitoraggio mensile dell'organizzazione non prova crescita del consenso: serve verifica elettorale indipendente.
+
+I DOCUMENTI BASE v3.1 SONO CONSERVATI COME CORPO DEL DOSSIER E DELLA GUIDA PER TRACCIABILITA':
+LE APPENDICI v3.2 SONO L'AGGIORNAMENTO METODOLOGICO APPLICABILE IN CASO DI FORMULAZIONI DIFFERENTI.

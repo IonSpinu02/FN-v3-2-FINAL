@@ -1,0 +1,128 @@
+{
+  "titolo": "Futuro Nazionale - configurazione dati e ipotesi v3.2",
+  "data_base": "2026-10-16",
+  "italia_2024": {
+    "elettori": 49552399,
+    "votanti": 24621499
+  },
+  "affluenza_percento": {
+    "Liguria": 50.61,
+    "Lombardia": 55.29,
+    "Piemonte": 56.62,
+    "Valle d'Aosta": 42.54,
+    "Emilia-Romagna": 59.02,
+    "Friuli-Venezia Giulia": 48.29,
+    "Trentino-Alto Adige": 46.96,
+    "Veneto": 52.6,
+    "Lazio": 46.64,
+    "Marche": 54.56,
+    "Toscana": 59.07,
+    "Umbria": 60.81,
+    "Abruzzo": 47.1,
+    "Basilicata": 42.82,
+    "Calabria": 40.29,
+    "Campania": 44.0,
+    "Molise": 47.99,
+    "Puglia": 43.61,
+    "Sardegna": 36.89,
+    "Sicilia": 38.0
+  },
+  "preferenze_totali": 532368,
+  "preferenze_circoscrizione": {
+    "NO": 186270,
+    "NE": 141264,
+    "C": 95579,
+    "S": 72404,
+    "I": 35145
+  },
+  "preferenze_regionali_osservate": {
+    "Lombardia": 122608,
+    "Sardegna": 15162
+  },
+  "iscritti_regione": {
+    "Abruzzo": 4325,
+    "Basilicata": 1297,
+    "Calabria": 6169,
+    "Campania": 12731,
+    "Emilia-Romagna": 9405,
+    "Friuli-Venezia Giulia": 3762,
+    "Lazio": 15889,
+    "Liguria": 4955,
+    "Lombardia": 23693,
+    "Marche": 4261,
+    "Molise": 1132,
+    "Piemonte": 11507,
+    "Puglia": 13552,
+    "Sardegna": 5096,
+    "Sicilia": 10983,
+    "Toscana": 7552,
+    "Trentino-Alto Adige": 1877,
+    "Umbria": 2109,
+    "Valle d'Aosta": 215,
+    "Veneto": 15946
+  },
+  "iscritti_totali_dichiarati": 158320,
+  "comitati": 2331,
+  "presenze_istituzionali": {
+    "dep": {
+      "Emilia-Romagna": 1,
+      "Veneto": 1,
+      "Sicilia": 1,
+      "Calabria": 1,
+      "Campania": 1,
+      "Piemonte": 1,
+      "Lombardia": 1,
+      "Puglia": 1,
+      "Toscana": 1
+    },
+    "creg": {
+      "Lombardia": 3,
+      "Toscana": 1,
+      "Veneto": 1,
+      "Calabria": 1,
+      "Liguria": 1
+    },
+    "sind": {
+      "Marche": 1,
+      "Piemonte": 2
+    },
+    "com": {
+      "Lombardia": 3,
+      "Lazio": 1,
+      "Piemonte": 2,
+      "Toscana": 3,
+      "Trentino-Alto Adige": 2,
+      "Calabria": 2,
+      "Basilicata": 2,
+      "Liguria": 1,
+      "Veneto": 2,
+      "Emilia-Romagna": 1
+    }
+  },
+  "sondaggio_nazionale": 0.072,
+  "pesi": {
+    "flussi": 0.35,
+    "pref": 0.25,
+    "isc": 0.25,
+    "ist": 0.15
+  },
+  "flussi_ipsos": {
+    "FdI": 0.31,
+    "Lega": 0.25,
+    "ast": 0.36
+  },
+  "punteggi_cariche": {
+    "dep": 5,
+    "creg": 3,
+    "sind": 2,
+    "com": 1
+  },
+  "lambda_istituzionale": 30,
+  "monte_carlo": {
+    "simulazioni": 20000,
+    "seme": 42,
+    "concentrazione_dirichlet": 20,
+    "sd_sondaggio": 0.012
+  },
+  "avvertenza": "Fonte iscritti ufficiale del partito come dichiarato dal committente, non certificazione indipendente. Preferenze regionali salvo Lombardia e Sardegna ricostruite. Voti 2024 dal JSON fornito, senza audit esterno. La validazione ex post rimane non disponibile fino a esiti indipendenti completi."
+}

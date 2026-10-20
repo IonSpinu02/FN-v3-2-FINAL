@@ -1,0 +1,10 @@
+REGISTRO DI VERIFICA FINALE - 18/10/2026
+Scenario originale congelato del 18 ottobre conservato senza variazioni.
+Motore Python eseguito senza librerie esterne: H iscritti 0.898449, H scenario 0.884337, differenza media 0.975986 pp.
+Excel principale: assenza di errori #VALUE!, #REF!, #DIV/0!, #NAME?, #N/A in scansione finale.
+Excel iscritti: idem.
+Validazione: 20 righe con dati coerenti -> calcolo sbloccato; 19 righe -> IN ATTESA.
+Monitoraggio: due mesi identici -> Jensen-Shannon 0 e Delta H 0; mese incompleto -> IN ATTESA.
+PDF: renderizzate le pagine sostitutive principali e le appendici. I contenuti conservati da v3.1 sono marcati REVISIONE 3.2.
+Le prove con dati sintetici non sono risultati elettorali reali e non sono incluse nel pacchetto.
+SHA256: controllo di integrita' dei file, non certificazione della loro data di creazione.

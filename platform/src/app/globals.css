@@ -1,0 +1,287 @@
+@import "tailwindcss";
+
+:root {
+  --fn-bg: #e8e2d6;
+  --fn-bg-pattern: #ddd6c8;
+  --fn-surface: #fffcf7;
+  --fn-surface-elevated: #ffffff;
+  --fn-border: #c9bfb0;
+  --fn-border-subtle: #e2dcd2;
+  --fn-text: #15202b;
+  --fn-text-muted: #5a6572;
+  --fn-accent: #0f5c48;
+  --fn-accent-soft: #e3f0eb;
+  --fn-accent-hover: #0b4536;
+  --fn-italy-green: #009246;
+  --fn-italy-red: #ce2b37;
+  --fn-warn-bg: #fff8eb;
+  --fn-warn-border: #d4a017;
+  --fn-warn-text: #6b4e0a;
+  --fn-danger: #b42318;
+  --fn-sidebar: #15202b;
+  --fn-sidebar-muted: #8b939c;
+  --fn-sidebar-active: #1f3d34;
+  --fn-shadow: 0 1px 2px rgb(21 32 43 / 6%), 0 8px 24px rgb(21 32 43 / 8%);
+  --fn-radius: 1rem;
+}
+
+@theme inline {
+  --color-fn-bg: var(--fn-bg);
+  --color-fn-surface: var(--fn-surface);
+  --color-fn-surface-elevated: var(--fn-surface-elevated);
+  --color-fn-border: var(--fn-border);
+  --color-fn-border-subtle: var(--fn-border-subtle);
+  --color-fn-text: var(--fn-text);
+  --color-fn-text-muted: var(--fn-text-muted);
+  --color-fn-accent: var(--fn-accent);
+  --color-fn-accent-soft: var(--fn-accent-soft);
+  --color-fn-accent-hover: var(--fn-accent-hover);
+  --color-fn-warn-bg: var(--fn-warn-bg);
+  --color-fn-warn-border: var(--fn-warn-border);
+  --color-fn-warn-text: var(--fn-warn-text);
+  --color-fn-danger: var(--fn-danger);
+  --color-fn-sidebar: var(--fn-sidebar);
+  --color-fn-sidebar-muted: var(--fn-sidebar-muted);
+  --color-fn-sidebar-active: var(--fn-sidebar-active);
+  --font-sans: var(--font-dm-sans);
+  --font-display: var(--font-fraunces);
+  --font-mono: var(--font-ibm-plex-mono);
+}
+
+body {
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
+  background-color: var(--fn-bg);
+  color: var(--fn-text);
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    var(--fn-bg-pattern) 1px,
+    transparent 0
+  );
+  background-size: 24px 24px;
+}
+
+.fn-panel {
+  border-radius: var(--fn-radius);
+  border: 1px solid var(--fn-border-subtle);
+  background: var(--fn-surface-elevated);
+  box-shadow: var(--fn-shadow);
+}
+
+.fn-panel-muted {
+  border-radius: var(--fn-radius);
+  border: 1px solid var(--fn-border-subtle);
+  background: var(--fn-surface);
+}
+
+.fn-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fn-text-muted);
+}
+
+.fn-input {
+  width: 100%;
+  border-radius: 0.625rem;
+  border: 1px solid var(--fn-border);
+  background: var(--fn-surface);
+  padding: 0.625rem 0.875rem;
+  font-size: 0.9375rem;
+  color: var(--fn-text);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.fn-input:focus {
+  outline: none;
+  border-color: var(--fn-accent);
+  box-shadow: 0 0 0 3px rgb(15 92 72 / 15%);
+}
+
+.fn-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border-radius: 0.625rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.fn-btn-primary {
+  background: var(--fn-accent);
+  color: #fff;
+}
+
+.fn-btn-primary:hover:not(:disabled) {
+  background: var(--fn-accent-hover);
+}
+
+.fn-btn-primary:disabled {
+  opacity: 0.55;
+}
+
+.fn-btn-secondary {
+  border: 1px solid var(--fn-border);
+  background: var(--fn-surface);
+  color: var(--fn-text);
+}
+
+.fn-btn-secondary:hover {
+  border-color: var(--fn-accent);
+  color: var(--fn-accent);
+}
+
+.fn-btn-ghost {
+  color: var(--fn-text-muted);
+}
+
+.fn-btn-ghost:hover {
+  color: var(--fn-text);
+  background: var(--fn-accent-soft);
+}
+
+.fn-segment {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border-radius: 0.75rem;
+  background: var(--fn-surface);
+  border: 1px solid var(--fn-border-subtle);
+}
+
+.fn-segment button {
+  border-radius: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--fn-text-muted);
+}
+
+.fn-segment button[data-active="true"] {
+  background: var(--fn-accent);
+  color: #fff;
+}
+
+.fn-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--fn-radius);
+  border: 1px solid var(--fn-border-subtle);
+  background: var(--fn-surface-elevated);
+}
+
+.fn-table {
+  width: 100%;
+  min-width: 640px;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.fn-table thead {
+  background: var(--fn-surface);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fn-text-muted);
+}
+
+.fn-table th,
+.fn-table td {
+  padding: 0.625rem 0.875rem;
+}
+
+.fn-table tbody tr {
+  border-top: 1px solid var(--fn-border-subtle);
+}
+
+.fn-table tbody tr:hover {
+  background: var(--fn-accent-soft);
+}
+
+.fn-table tbody tr[data-selected="true"] {
+  background: rgb(15 92 72 / 12%);
+}
+
+.fn-kpi {
+  border-radius: var(--fn-radius);
+  border: 1px solid var(--fn-border-subtle);
+  background: var(--fn-surface-elevated);
+  padding: 1rem 1.125rem;
+  box-shadow: var(--fn-shadow);
+}
+
+.fn-kpi-value {
+  font-family: var(--font-ibm-plex-mono), ui-monospace, monospace;
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--fn-text);
+  margin-top: 0.25rem;
+}
+
+.fn-alert {
+  border-radius: 0.75rem;
+  border: 1px solid var(--fn-warn-border);
+  background: var(--fn-warn-bg);
+  padding: 0.875rem 1rem;
+  font-size: 0.875rem;
+  color: var(--fn-warn-text);
+  line-height: 1.5;
+}
+
+.fn-alert-custom {
+  border-color: #e07a2f;
+  background: #fff3ea;
+  color: #7a3d12;
+}
+
+.fn-range {
+  width: 100%;
+  accent-color: var(--fn-accent);
+}
+
+@media print {
+  .screen-only {
+    display: none !important;
+  }
+  .nota-print {
+    display: block !important;
+    color: #000;
+    background: #fff;
+    padding: 12mm;
+    font-size: 10pt;
+    font-family: Georgia, "Times New Roman", serif;
+  }
+  .nota-print-header h1 {
+    font-size: 14pt;
+    margin-bottom: 4pt;
+  }
+  .nota-print-box {
+    border: 1px solid #333;
+    padding: 8pt;
+    margin: 10pt 0;
+    font-size: 9pt;
+  }
+  .nota-print-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8pt 0;
+    font-size: 9pt;
+  }
+  .nota-print-table th,
+  .nota-print-table td {
+    border: 1px solid #ccc;
+    padding: 3pt 5pt;
+    text-align: left;
+  }
+  .nota-print-table-full {
+    font-size: 7.5pt;
+  }
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+}

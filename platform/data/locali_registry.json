@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "id": "loc-marche-sind-1",
+      "comune": "Esempio Marche",
+      "regione": "Marche",
+      "carica": "sind",
+      "partito_fn": true,
+      "note": "Allineato a config v3.2 (sind Marche)",
+      "ultimo_aggiornamento": "2026-10-18"
+    },
+    {
+      "id": "loc-piemonte-sind-1",
+      "comune": "Torino (esempio)",
+      "regione": "Piemonte",
+      "carica": "sind",
+      "partito_fn": true,
+      "ultimo_aggiornamento": "2026-10-18"
+    },
+    {
+      "id": "loc-piemonte-sind-2",
+      "comune": "Alessandria (esempio)",
+      "regione": "Piemonte",
+      "carica": "sind",
+      "partito_fn": true,
+      "ultimo_aggiornamento": "2026-10-18"
+    },
+    {
+      "id": "loc-lombardia-com-1",
+      "comune": "Bergamo (esempio)",
+      "regione": "Lombardia",
+      "carica": "com",
+      "partito_fn": true,
+      "ultimo_aggiornamento": "2026-10-18"
+    },
+    {
+      "id": "loc-lombardia-com-2",
+      "comune": "Brescia (esempio)",
+      "regione": "Lombardia",
+      "carica": "com",
+      "partito_fn": true,
+      "ultimo_aggiornamento": "2026-10-18"
+    },
+    {
+      "id": "loc-lombardia-com-3",
+      "comune": "Monza (esempio)",
+      "regione": "Lombardia",
+      "carica": "com",
+      "partito_fn": true,
+      "ultimo_aggiornamento": "2026-10-18"
+    }
+  ]
+}
