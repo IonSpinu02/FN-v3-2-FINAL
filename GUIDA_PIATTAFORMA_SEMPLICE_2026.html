@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <title>Futuro Nazionale — Piattaforma web spiegata facile (2026)</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      font-size: 11.5pt;
+      line-height: 1.55;
+      color: #1a1a1a;
+      max-width: 175mm;
+      margin: 0 auto;
+      padding: 12mm 14mm;
+    }
+    h1 { font-size: 17pt; margin: 0 0 6pt; line-height: 1.25; }
+    h2 {
+      font-size: 13pt;
+      margin: 16pt 0 8pt;
+      padding-bottom: 4pt;
+      border-bottom: 2px solid #334155;
+      page-break-after: avoid;
+    }
+    h3 { font-size: 11.5pt; margin: 10pt 0 6pt; }
+    p { margin: 0 0 8pt; }
+    ul { margin: 0 0 10pt; padding-left: 20pt; }
+    li { margin-bottom: 5pt; }
+    .meta { font-size: 9.5pt; color: #64748b; margin-bottom: 12pt; }
+    .legenda {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8pt;
+      margin: 12pt 0 16pt;
+      font-size: 9.5pt;
+    }
+    .legenda span {
+      padding: 4pt 8pt;
+      border-radius: 4pt;
+      border: 1px solid #cbd5e1;
+    }
+    .legenda .L-base { background: #fff; }
+    .legenda .L-nuovo { background: #dbeafe; border-color: #2563eb; color: #1e3a8a; }
+    .legenda .L-oss { background: #fef3c7; border-color: #d97706; color: #92400e; }
+    .box {
+      border: 1px solid #94a3b8;
+      padding: 10pt 12pt;
+      margin: 10pt 0;
+      background: #f8fafc;
+      border-radius: 4pt;
+    }
+    .warn {
+      border-color: #ea580c;
+      background: #fff7ed;
+    }
+    .esempio {
+      border-left: 4px solid #64748b;
+      padding-left: 10pt;
+      margin: 8pt 0;
+      font-size: 10.5pt;
+    }
+    /* Evidenziazioni contenuto */
+    .nuovo {
+      background: #eff6ff;
+      border-left: 4px solid #2563eb;
+      padding: 6pt 10pt;
+      margin: 6pt 0;
+      border-radius: 0 4pt 4pt 0;
+    }
+    .nuovo strong { color: #1d4ed8; }
+    .osservatorio {
+      background: #fffbeb;
+      border-left: 4px solid #d97706;
+      padding: 6pt 10pt;
+      margin: 6pt 0;
+      border-radius: 0 4pt 4pt 0;
+    }
+    .osservatorio strong { color: #b45309; }
+    .no-print { margin-bottom: 12pt; }
+    @media print {
+      body { padding: 0; max-width: none; }
+      .no-print { display: none !important; }
+      h2 { page-break-after: avoid; }
+      .box, .nuovo, .osservatorio { break-inside: avoid; }
+      .nuovo { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .osservatorio { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .legenda span { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+    @page { size: A4; margin: 14mm; }
+  </style>
+</head>
+<body>
+
+  <p class="no-print meta">
+    <strong>Salva come PDF:</strong> Ctrl+P (Stampa) → Destinazione «Salva come PDF» → margini predefiniti.
+    Assicurati che «Grafica di sfondo» sia attiva così i colori restano visibili.
+  </p>
+
+  <h1>Futuro Nazionale v3.2 — La piattaforma spiegata con parole semplici</h1>
+  <p class="meta">Per dirigenza e staff · Ottobre 2026 · URL: platform-sigma-beige.vercel.app</p>
+
+  <div class="legenda">
+    <span class="L-base">Testo normale = funzioni della prima versione web</span>
+    <span class="L-nuovo">Azzurro = aggiunte successive (locali, cloud, snapshot…)</span>
+    <span class="L-oss">Ambra = Osservatorio integrato (documento metodologico)</span>
+  </div>
+
+  <div class="box warn">
+    <strong>Regola d’oro:</strong> la piattaforma <em>non</em> è un sondaggio elettorale ufficiale.
+    Mostra uno <strong>scenario</strong> (una storia plausibile su come distribuire il consenso sulle 20 regioni),
+    partendo da un numero nazionale di riferimento (es. 7,2%). Sempre: <em>predizione_validata: false</em>.
+  </div>
+
+  <h2>1. Cosa fa, in una frase</h2>
+  <p>
+    Immagina un <strong>foglio Excel molto intelligente</strong> che conosce iscritti, voti 2024, preferenze e presenze istituzionali,
+    e ti dice: «Se il consenso nazionale fosse circa il 7,2%, quanto potrebbe essere in Lombardia, in Puglia, in Sicilia…?»
+    con anche un margine di incertezza (simulazione Monte Carlo).
+  </p>
+  <p class="esempio">
+    <strong>Esempio facile:</strong> il 7,2% è come dire «a livello Italia, una persona su circa 14 dichiara intenzione FN».
+    In Veneto il modello può uscire più alto o più basso del 7,2% perché lì pesano di più flussi elettorali, iscritti o sindaci registrati.
+    Non significa che abbiamo chiamato 1000 veneti al telefono.
+  </p>
+
+  <h2>2. Le schede (tab) della dashboard</h2>
+
+  <h3>Scenario — il cuore</h3>
+  <p>Qui muovi le leve (S nazionale, pesi del mix, a volte flussi Ipsos) e vedi la <strong>mappa colorata</strong> delle 20 regioni.
+  C’è anche un «sondaggio simulato» interno: probabilità di superare una soglia, regioni «sicure» o «critiche».</p>
+
+  <div class="nuovo">
+    <strong>Aggiunte rispetto alla versione iniziale:</strong> flussi Ipsos 2026 modificabili; adeguamento istituzionale da registro comuni;
+    pulsante <strong>Congela Snapshot</strong> (salva lo scenario con nome e hash); badge «Cloud DB» se Neon è collegato, altrimenti «Modalità Locale».
+  </div>
+
+  <div class="osservatorio">
+    <strong>Osservatorio — tab dedicata:</strong> non cambia i numeri dello Scenario da sola.
+    Spiega tre «moduli» separati (voto modellato, bisogni del territorio, attenzione mediatica) come nel documento Osservatorio.
+    Scheda mensile per regione, export PDF dedicato, grafico Trends dimostrativo.
+  </div>
+
+  <h3>Locali &amp; News</h3>
+  <div class="nuovo">
+    <p><strong>Novità (non c’era all’inizio):</strong> elenco comuni/cariche FN, scansione titoli RSS, approvazione manuale delle notizie.
+    Se attivi «Applica al scenario», i sindaci registrati possono spostare leggermente l’indice istituzionale di una regione.</p>
+    <p class="esempio">Esempio: registri che a Bari c’è un nuovo sindaco FN → il modello aumenta un po’ il peso «istituzioni» in Puglia.
+    Resta uno scenario descrittivo, non un exit poll.</p>
+    <p>Salvataggio: browser + opzionale <strong>database cloud Neon</strong> (pulsante salva registro).</p>
+  </div>
+
+  <div class="osservatorio">
+    Locali &amp; News copre in parte il <strong>Modulo C</strong> (notizie = attenzione), ma non misura da sola quanti voti cambiano.
+  </div>
+
+  <h3>Snapshot &amp; Audit</h3>
+  <div class="nuovo">
+    <p><strong>Novità:</strong> «congelare» una versione dello scenario (come una foto con data e autore).
+    Confronto tra due snapshot (differenze regione per regione). Registro audit: chi ha creato o eliminato snapshot sul cloud.</p>
+    <p class="esempio">Esempio: il 18/10/2026 esiste lo snapshot ufficiale congelato; ne crei uno nuovo «Pre regionali» e lo confronti per vedere quanto è cambiata la stima in Calabria.</p>
+    <p>Senza database: funziona lo stesso con file JSON e memoria del browser.</p>
+  </div>
+
+  <h3>Storico iscritti</h3>
+  <p>Carichi un CSV mensile degli iscritti e vedi se la distribuzione per regione si allontana dallo snapshot di riferimento (entropia, gap).</p>
+
+  <h3>Post-voto</h3>
+  <p>Quando avrai i risultati elettorali veri (CSV 20 regioni), li confronti con uno snapshot scelto e ottieni errori medi (MAE) e metriche di validazione.</p>
+  <div class="nuovo">Puoi scegliere quale snapshot usare come baseline (non solo quello del 18/10).</div>
+
+  <h2>3. Il motore (dietro le quinte), senza formule</h2>
+  <p>Per ogni regione il computer mescola quattro ingredienti con pesi (di default 35% flussi, 25% preferenze, 25% iscritti, 15% istituzioni),
+  poi applica il 7,2% nazionale «scalato» sulla dimensione elettorale della regione.</p>
+  <p class="esempio">
+    <strong>Analogia:</strong> una torta nazionale al 7,2% tagliata in 20 fette disuguali: ogni fetta (regione) ha una percentuale diversa,
+    ma la ricetta è la stessa per tutti.
+  </p>
+
+  <h2>4. Osservatorio: tre cose diverse (importante)</h2>
+
+  <div class="osservatorio">
+    <p><strong>Modulo A — Elettorale:</strong> ciò che vedi in Scenario (stime %). È modellato, non un sondaggio regionale.</p>
+    <p><strong>Modulo B — Fabbisogni:</strong> sanità, lavoro, casa, trasporti (dati ISTAT/AGENAS/OpenCivitas quando li inserite).
+    <em>Esempio:</em> tempi di attesa in Lombardia e in Sicilia sono problemi pubblici; non dicono automaticamente come voterà una persona.</p>
+    <p><strong>Modulo C — Eventi e attenzione:</strong> cronologia episodi, import Google Trends (indice 0–100 relativo).
+    <em>Esempio:</em> se dopo un’intervista TV salgono le ricerche Google, significa <em>curiosità</em>, non «+2 punti al sondaggio».</p>
+    <p>Catalogo <strong>20 regioni × 4 indicatori</strong> con fonte e periodo; indagini «priorità cittadini» solo se le caricate voi (CSV/form).</p>
+    <p>Salvataggio cloud tabella <em>osservatorio_cloud_state</em> (eventi, serie Trends, note mensili).</p>
+  </div>
+
+  <h2>5. Database cloud (Neon) — opzionale</h2>
+  <div class="nuovo">
+    <p>Se c’è <code>DATABASE_URL</code> su Vercel: snapshot, registro locali e stato Osservatorio possono essere condivisi tra colleghi.</p>
+    <p>Se manca: nessun errore; tutto continua con file in <code>platform/data/</code> e localStorage.</p>
+    <p class="esempio">Come un Google Drive opzionale: senza login al drive, lavori sul file sul desktop.</p>
+  </div>
+
+  <h2>6. AI Gateway (Vercel) — opzionale</h2>
+  <div class="nuovo">
+    <p>Chiave AI separata per provare modelli linguistici (health check e chat di test). <strong>Non</strong> calcola percentuali elettorali.</p>
+  </div>
+
+  <h2>7. Cosa puoi fare ogni giorno (checklist semplice)</h2>
+  <ol>
+    <li>Apri <strong>Scenario</strong>, verifica mappa e numeri.</li>
+    <li class="nuovo">Aggiorna <strong>Locali</strong> se entrano sindaci; opzionale scan news.</li>
+    <li class="nuovo">Se serve, <strong>congela uno snapshot</strong> prima di una riunione.</li>
+    <li class="osservatorio">In <strong>Osservatorio</strong>, compila eventi o importa Trends; esporta PDF scheda mensile per una regione.</li>
+    <li>Esporta <strong>PDF nota dirigenza</strong> da Scenario per la riunione.</li>
+  </ol>
+
+  <h2>8. Errori da evitare (in parole povere)</h2>
+  <ul>
+    <li>Non dire «il modello prevede X% al Sud» come fosse Ipsos: è uno <strong>scenario</strong>.</li>
+    <li class="osservatorio">Non dire «la sanità va male quindi perdiamo voti» senza indagine sulle stesse persone ( errore ecologico ).</li>
+    <li class="osservatorio">Non dire «Google Trends a 100 = vittoria elettorale».</li>
+    <li class="nuovo">Non confondere snapshot personali con lo snapshot ufficiale 18/10 (quello non si cancella dal cloud).</li>
+  </ul>
+
+  <p class="meta" style="margin-top: 20pt;">
+    Documento generato per FN v3.2 · Piattaforma Next.js · Test automatici 62 · Deploy production Vercel.
+  </p>
+
+</body>
+</html>

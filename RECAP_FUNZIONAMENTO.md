@@ -163,6 +163,21 @@ platform/
 
 **Vincolo golden:** `calculate(cfg, eu)` **senza** override resta identico al pacchetto v3.2; test `golden.test.ts` sempre verde. Adeguamenti (S, pesi, delta istituzionale, flussi Ipsos) passano **solo** via `CalculateOverrides` nelle API.
 
+### 4.3.1 Monorepo e comandi npm
+
+| Comando | Radice (`package.json` bridge) | `platform/` |
+|---------|--------------------------------|-------------|
+| `npm run dev` | ✓ | `npm run dev` |
+| `npm run test` | ✓ | `npm run test` |
+| `npm run build` | ✓ | `npm run build` |
+| `npm run db:push` | ✓ | `node scripts/db-push-safe.mjs` |
+| `npm run db:studio` | ✓ | Drizzle Studio |
+| `npm run py:calc` | ✓ (Python in radice) | — |
+
+**Parità dati:** i file `config_v3_2.json`, `eu2024.json`, `risultati_v3_2.json`, `scenario_congelato_18-10-2026.json` in `platform/data/` devono restare allineati ai JSON in radice; Vitest verifica SHA-256 quando la radice è presente (`golden.test.ts`).
+
+**Database:** in `platform/`, `npx vercel env pull .env.local` poi `npm run db:push` sincronizza lo schema Drizzle (snapshots, audit_logs, osservatorio_cloud_state, locali_cloud_state).
+
 ### 4.4 Flusso utente e API
 
 ```mermaid
@@ -181,14 +196,15 @@ flowchart LR
 ```
 
 1. Apertura URL → **login** se non autenticati (`middleware` su `/dashboard`).
-2. **Email** in `ALLOWLIST_EMAILS` (virgola, trim, confronto case-insensitive).
-3. **Password** = `PLATFORM_PASSWORD` (env, non committare).
-4. Le route API di calcolo (`/api/scenario`, `/api/regional-poll`, `/api/news/scan`, `/api/locali/*`) richiedono **sessione** (`requireSession()`).
-5. Dashboard: stato client (S, pesi, sondaggio simulato) → `POST /api/scenario` con `includePoll: true`; debounce MC ~250 ms (20k sim).
+2. **Email** in `ALLOWLIST_EMAILS` (virgola, trim, confronto case-insensitive) **oppure** password dedicata in `ALLOWLIST_CREDENTIALS` (`email:pass,…`).
+3. **Password** = `PLATFORM_PASSWORD` di default, o password per-email se configurata in `ALLOWLIST_CREDENTIALS`.
+4. Audit trail (`audit_logs`) registra `actorEmail` in **lowercase**.
+5. Le route API di calcolo (`/api/scenario`, `/api/regional-poll`, `/api/news/scan`, `/api/locali/*`) richiedono **sessione** (`requireSession()`).
+6. Dashboard: stato client (S, pesi, sondaggio simulato) → `POST /api/scenario` con `includePoll: true`; debounce MC ~250 ms (20k sim).
 
 ### 4.5 Dashboard (tab sidebar)
 
-Navigazione: **Scenario** · **Locali & News** · **Storico iscritti** · **Post-voto**.
+Navigazione: **Scenario** (viste **Landing**, **Stage**, **Console**) · **Quadro FN** · **Osservatorio** (Moduli A/B/C, 20 regioni) · **Locali & News** (registro, geocoding, RSS con **cache server 15 min** e `forceRefresh`) · **Snapshot & Audit** (Neon/Drizzle, SHA-256 integrità pacchetto) · **Storico iscritti** · **Post-voto**.
 
 **Scenario**
 
@@ -211,9 +227,14 @@ Navigazione: **Scenario** · **Locali & News** · **Storico iscritti** · **Post
 
 - Upload CSV; `parseHistory()` vs snapshot congelato.
 
+**Snapshot & Audit**
+
+- Elenco versioni congelate (Neon o fallback localStorage/JSON), hash **SHA-256**, comparatore diff regione per regione, registro **audit_logs**.
+- **Congela Snapshot** dalla tab Scenario (ricalcolo server **20 000** simulazioni MC).
+
 **Post-voto**
 
-- Upload CSV 20 regioni; valutazione ex post sullo **snapshot 18/10/2026** (+ metriche sondaggio dove previsto).
+- Upload CSV 20 regioni; valutazione ex post vs **baseline snapshot** selezionabile (+ metriche sondaggio dove previsto).
 
 **Auth:** sign out in sidebar.
 
@@ -227,6 +248,11 @@ Navigazione: **Scenario** · **Locali & News** · **Storico iscritti** · **Post
 | `NEWS_RSS_URLS` | No | Override feed RSS (virgola). Se assente: **catalogo integrato** (31 sorgenti: nazionali + ANSA 20 regioni + campioni locali) |
 | `NEWS_KEYWORDS` | No | Keyword aggiuntive (virgola); default in `newsIngest.ts` |
 | `NEWS_SCAN_MAX_ITEMS` | No | Max candidati in risposta scan (default 30, cap 50) |
+| `DATABASE_URL` | No (prod sì) | Neon Postgres; se assente: file `platform/data/` + localStorage, nessun crash |
+| `AI_GATEWAY_API_KEY` | No | Chiave team [AI Gateway](https://vercel.com/docs/ai-gateway/getting-started); solo server |
+| `AI_GATEWAY_MODEL` | No | Slug `provider/model` (es. `openai/gpt-6-astra`) |
+
+**AI Gateway (opzionale, separato dal motore v3.2):** con `AI_GATEWAY_API_KEY` in `platform/.env.local`, `GET /api/ai-gateway/health` verifica `/v1/models`; `POST /api/ai-gateway/chat` con `{ "prompt": "..." }` genera testo via AI SDK 7 (crediti Gateway). **Non** altera `calculate()` né Modulo A. Deploy Vercel: possibile OIDC al posto della chiave. Log: [AI Gateway Logs](https://vercel.com/docs/ai-gateway/getting-started#monitor-your-request). Agenti: `npx vercel@latest ai-gateway setup`.
 
 File esempio: `platform/.env.example`  
 Sviluppo locale: `platform/.env.local` (in `.gitignore`, **non** pushare).
@@ -241,6 +267,8 @@ npm install
 npm run test          # parità motore vs golden JSON
 npm run dev           # http://localhost:3000
 npm run build
+npm run db:push       # schema Drizzle su Neon (dopo DATABASE_URL in .env.local)
+npm run db:studio     # explorer Drizzle (opzionale)
 ```
 
 ---
@@ -301,10 +329,14 @@ npx vercel deploy --prod
 
 **Disclaimer operativo (news/locali):** titoli RSS e keyword **non sono verificati**; collegamento comune/regione manuale; output scenario con delta istituzionale resta **descrittivo** (`predizione_validata: false`).
 
+### Completate (roadmap piattaforma)
+
+12. **Snapshot DB + Audit (Neon + Drizzle)** — tabelle `snapshots`, `locali_cloud_state`, `audit_logs`; API `/api/snapshots`; tab **Snapshot & Audit**; hash SHA-256 (`snapshotDiff.ts`); fallback **localStorage/JSON** se `DATABASE_URL` assente; badge **Cloud DB: Connesso** vs **Modalità Locale (JSON)**.
+13. **Osservatorio integrato (doc 20/10/2026)** — tab **Osservatorio** (moduli A/B/C), catalogo **20 regioni** (`fabbisogni_catalog.json`), persistenza cloud `osservatorio_cloud_state`, export PDF scheda mensile, import CSV Trends/priorità, serie Trends dimostrativa, API `GET/POST /api/osservatorio`.
+
 ### Roadmap futura
 
 1. **News avanzate**: NER/LLM o servizio esterno, geocoding comune → regione.
-2. **Snapshot DB**: versioni congelate, diff, audit trail (Neon + Drizzle).
 
 ---
 
@@ -320,7 +352,7 @@ npx vercel deploy --prod
 
 - [ ] `platform/.env.local` da `.env.example` (AUTH_SECRET, ALLOWLIST_EMAILS, PLATFORM_PASSWORD)
 - [ ] `npm run test` verde (`golden.test.ts` incluso)
-- [ ] `npm run dev` → login → tutte e 4 le tab
+- [ ] `npm run dev` → login → tutte e 6 le tab (Osservatorio, Snapshot & Audit, …)
 
 **Piattaforma Vercel:**
 

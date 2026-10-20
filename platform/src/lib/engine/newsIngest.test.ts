@@ -51,6 +51,41 @@ describe("newsIngest", () => {
     expect(relevant.some((c) => c.titolo.includes("Meteo"))).toBe(false);
   });
 
+  it("include articoli elezioni e seggi con segnale istituzionale", () => {
+    const raw = parseRssItems(
+      `<?xml version="1.0"?><rss><channel><item><title>Trieste, consiglio comunale e commissione elettorale: ripartizione seggi suppletive</title><link>https://x</link><description>Giunta comunale e scrutinio.</description></item></channel></rss>`,
+      "https://feed.test",
+      5,
+    );
+    const enriched = enrichNewsCandidates(raw, ["seggi", "elezioni"], []);
+    expect(filterRelevantCandidates(enriched)).toHaveLength(1);
+  });
+
+  it("esclude necrologi e sindacalista", () => {
+    const raw = parseRssItems(
+      `<?xml version="1.0"?><rss><channel><item><title>Addio a Simone Foresti, storico sindacalista</title><link>https://x</link><description>Funeral house.</description></item></channel></rss>`,
+      "https://feed.test",
+      5,
+    );
+    const enriched = enrichNewsCandidates(raw, ["sindaco", "consiglio"], []);
+    expect(filterRelevantCandidates(enriched)).toHaveLength(0);
+  });
+
+  it("esclude allerta meteo e arpal anche con geo Liguria", () => {
+    const raw = parseRssItems(
+      `<?xml version="1.0"?><rss><channel><item><title>Allerta arancione per temporali estesa in Liguria fino a domani — Arpal</title><link>https://x</link><description>Previsioni meteo Liguria.</description></item></channel></rss>`,
+      "https://www.ansa.it/liguria/notizie/liguria_rss.xml",
+      5,
+    );
+    const enriched = enrichNewsCandidates(
+      raw,
+      ["sindaco", "comune", "consiglio", "giunta"],
+      [],
+    );
+    const relevant = filterRelevantCandidates(enriched);
+    expect(relevant).toHaveLength(0);
+  });
+
   it("resolveNewsRssUrls usa catalogo se env vuoto", () => {
     const d = resolveNewsRssUrls(undefined);
     expect(d.fromDefaultCatalog).toBe(true);

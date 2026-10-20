@@ -1,7 +1,16 @@
 import { REGIONS, type Region } from "./constants";
-import { resolveGeoFromNews } from "./italianGeoLookup";
+import { inferRegionFromFeedUrl } from "./italianGeoLookup";
 import { DEFAULT_NEWS_RSS_URLS } from "./newsFeedCatalog";
 import type { LocalEventType, NewsCandidate } from "./localiTypes";
+import {
+  analyzeInstitutionalArticle,
+  HARD_BLACKLIST_REGEX,
+  matchesNewsSearch,
+  normalizeTitleKey,
+  sanitizeNewsText,
+} from "./newsInstitutionalAnalyzer";
+
+export { HARD_BLACKLIST_REGEX, matchesNewsSearch, analyzeInstitutionalArticle };
 
 export const DEFAULT_NEWS_KEYWORDS = [
   "sindaco",
@@ -12,19 +21,11 @@ export const DEFAULT_NEWS_KEYWORDS = [
   "passa a",
   "passaggio",
   "futuro nazionale",
-  "fdi",
-  "lega",
+  "consiglio comunale",
+  "consiglio regionale",
   "elezioni",
   "comune",
 ];
-
-const REGION_ALIASES: Record<string, Region> = {
-  lombardia: "Lombardia",
-  piemonte: "Piemonte",
-  lazio: "Lazio",
-  sicilia: "Sicilia",
-  veneto: "Veneto",
-};
 
 function decodeEntities(s: string): string {
   return s
@@ -48,46 +49,56 @@ function extractTag(block: string, tag: string): string {
   return m ? decodeEntities(m[1]) : "";
 }
 
-export function parseRssItems(xml: string, feedUrl: string, maxItems: number): Omit<NewsCandidate, "id" | "matchedKeywords" | "comuneGuess" | "regioneGuess" | "suggestedAction">[] {
-  const items: Omit<NewsCandidate, "id" | "matchedKeywords" | "comuneGuess" | "regioneGuess" | "suggestedAction">[] = [];
+export function parseRssItems(
+  xml: string,
+  feedUrl: string,
+  maxItems: number,
+): Omit<
+  NewsCandidate,
+  | "id"
+  | "matchedKeywords"
+  | "comuneGuess"
+  | "regioneGuess"
+  | "suggestedAction"
+  | "confidenceScore"
+  | "matchedRoleKeyword"
+  | "matchedGeoKeyword"
+  | "sourceLabel"
+>[] {
+  const items: Omit<
+    NewsCandidate,
+    | "id"
+    | "matchedKeywords"
+    | "comuneGuess"
+    | "regioneGuess"
+    | "suggestedAction"
+    | "confidenceScore"
+    | "matchedRoleKeyword"
+    | "matchedGeoKeyword"
+    | "sourceLabel"
+  >[] = [];
   const itemRe = /<item[\s>]([\s\S]*?)<\/item>/gi;
   let m: RegExpExecArray | null;
   while ((m = itemRe.exec(xml)) !== null && items.length < maxItems) {
     const block = m[1];
-    const titolo = extractTag(block, "title") || extractTag(block, "title");
+    const titolo = extractTag(block, "title");
     const link = extractTag(block, "link") || extractTag(block, "guid");
-    const pubDate = extractTag(block, "pubDate") || extractTag(block, "dc:date") || null;
-    const desc = extractTag(block, "description") || extractTag(block, "content:encoded");
+    const pubDate =
+      extractTag(block, "pubDate") || extractTag(block, "dc:date") || null;
+    const desc =
+      extractTag(block, "description") ||
+      extractTag(block, "content:encoded");
     if (titolo || link) {
       items.push({
         titolo: titolo || "(senza titolo)",
         link: link || feedUrl,
         pubDate: pubDate || null,
-        snippet: desc.slice(0, 280),
+        snippet: desc.slice(0, 480),
         feedUrl,
       });
     }
   }
   return items;
-}
-
-function guessComune(text: string, comuni: string[]): string | undefined {
-  const lower = text.toLowerCase();
-  for (const c of comuni) {
-    if (c.length >= 4 && lower.includes(c.toLowerCase())) return c;
-  }
-  return undefined;
-}
-
-function guessRegion(text: string): Region | undefined {
-  const lower = text.toLowerCase();
-  for (const [alias, region] of Object.entries(REGION_ALIASES)) {
-    if (lower.includes(alias)) return region;
-  }
-  for (const r of REGIONS) {
-    if (lower.includes(r.toLowerCase())) return r;
-  }
-  return undefined;
 }
 
 function suggestAction(text: string, keywords: string[]): LocalEventType | undefined {
@@ -104,55 +115,137 @@ function suggestAction(text: string, keywords: string[]): LocalEventType | undef
   return undefined;
 }
 
-export function enrichNewsCandidates(
-  raw: Omit<NewsCandidate, "id" | "matchedKeywords" | "comuneGuess" | "regioneGuess" | "suggestedAction">[],
-  keywords: string[],
-  comuniNames: string[],
-): NewsCandidate[] {
-  return raw.map((item, idx) => {
-    const blob = `${item.titolo} ${item.snippet}`.toLowerCase();
-    const matchedKeywords = keywords.filter((k) =>
-      blob.includes(k.toLowerCase()),
-    );
-    const comuneGuess = guessComune(`${item.titolo} ${item.snippet}`, comuniNames);
-    const regioneGuess = guessRegion(`${item.titolo} ${item.snippet}`);
-    const geo = resolveGeoFromNews(
-      item.titolo,
-      item.snippet,
-      item.feedUrl,
-    );
-    const suggestedComune = geo.suggestedComune ?? comuneGuess;
-    const suggestedRegion = geo.suggestedRegion ?? regioneGuess;
-    return {
-      ...item,
-      id: `news-${idx}-${hashStr(item.link)}`,
-      matchedKeywords,
-      comuneGuess: suggestedComune ?? comuneGuess,
-      regioneGuess: suggestedRegion ?? regioneGuess,
-      suggestedRegion,
-      suggestedComune,
-      suggestedRole: geo.suggestedRole,
-      suggestedAction: suggestAction(blob, matchedKeywords),
-    };
-  });
-}
-
 function hashStr(s: string): string {
   let h = 0;
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
   return Math.abs(h).toString(36);
 }
 
+export function isNewsJunkText(titolo: string, snippet = ""): boolean {
+  return HARD_BLACKLIST_REGEX.test(sanitizeNewsText(titolo, snippet));
+}
+
+export function hasInstitutionalNewsSignals(
+  titolo: string,
+  snippet = "",
+): boolean {
+  return (
+    analyzeInstitutionalArticle({
+      titolo,
+      snippet,
+      feedUrl: "",
+    }) !== null
+  );
+}
+
+export function enrichNewsCandidates(
+  raw: Omit<
+    NewsCandidate,
+    | "id"
+    | "matchedKeywords"
+    | "comuneGuess"
+    | "regioneGuess"
+    | "suggestedAction"
+    | "confidenceScore"
+    | "matchedRoleKeyword"
+    | "matchedGeoKeyword"
+    | "sourceLabel"
+  >[],
+  keywords: string[],
+  _comuniNames: string[],
+): NewsCandidate[] {
+  const out: NewsCandidate[] = [];
+  for (const [idx, item] of raw.entries()) {
+    const titolo = item.titolo;
+    const snippet = item.snippet;
+    const feedRegionHint = inferRegionFromFeedUrl(item.feedUrl);
+    const analyzed = analyzeInstitutionalArticle({
+      titolo,
+      snippet,
+      feedUrl: item.feedUrl,
+      feedRegionHint,
+    });
+    if (!analyzed) continue;
+
+    const blob = `${titolo} ${snippet}`.toLowerCase();
+    const matchedKeywords = keywords.filter((k) =>
+      blob.includes(k.toLowerCase()),
+    );
+
+    out.push({
+      ...item,
+      titolo,
+      snippet,
+      id: `news-${idx}-${hashStr(item.link)}`,
+      matchedKeywords,
+      comuneGuess: analyzed.comune,
+      regioneGuess: analyzed.regione,
+      suggestedRegion: analyzed.regione,
+      suggestedComune: analyzed.comune,
+      suggestedRole: analyzed.role,
+      confidenceScore: analyzed.confidenceScore,
+      matchedRoleKeyword: analyzed.matchedRoleKeyword,
+      matchedGeoKeyword: analyzed.matchedGeoKeyword,
+      suggestedAction: suggestAction(blob, matchedKeywords),
+    });
+  }
+  return out;
+}
+
+export function passesEditorialNewsFilter(c: NewsCandidate): boolean {
+  if (isNewsJunkText(c.titolo, c.snippet)) return false;
+  if (!c.suggestedRole) return false;
+  return (
+    analyzeInstitutionalArticle({
+      titolo: c.titolo,
+      snippet: c.snippet,
+      feedUrl: c.feedUrl,
+      feedRegionHint: c.suggestedRegion,
+    }) !== null
+  );
+}
+
 export function filterRelevantCandidates(
   candidates: NewsCandidate[],
 ): NewsCandidate[] {
-  return candidates.filter((c) => c.matchedKeywords.length > 0);
+  return candidates.filter(passesEditorialNewsFilter);
+}
+
+export function dedupeNewsRaw<
+  T extends { titolo: string; link: string },
+>(items: T[]): T[] {
+  const seen = new Set<string>();
+  const out: T[] = [];
+  for (const it of items) {
+    const key = normalizeTitleKey(it.titolo) || it.link;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(it);
+  }
+  return out;
 }
 
 export async function fetchFeedXml(
   url: string,
-  timeoutMs = 8000,
+  timeoutMs = 3500,
 ): Promise<string> {
+  const signal =
+    typeof AbortSignal !== "undefined" &&
+    "timeout" in AbortSignal &&
+    typeof AbortSignal.timeout === "function"
+      ? AbortSignal.timeout(timeoutMs)
+      : undefined;
+
+  if (signal) {
+    const res = await fetch(url, {
+      signal,
+      headers: { Accept: "application/rss+xml, application/xml, text/xml, */*" },
+      next: { revalidate: 0 },
+    });
+    if (!res.ok) throw new Error(`Feed HTTP ${res.status}: ${url}`);
+    return await res.text();
+  }
+
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
@@ -178,7 +271,6 @@ export function parseRssUrlsEnv(raw: string | undefined): string[] {
   return raw.split(",").map((s) => s.trim()).filter(Boolean);
 }
 
-/** Env `NEWS_RSS_URLS` se impostato, altrimenti catalogo predefinito (nazionale + ANSA 20 regioni + locali campione). */
 export function resolveNewsRssUrls(raw: string | undefined): {
   urls: string[];
   fromDefaultCatalog: boolean;
@@ -190,7 +282,6 @@ export function resolveNewsRssUrls(raw: string | undefined): {
   return { urls: [...DEFAULT_NEWS_RSS_URLS], fromDefaultCatalog: true };
 }
 
-/** Limite articoli per singolo feed quando si scansionano molte sorgenti. */
 export function perFeedItemLimit(totalFeeds: number, maxItems: number): number {
   if (totalFeeds <= 0) return maxItems;
   if (totalFeeds === 1) return maxItems;

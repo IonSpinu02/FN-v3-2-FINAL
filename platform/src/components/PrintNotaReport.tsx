@@ -83,6 +83,11 @@ export function PrintNotaReport({
             predittivo.
           </li>
           <li>
+            Osservatorio integrato (A/B/C): fabbisogni pubblici e attenzione
+            (news/Trends) non dimostrano preferenze elettorali né causalità di
+            singoli eventi.
+          </li>
+          <li>
             Gap iscritti: {gap.toLocaleString("it-IT")} (dichiarati vs
             regionalizzati).
           </li>

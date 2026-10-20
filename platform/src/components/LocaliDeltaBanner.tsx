@@ -35,7 +35,7 @@ export function LocaliDeltaBanner({
             onChange={(e) => onApplyChange(e.target.checked)}
             className="h-4 w-4 accent-[var(--fn-accent)]"
           />
-          Applica al scenario
+          Applica allo scenario
         </label>
       </div>
       {hasDelta && applyToScenario && (

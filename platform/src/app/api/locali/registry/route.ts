@@ -3,7 +3,7 @@ import {
   unauthorizedResponse,
 } from "@/lib/api/requireSession";
 import { loadLocaliFromDb, saveLocaliToDb } from "@/lib/db/localiRepository";
-import { isDatabaseConfigured } from "@/lib/db/neon";
+import { isDbConfigured } from "@/lib/db/client";
 import { loadJson } from "@/lib/engine/loadData";
 import type {
   LocalApprovedEvent,
@@ -20,40 +20,36 @@ export async function GET() {
   const fileEvents = loadJson<LocaliEventsFile>("locali_events.json");
 
   const fromDb = await loadLocaliFromDb();
-  const registry =
-    fromDb && fromDb.registry.length > 0
-      ? { version: 1 as const, entries: fromDb.registry }
-      : fileRegistry;
-  const events =
-    fromDb && fromDb.events.length > 0
-      ? { version: 1 as const, events: fromDb.events }
-      : fileEvents;
+  if (fromDb) {
+    return Response.json({
+      registry: { version: 1 as const, entries: fromDb.registry },
+      events: { version: 1 as const, events: fromDb.events },
+      source: fromDb.source === "db" ? "db" : "seed",
+      updatedAt: fromDb.updatedAt,
+      updatedBy: fromDb.updatedBy,
+      dbConnected: true,
+    });
+  }
 
   return Response.json({
-    registry,
-    events,
-    persistence: {
-      database: isDatabaseConfigured(),
-      source: fromDb && fromDb.registry.length > 0 ? "neon" : "file",
-      updatedAt: fromDb?.updatedAt ?? null,
-    },
+    registry: fileRegistry,
+    events: fileEvents,
+    source: "file",
+    updatedAt: null,
+    updatedBy: null,
+    dbConnected: isDbConfigured(),
   });
 }
 
-export async function PUT(req: Request) {
+async function saveRegistry(req: Request) {
   const session = await requireSession();
   if (!session) return unauthorizedResponse();
 
-  if (!isDatabaseConfigured()) {
-    return Response.json(
-      { error: "DATABASE_URL non configurato su questo deploy" },
-      { status: 503 },
-    );
-  }
-
   let body: {
     entries?: LocalRegistryEntry[];
+    registry?: LocalRegistryEntry[];
     events?: LocalApprovedEvent[];
+    summary?: string;
   };
   try {
     body = await req.json();
@@ -61,19 +57,43 @@ export async function PUT(req: Request) {
     return Response.json({ error: "JSON non valido" }, { status: 400 });
   }
 
-  const entries = body.entries;
+  const entries = body.entries ?? body.registry;
   if (!Array.isArray(entries)) {
     return Response.json({ error: "entries obbligatorio" }, { status: 400 });
   }
 
   const events = Array.isArray(body.events) ? body.events : [];
-  const saved = await saveLocaliToDb(entries, events);
-  if (!saved) {
-    return Response.json(
-      { error: "Salvataggio fallito (tabella fn_locali_state presente?)" },
-      { status: 503 },
-    );
+
+  if (!isDbConfigured()) {
+    return Response.json({
+      ok: false,
+      dbConnected: false,
+      error: "DATABASE_URL non configurato — usa export JSON / localStorage",
+    });
   }
 
-  return Response.json({ ok: true });
+  const actor = session.user.email ?? "unknown";
+  const saved = await saveLocaliToDb(
+    entries,
+    events,
+    actor,
+    body.summary,
+  );
+  if (!saved) {
+    return Response.json({
+      ok: false,
+      dbConnected: false,
+      error: "Salvataggio fallito (eseguire npm run db:push?)",
+    });
+  }
+
+  return Response.json({ ok: true, dbConnected: true });
+}
+
+export async function PUT(req: Request) {
+  return saveRegistry(req);
+}
+
+export async function POST(req: Request) {
+  return saveRegistry(req);
 }

@@ -11,6 +11,22 @@ function allowlist(): Set<string> {
   );
 }
 
+/** email (lowercase) → password dedicata */
+function allowlistCredentials(): Map<string, string> {
+  const raw = process.env.ALLOWLIST_CREDENTIALS ?? "";
+  const map = new Map<string, string>();
+  for (const chunk of raw.split(",")) {
+    const trimmed = chunk.trim();
+    if (!trimmed) continue;
+    const sep = trimmed.indexOf(":");
+    if (sep <= 0) continue;
+    const email = trimmed.slice(0, sep).trim().toLowerCase();
+    const pass = trimmed.slice(sep + 1);
+    if (email && pass) map.set(email, pass);
+  }
+  return map;
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
   providers: [
@@ -25,8 +41,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           .trim()
           .toLowerCase();
         const password = String(credentials?.password ?? "");
+        if (!email) return null;
+
+        const dedicated = allowlistCredentials().get(email);
+        if (dedicated !== undefined) {
+          if (password !== dedicated) return null;
+          return { id: email, email };
+        }
+
         const list = allowlist();
-        if (!email || !list.has(email)) return null;
+        if (!list.has(email)) return null;
         const expected = process.env.PLATFORM_PASSWORD ?? "";
         if (!expected || password !== expected) return null;
         return { id: email, email };

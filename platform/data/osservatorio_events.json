@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "events": [
+    {
+      "id": "caso-vannacci-corona-draft",
+      "titolo": "Intervista televisiva/digitale Vannacci con Corona (caso studio)",
+      "data": "2026-09-26",
+      "tema": "media / visibilità",
+      "livello": "attenzione",
+      "fontePrimaria": "Da verificare su fonti primarie",
+      "finestraPreGiorni": 14,
+      "finestraPostGiorni": 14,
+      "statoVerifica": "draft",
+      "notaMetodologica": "Registrare solo dopo verifica date e copertura; non attribuire voti guadagnati o persi."
+    },
+    {
+      "id": "caso-agricoltori-contestazione-draft",
+      "titolo": "Incontro categorie produttive/agricoltori (caso studio)",
+      "data": "2026-10-09",
+      "tema": "protesta / territorio",
+      "livello": "attenzione",
+      "fontePrimaria": "Da verificare",
+      "finestraPreGiorni": 14,
+      "finestraPostGiorni": 14,
+      "statoVerifica": "draft",
+      "notaMetodologica": "Annotare eventi concorrenti; distinguere attenzione (Trends) da voto dichiarato (sondaggi)."
+    }
+  ]
+}

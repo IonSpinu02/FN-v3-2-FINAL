@@ -6,6 +6,7 @@ import type { RegionPollResult } from "@/lib/engine/regionalPollShared";
 import type { FnConfig, ScenarioRow } from "@/lib/engine/types";
 import { pct } from "@/lib/format";
 import { Btn } from "@/components/ui/FnUi";
+import { motion, useReducedMotion } from "framer-motion";
 
 const CARICHE: { key: keyof InstitutionalRow; label: string }[] = [
   { key: "dep", label: "Deputati" },
@@ -41,6 +42,7 @@ export function RegionPollDrawer({
   onResetRegion: () => void;
   onClose: () => void;
 }) {
+  const reduce = useReducedMotion();
   const classLabel = {
     sicura: "Sicura (≥90% prob. sopra soglia)",
     contesa: "Contesa / In bilico (35–89%)",
@@ -65,14 +67,18 @@ export function RegionPollDrawer({
       aria-label={`Sondaggio ${poll.regione}`}
       onClick={onClose}
     >
-      <div
-        className="fn-panel h-full w-full max-w-md overflow-y-auto border-l-0 p-6 shadow-2xl"
+      <motion.div
+        className="fn-panel fn-drawer-panel h-full w-full max-w-md overflow-y-auto border-l border-white/10 p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
+        initial={reduce ? false : { x: "100%", opacity: 0.8 }}
+        animate={{ x: 0, opacity: 1 }}
+        exit={reduce ? undefined : { x: "100%", opacity: 0 }}
+        transition={{ type: "spring", stiffness: 340, damping: 34 }}
       >
         <div className="mb-4 flex items-start justify-between gap-2">
           <div>
             <p className="fn-label">Bollettino regionale</p>
-            <h2 className="font-[family-name:var(--font-fraunces)] text-2xl font-semibold">
+            <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold">
               {poll.regione}
             </h2>
           </div>
@@ -177,7 +183,7 @@ export function RegionPollDrawer({
           <Bar label="Iscritti" pct={poll.contribIscritti} color="bg-fn-accent" />
           <Bar label="Istituzioni" pct={poll.contribIstituzioni} color="bg-violet-600" />
         </ul>
-      </div>
+      </motion.div>
     </div>
   );
 }

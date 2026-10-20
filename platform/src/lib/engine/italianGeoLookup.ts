@@ -2,6 +2,10 @@ import { REGIONS, type Region } from "./constants";
 import type { CaricaLocale } from "./localiTypes";
 import { ANSA_REGION_SLUG } from "./newsFeedCatalog";
 import { GEO_COMUNI, GEO_PROVINCE } from "./italianGeoData";
+import {
+  findCapoluogoInText,
+  regioneForComune,
+} from "./capoluoghiToRegione";
 
 const SLUG_TO_REGION: Record<string, Region> = Object.fromEntries(
   Object.entries(ANSA_REGION_SLUG).map(([r, slug]) => [slug, r as Region]),
@@ -29,10 +33,14 @@ export function inferRegionFromFeedUrl(feedUrl: string): Region | undefined {
 }
 
 export function findComuneInText(text: string): string | undefined {
+  const fromCapoluoghi = findCapoluogoInText(text);
+  if (fromCapoluoghi) return fromCapoluoghi;
   const norm = normalizeForMatch(text);
   for (const [name] of COMUNE_SORTED) {
     const n = normalizeForMatch(name);
-    if (n.length >= 4 && norm.includes(n)) return name;
+    if (n.length >= 4 && new RegExp(`\\b${n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(norm)) {
+      return name;
+    }
   }
   return undefined;
 }
@@ -79,12 +87,12 @@ export function resolveGeoFromNews(
   const blob = `${titolo} ${snippet}`;
   const fromFeed = inferRegionFromFeedUrl(feedUrl);
   const suggestedComune = findComuneInText(blob);
+  const regionFromComune = suggestedComune
+    ? (regioneForComune(suggestedComune) ??
+      GEO_COMUNI.find(([n]) => n === suggestedComune)?.[1])
+    : undefined;
   const suggestedRegion =
-    fromFeed ??
-    findRegionInText(blob) ??
-    (suggestedComune
-      ? GEO_COMUNI.find(([n]) => n === suggestedComune)?.[1]
-      : undefined);
+    regionFromComune ?? fromFeed ?? findRegionInText(blob);
   const suggestedRole = detectInstitutionalRole(blob);
   return { suggestedRegion, suggestedComune, suggestedRole };
 }
@@ -105,7 +113,14 @@ export function detectInstitutionalRole(text: string): CaricaLocale | undefined 
   ) {
     return "creg";
   }
-  if (/\bsindac[oa]\b/.test(lower) || /\bgiunta\b/.test(lower)) {
+  if (
+    (/\bsindac[oa]\b/.test(lower) || /\bsindaci\b/.test(lower)) &&
+    !/\bsindacat/i.test(lower) &&
+    !/\bsindacalist/i.test(lower)
+  ) {
+    return "sind";
+  }
+  if (/\bgiunta\b/.test(lower)) {
     return "sind";
   }
   if (

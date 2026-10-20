@@ -3,7 +3,7 @@
   "entries": [
     {
       "id": "loc-marche-sind-1",
-      "comune": "Esempio Marche",
+      "comune": "Ancona",
       "regione": "Marche",
       "carica": "sind",
       "partito_fn": true,
@@ -12,7 +12,7 @@
     },
     {
       "id": "loc-piemonte-sind-1",
-      "comune": "Torino (esempio)",
+      "comune": "Torino",
       "regione": "Piemonte",
       "carica": "sind",
       "partito_fn": true,
@@ -20,7 +20,7 @@
     },
     {
       "id": "loc-piemonte-sind-2",
-      "comune": "Alessandria (esempio)",
+      "comune": "Alessandria",
       "regione": "Piemonte",
       "carica": "sind",
       "partito_fn": true,
@@ -28,7 +28,7 @@
     },
     {
       "id": "loc-lombardia-com-1",
-      "comune": "Bergamo (esempio)",
+      "comune": "Bergamo",
       "regione": "Lombardia",
       "carica": "com",
       "partito_fn": true,
@@ -36,7 +36,7 @@
     },
     {
       "id": "loc-lombardia-com-2",
-      "comune": "Brescia (esempio)",
+      "comune": "Brescia",
       "regione": "Lombardia",
       "carica": "com",
       "partito_fn": true,
@@ -44,9 +44,90 @@
     },
     {
       "id": "loc-lombardia-com-3",
-      "comune": "Monza (esempio)",
+      "comune": "Monza",
       "regione": "Lombardia",
       "carica": "com",
+      "partito_fn": true,
+      "ultimo_aggiornamento": "2026-10-18"
+    },
+    {
+      "id": "loc-lombardia-creg-1",
+      "comune": "Milano",
+      "regione": "Lombardia",
+      "carica": "creg",
+      "partito_fn": true,
+      "note": "Consiglieri regionali da config v3.2",
+      "ultimo_aggiornamento": "2026-10-18"
+    },
+    {
+      "id": "loc-veneto-dep-1",
+      "comune": "Verona",
+      "regione": "Veneto",
+      "carica": "dep",
+      "partito_fn": true,
+      "ultimo_aggiornamento": "2026-10-18"
+    },
+    {
+      "id": "loc-emilia-dep-1",
+      "comune": "Bologna",
+      "regione": "Emilia-Romagna",
+      "carica": "dep",
+      "partito_fn": true,
+      "ultimo_aggiornamento": "2026-10-18"
+    },
+    {
+      "id": "loc-sicilia-dep-1",
+      "comune": "Palermo",
+      "regione": "Sicilia",
+      "carica": "dep",
+      "partito_fn": true,
+      "ultimo_aggiornamento": "2026-10-18"
+    },
+    {
+      "id": "loc-calabria-creg-1",
+      "comune": "Catanzaro",
+      "regione": "Calabria",
+      "carica": "creg",
+      "partito_fn": true,
+      "ultimo_aggiornamento": "2026-10-18"
+    },
+    {
+      "id": "loc-toscana-com-1",
+      "comune": "Firenze",
+      "regione": "Toscana",
+      "carica": "com",
+      "partito_fn": true,
+      "ultimo_aggiornamento": "2026-10-18"
+    },
+    {
+      "id": "loc-lazio-com-1",
+      "comune": "Viterbo",
+      "regione": "Lazio",
+      "carica": "com",
+      "partito_fn": true,
+      "ultimo_aggiornamento": "2026-10-18"
+    },
+    {
+      "id": "loc-puglia-creg-1",
+      "comune": "Bari",
+      "regione": "Puglia",
+      "carica": "creg",
+      "partito_fn": true,
+      "ultimo_aggiornamento": "2026-10-18"
+    },
+    {
+      "id": "loc-liguria-com-1",
+      "comune": "Genova",
+      "regione": "Liguria",
+      "carica": "com",
+      "partito_fn": true,
+      "ultimo_aggiornamento": "2026-10-18"
+    },
+    {
+      "id": "loc-campania-dep-1",
+      "comune": "Napoli",
+      "regione": "Campania",
+      "carica": "dep",
       "partito_fn": true,
       "ultimo_aggiornamento": "2026-10-18"
     }

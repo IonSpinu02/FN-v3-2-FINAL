@@ -53,6 +53,10 @@ export interface NewsCandidate {
   suggestedRegion?: Region;
   suggestedComune?: string;
   suggestedRole?: CaricaLocale;
+  confidenceScore?: number;
+  matchedRoleKeyword?: string;
+  matchedGeoKeyword?: string;
+  sourceLabel?: string;
 }
 
 export interface IstituzioniDeltaSummary {

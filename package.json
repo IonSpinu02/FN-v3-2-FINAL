@@ -1,0 +1,14 @@
+{
+  "name": "fn-v3-2-monorepo",
+  "private": true,
+  "description": "Root workspace wrapper per Futuro Nazionale v3.2 (motore Python + piattaforma Next.js in platform/)",
+  "scripts": {
+    "dev": "npm --prefix platform run dev",
+    "build": "npm --prefix platform run build",
+    "start": "npm --prefix platform run start",
+    "test": "npm --prefix platform run test",
+    "db:push": "npm --prefix platform run db:push",
+    "db:studio": "npm --prefix platform run db:studio",
+    "py:calc": "python modello_fn_v3_2.py --output risultati_ricalcolati.json"
+  }
+}

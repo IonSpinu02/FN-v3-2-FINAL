@@ -11,11 +11,18 @@
     "test:watch": "vitest",
     "deploy": "vercel deploy",
     "deploy:prod": "vercel deploy --prod",
-    "db:schema": "node scripts/apply-neon-schema.mjs"
+    "db:schema": "node scripts/apply-neon-schema.mjs",
+    "db:push": "node scripts/db-push-safe.mjs",
+    "db:generate": "drizzle-kit generate",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",
+    "ai": "^7.0.146",
     "d3-scale": "^4.0.2",
+    "drizzle-orm": "^0.45.4",
+    "framer-motion": "^14.4.0",
+    "lucide-react": "^1.60.0",
     "next": "16.4.2",
     "next-auth": "^5.0.0-beta.32",
     "python-random": "^1.0.0",
@@ -30,6 +37,8 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^18.0.8",
+    "drizzle-kit": "^0.31.11",
     "eslint": "^9",
     "eslint-config-next": "16.4.2",
     "tailwindcss": "^4",

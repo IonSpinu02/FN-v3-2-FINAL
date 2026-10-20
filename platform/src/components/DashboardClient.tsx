@@ -22,53 +22,88 @@ import {
 import type { CalculateOverrides } from "@/lib/engine/calculate";
 import type { IstituzioniDeltaSummary } from "@/lib/engine/localiTypes";
 import type { FnConfig, ScenarioResult } from "@/lib/engine/types";
-import { pesiFromUi, SensitivityControls, uiFromPesi } from "@/components/SensitivityControls";
-import { Btn, Panel, Segmented, StatusDot } from "@/components/ui/FnUi";
+import { pesiFromUi, uiFromPesi } from "@/components/SensitivityControls";
+import { DashboardShell, DashboardSubtitle } from "@/components/DashboardShell";
+import { AwwwardsLandingHero } from "@/components/AwwwardsLandingHero";
+import {
+  ScenarioViewSwitch,
+  StageTopHud,
+  type ScenarioViewMode,
+} from "@/components/StageTopHud";
+import { MethodologyStatusBar } from "./MethodologyStatusBar";
 import dynamic from "next/dynamic";
+import { AnimatePresence } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { DisclaimerBanner } from "./DisclaimerBanner";
-import { ItalyMap, type MapColorMode } from "./ItalyMap";
-import { MetricCards } from "./MetricCards";
+import type { MapColorMode } from "./ItalyMap";
+import { ScenarioTerritoryStage } from "./ScenarioTerritoryStage";
 import { exportNotaPdf, PrintNotaReport } from "./PrintNotaReport";
 import { RegionPollDrawer } from "./RegionPollDrawer";
-import { RegionalPollControls } from "./RegionalPollControls";
-import { RegionalPollTable } from "./RegionalPollTable";
+import type { SnapshotParams } from "@/lib/engine/snapshotDiff";
+import { loadLocalSnapshots } from "@/lib/engine/snapshotStorage";
 
 const LocaliPanel = dynamic(
   () => import("./LocaliPanel").then((m) => m.LocaliPanel),
   { ssr: false, loading: () => <p className="text-sm text-fn-text-muted">Caricamento tab…</p> },
 );
-const HistoryPanel = dynamic(
-  () => import("./HistoryPanel").then((m) => m.HistoryPanel),
-  { ssr: false, loading: () => <p className="text-sm text-fn-text-muted">Caricamento tab…</p> },
+const AuditWorkspacePanel = dynamic(
+  () =>
+    import("./AuditWorkspacePanel").then((m) => m.AuditWorkspacePanel),
+  {
+    ssr: false,
+    loading: () => (
+      <p className="text-sm text-fn-text-muted">Caricamento audit…</p>
+    ),
+  },
 );
-const PostVotePanel = dynamic(
-  () => import("./PostVotePanel").then((m) => m.PostVotePanel),
-  { ssr: false, loading: () => <p className="text-sm text-fn-text-muted">Caricamento tab…</p> },
+const OsservatorioPanel = dynamic(
+  () =>
+    import("./OsservatorioPanel").then((m) => m.OsservatorioPanel),
+  {
+    ssr: false,
+    loading: () => (
+      <p className="text-sm text-fn-text-muted">Caricamento tab…</p>
+    ),
+  },
 );
-
-type Tab = "scenario" | "storico" | "postvoto" | "locali";
+const FuturoNazionaleQuadroPanel = dynamic(
+  () =>
+    import("./FuturoNazionaleQuadroPanel").then(
+      (m) => m.FuturoNazionaleQuadroPanel,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <p className="text-sm text-fn-text-muted">Caricamento tab…</p>
+    ),
+  },
+);
+type Tab = "scenario" | "quadro" | "osservatorio" | "locali" | "audit";
 
 const NAV: { id: Tab; label: string; desc: string }[] = [
   {
     id: "scenario",
-    label: "Scenario",
-    desc: "Mappa, sensibilità, sondaggio simulato",
+    label: "01 · Scenario",
+    desc: "Mappa tattica e showcase",
+  },
+  {
+    id: "quadro",
+    label: "02 · Quadro FN",
+    desc: "Matrice integrata 20 regioni (Moduli A · B · C)",
+  },
+  {
+    id: "osservatorio",
+    label: "03 · Osservatorio",
+    desc: "Moduli A/B/C, scheda mensile, storico iscritti",
   },
   {
     id: "locali",
-    label: "Locali & News",
-    desc: "Registro comuni, RSS, delta istituzionale",
+    label: "04 · Rassegna stampa",
+    desc: "Scanner RSS, NER istituzionale, dispacci certificati Typeflow",
   },
   {
-    id: "storico",
-    label: "Storico iscritti",
-    desc: "Monitoraggio mensile CSV",
-  },
-  {
-    id: "postvoto",
-    label: "Post-voto",
-    desc: "Confronto con snapshot 18/10",
+    id: "audit",
+    label: "05 · Audit & Post-Voto (WIP)",
+    desc: "Work in progress · anteprima snapshot, post-voto e audit trail",
   },
 ];
 
@@ -106,6 +141,28 @@ export function DashboardClient({
     CalculateOverrides["istituzioniDelta"]
   >();
   const [compareSnapshot, setCompareSnapshot] = useState(false);
+  const [baselineScenario, setBaselineScenario] =
+    useState<ScenarioResult>(frozenSnapshot);
+  const [baselineLabel, setBaselineLabel] = useState(
+    "Snapshot Ufficiale 18-10-2026",
+  );
+  const [baselineId, setBaselineId] = useState("file-frozen-18-10-2026");
+  const [dbCloudConnected, setDbCloudConnected] = useState<boolean | null>(
+    null,
+  );
+  const [snapshotCatalog, setSnapshotCatalog] = useState<
+    { id: string; label: string; scenario: ScenarioResult }[]
+  >([
+    {
+      id: "file-frozen-18-10-2026",
+      label: "Snapshot Ufficiale 18-10-2026",
+      scenario: frozenSnapshot,
+    },
+  ]);
+  const [freezeName, setFreezeName] = useState("");
+  const [freezeNotes, setFreezeNotes] = useState("");
+  const [scenarioView, setScenarioView] =
+    useState<ScenarioViewMode>("map-matrix");
 
   const handleDeltaChange = useCallback(
     (
@@ -127,7 +184,7 @@ export function DashboardClient({
     [applyInstitutional, registryIstituzioniDelta, quickInstDelta],
   );
 
-  const pesi = pesiFromUi(weights);
+  const pesi = useMemo(() => pesiFromUi(weights), [weights]);
   const hasInstitutional = hasNonZeroIstituzioniDelta(
     effectiveIstituzioniDelta,
   );
@@ -199,6 +256,59 @@ export function DashboardClient({
     };
   }, [fetchScenario]);
 
+  useEffect(() => {
+    void fetch("/api/snapshots")
+      .then((r) => r.json())
+      .then(
+        (data: {
+          dbConnected?: boolean;
+          snapshots?: {
+            id: string;
+            name: string;
+            scenarioData: ScenarioResult;
+          }[];
+        }) => {
+          setDbCloudConnected(Boolean(data.dbConnected));
+          const list = data.snapshots ?? [];
+          const local = loadLocalSnapshots();
+          const merged = [...list];
+          for (const l of local) {
+            if (!merged.some((m) => m.id === l.id)) {
+              merged.push({
+                id: l.id,
+                name: l.name,
+                scenarioData: l.scenarioData,
+              });
+            }
+          }
+          if (merged.length) {
+            setSnapshotCatalog(
+              merged.map((s) => ({
+                id: s.id,
+                label: s.name,
+                scenario: s.scenarioData,
+              })),
+            );
+          }
+        },
+      )
+      .catch(() => setDbCloudConnected(false));
+  }, [tab]);
+
+  const loadSnapshotIntoDashboard = useCallback(
+    (s: ScenarioResult, params?: SnapshotParams) => {
+      setScenario(s);
+      if (params) {
+        setS(params.S);
+        setWeights(uiFromPesi(params.pesi));
+        if (params.flussi_ipsos) {
+          setFlussiIpsos({ ...params.flussi_ipsos });
+        }
+      }
+    },
+    [],
+  );
+
   const mapValues = useMemo(() => {
     if (!poll.length) {
       return Object.fromEntries(scenario.righe.map((r) => [r.regione, r.stima]));
@@ -257,190 +367,197 @@ export function DashboardClient({
 
   return (
     <>
-      <div className="screen-only flex min-h-full flex-col lg:flex-row">
-        <aside className="hidden w-64 shrink-0 flex-col bg-fn-sidebar text-white/90 lg:flex lg:w-72">
-          <div className="border-b border-white/10 p-6">
-            <div className="mb-3 flex gap-1">
-              <span className="h-0.5 w-6 rounded-full bg-[var(--fn-italy-green)]" />
-              <span className="h-0.5 w-6 rounded-full bg-white/80" />
-              <span className="h-0.5 w-6 rounded-full bg-[var(--fn-italy-red)]" />
-            </div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/50">
-              Futuro Nazionale
-            </p>
-            <p className="font-[family-name:var(--font-fraunces)] text-lg font-semibold leading-snug">
-              Scenario v3.2
-            </p>
+      <DashboardShell
+        nav={NAV}
+        tab={tab}
+        onTabChange={(id) => setTab(id as Tab)}
+        fullBleed={tab === "scenario" && scenarioView === "map-matrix"}
+        contentClassName={
+          tab === "scenario" && scenarioView === "map-matrix"
+            ? "!m-0 !h-screen !max-h-screen !overflow-hidden !p-0 !pt-0"
+            : "space-y-4"
+        }
+        lockViewport={tab === "scenario" && scenarioView === "map-matrix"}
+        overrideActive={isCustom || hasInstitutional}
+        topHud={
+          <StageTopHud
+            frostedBar={
+              !(tab === "scenario" && scenarioView === "map-matrix")
+            }
+            brandExtra={
+              <DashboardSubtitle
+                busy={busy}
+                metaDate={scenario.metadati.data}
+                dbCloudConnected={dbCloudConnected}
+              />
+            }
+            methodologyPill={<MethodologyStatusBar hudPill />}
+            scenarioControls={
+              tab === "scenario" ? (
+                <ScenarioViewSwitch mode={scenarioView} onChange={setScenarioView} />
+              ) : undefined
+            }
+            onExportPdf={() => exportNotaPdf()}
+            busy={busy}
+          />
+        }
+      >
+        {tab === "scenario" && scenarioView === "showcase" ? (
+          <AwwwardsLandingHero
+            scenario={scenario}
+            poll={poll}
+            mapValues={mapValues}
+            pesi={pesi}
+            onSChange={setS}
+            onFlussiChange={setFlussiIpsos}
+            onOpenCommandCenter={() => setScenarioView("map-matrix")}
+            onOpenOsservatorio={() => {
+              setTab("osservatorio");
+            }}
+            onExportPdf={() => exportNotaPdf()}
+          />
+        ) : null}
+
+        {tab === "scenario" && scenarioView === "map-matrix" ? (
+            <ScenarioTerritoryStage
+              immersive
+              hideRegionalTable
+              onOpenMatrixView={() => setTab("quadro")}
+              scenario={scenario}
+              baselineGolden={frozenSnapshot}
+              baselineForTable={baselineScenario}
+              poll={poll}
+              mapValues={mapValues}
+              mapMode={mapMode}
+              onMapModeChange={setMapMode}
+              selectedRegion={selectedRegion}
+              onSelectRegion={setSelectedRegion}
+              freezeName={freezeName}
+              freezeNotes={freezeNotes}
+              onFreezeNameChange={setFreezeName}
+              onFreezeNotesChange={setFreezeNotes}
+              S={S}
+              weights={weights}
+              flussiIpsos={flussiIpsos}
+              onSChange={setS}
+              onWeightsChange={setWeights}
+              onFlussiChange={setFlussiIpsos}
+              onResetOfficial={resetOfficial}
+              mcLoading={mcLoading}
+              pollConfig={pollConfig}
+              onPollConfigChange={setPollConfig}
+              baselineLabel={baselineLabel}
+              baselineOptions={snapshotCatalog.map((s) => ({
+                id: s.id,
+                label: s.label,
+              }))}
+              baselineId={baselineId}
+              onBaselineIdChange={(id) => {
+                setBaselineId(id);
+                const pick = snapshotCatalog.find((s) => s.id === id);
+                if (pick) {
+                  setBaselineScenario(pick.scenario);
+                  setBaselineLabel(pick.label);
+                }
+              }}
+              compareSnapshot={compareSnapshot}
+              onCompareSnapshotChange={setCompareSnapshot}
+              onAdjustInst={(region, carica, d) =>
+                adjustQuickInst(region as Region, carica, d)
+              }
+              onResetInstRegion={(region) =>
+                resetQuickInstRegion(region as Region)
+              }
+              fnConfig={fnConfig}
+              quickInstDelta={quickInstDelta}
+              busy={busy}
+            />
+        ) : null}
+
+        {tab === "quadro" && (
+          <div className="pb-36">
+            <FuturoNazionaleQuadroPanel
+              scenario={scenario}
+              poll={poll}
+              onOpenTab={setTab}
+              onOpenScenarioRegion={(region) => {
+                setSelectedRegion(region);
+                setTab("scenario");
+                setScenarioView("map-matrix");
+              }}
+            />
           </div>
-          <nav className="flex flex-1 flex-col gap-1 p-3">
-            {NAV.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setTab(item.id)}
-                className={`rounded-xl px-4 py-3 text-left transition-colors ${
-                  tab === item.id
-                    ? "bg-fn-sidebar-active text-white shadow-inner"
-                    : "text-white/70 hover:bg-white/5 hover:text-white"
-                }`}
-              >
-                <span className="block text-sm font-semibold">{item.label}</span>
-                <span className="mt-0.5 block text-[11px] leading-snug opacity-70">
-                  {item.desc}
-                </span>
-              </button>
-            ))}
-          </nav>
-          <div className="border-t border-white/10 p-4 text-xs text-white/45">
-            <p>Uso interno · accesso aperto (auth disabilitato)</p>
-          </div>
-        </aside>
+        )}
 
-        <div className="flex min-w-0 flex-1 flex-col">
-          <div className="flex gap-1 overflow-x-auto border-b border-fn-border-subtle bg-fn-sidebar p-2 lg:hidden">
-            {NAV.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setTab(item.id)}
-                className={`shrink-0 rounded-lg px-3 py-2 text-xs font-semibold ${
-                  tab === item.id
-                    ? "bg-fn-sidebar-active text-white"
-                    : "text-white/70"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-          <header className="border-b border-fn-border-subtle bg-fn-surface/80 px-4 py-4 backdrop-blur-sm sm:px-6">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <h1 className="font-[family-name:var(--font-fraunces)] text-2xl font-semibold text-fn-text">
-                  {NAV.find((n) => n.id === tab)?.label}
-                </h1>
-                <p className="mt-0.5 flex items-center gap-2 text-sm text-fn-text-muted">
-                  <StatusDot active={busy} />
-                  Base {scenario.metadati.data}
-                  {busy ? " · aggiornamento in corso" : " · pronto"}
-                </p>
-              </div>
-              <Btn variant="primary" onClick={() => exportNotaPdf()}>
-                Esporta report PDF
-              </Btn>
-            </div>
-          </header>
-
-          <div className="flex flex-1 flex-col gap-6 p-6 lg:p-8">
-            <DisclaimerBanner />
-
-            {tab === "scenario" && (
-              <>
-                {isCustom && (
-                  <div className="fn-alert fn-alert-custom" role="status">
-                    <strong>Scenario personalizzato</strong> — non certificato
-                    golden v3.2
-                    {!isOfficialParams(S, pesi, OFFICIAL_FLUSSI)
-                      ? " (S o pesi diversi dal default ufficiale)"
-                      : ""}
-                    {customFlussi ? " · flussi Ipsos personalizzati" : ""}
-                    {hasInstitutional
-                      ? " · adeguamento istituzionale (registro e/o campagna)"
-                      : ""}
-                    .
-                  </div>
-                )}
-
-                <MetricCards scenario={scenario} />
-
-                <div className="grid gap-5 xl:grid-cols-2">
-                  <SensitivityControls
-                    S={S}
-                    weights={weights}
-                    flussiIpsos={flussiIpsos}
-                    onSChange={setS}
-                    onWeightsChange={setWeights}
-                    onFlussiChange={setFlussiIpsos}
-                    onReset={resetOfficial}
-                    mcLoading={mcLoading}
-                  />
-                  <RegionalPollControls
-                    config={pollConfig}
-                    onChange={setPollConfig}
-                  />
-                </div>
-
-                <Panel className="p-4">
-                  <p className="fn-label mb-3">Legenda mappa</p>
-                  <Segmented
-                    value={mapMode}
-                    onChange={setMapMode}
-                    options={[
-                      { value: "stima", label: "Stima sondaggio" },
-                      { value: "probSoglia", label: "Prob. soglia" },
-                      { value: "scartoBenchmark", label: "Scarto benchmark" },
-                    ]}
-                  />
-                </Panel>
-
-                <div className="grid gap-6 xl:grid-cols-[minmax(300px,420px)_1fr]">
-                  <ItalyMap
-                    valuesByRegion={mapValues}
-                    colorMode={mapMode}
-                    onRegionClick={setSelectedRegion}
-                  />
-                  <div>
-                    <h2 className="fn-label mb-3">Scheda sondaggio regionale</h2>
-                    {poll.length > 0 ? (
-                      <RegionalPollTable
-                        poll={poll}
-                        selectedRegion={selectedRegion}
-                        onSelect={setSelectedRegion}
-                        frozenSnapshot={frozenSnapshot}
-                        compareSnapshot={compareSnapshot}
-                        onCompareSnapshotChange={setCompareSnapshot}
-                      />
-                    ) : (
-                      <p className="text-sm text-fn-text-muted">
-                        Calcolo sondaggio…
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </>
+        {tab !== "scenario" && tab !== "quadro" && (
+          <div className="pb-36 space-y-4">
+            {tab === "osservatorio" && (
+              <OsservatorioPanel
+                scenario={scenario}
+                baselineScenario={baselineScenario}
+                liveS={S}
+                onRestoreBaselineS={() => setS(OFFICIAL_S)}
+                onOpenTab={setTab}
+              />
             )}
 
             {tab === "locali" && (
               <LocaliPanel
+                newsOnly
                 configSnapshot={fnConfig}
                 applyToScenario={applyInstitutional}
                 onApplyToScenarioChange={setApplyInstitutional}
                 onDeltaChange={handleDeltaChange}
               />
             )}
-            {tab === "storico" && <HistoryPanel snapshot={frozenSnapshot} />}
-            {tab === "postvoto" && <PostVotePanel snapshot={frozenSnapshot} />}
+            {tab === "audit" && (
+              <AuditWorkspacePanel
+                liveScenario={scenario}
+                onLoadScenario={loadSnapshotIntoDashboard}
+                baselineScenario={baselineScenario}
+                onBaselineChange={(s, label) => {
+                  setBaselineScenario(s);
+                  setBaselineLabel(label);
+                  const match = snapshotCatalog.find(
+                    (x) => x.label === label,
+                  );
+                  if (match) setBaselineId(match.id);
+                }}
+                snapshotCatalog={snapshotCatalog}
+                defaultBaselineId={
+                  snapshotCatalog.find((s) => s.label.includes("18-10"))
+                    ?.id ?? snapshotCatalog[0]!.id
+                }
+              />
+            )}
           </div>
-        </div>
-      </div>
+        )}
+      </DashboardShell>
 
-      {pollRow && scenarioRow && (
-        <RegionPollDrawer
-          poll={pollRow}
-          row={scenarioRow}
-          fnConfig={fnConfig}
-          region={selectedRegion as Region}
-          quickDelta={quickInstDelta?.[selectedRegion as Region]}
-          mergedDelta={effectiveIstituzioniDelta?.[selectedRegion as Region]}
-          onAdjustInst={(carica, d) =>
-            adjustQuickInst(selectedRegion as Region, carica, d)
-          }
-          onResetRegion={() =>
-            resetQuickInstRegion(selectedRegion as Region)
-          }
-          onClose={() => setSelectedRegion(null)}
-        />
-      )}
+      <AnimatePresence>
+        {pollRow &&
+          scenarioRow &&
+          selectedRegion &&
+          tab === "scenario" &&
+          scenarioView === "map-matrix" && (
+          <RegionPollDrawer
+            key={selectedRegion}
+            poll={pollRow}
+            row={scenarioRow}
+            fnConfig={fnConfig}
+            region={selectedRegion as Region}
+            quickDelta={quickInstDelta?.[selectedRegion as Region]}
+            mergedDelta={effectiveIstituzioniDelta?.[selectedRegion as Region]}
+            onAdjustInst={(carica, d) =>
+              adjustQuickInst(selectedRegion as Region, carica, d)
+            }
+            onResetRegion={() =>
+              resetQuickInstRegion(selectedRegion as Region)
+            }
+            onClose={() => setSelectedRegion(null)}
+          />
+        )}
+      </AnimatePresence>
 
       <PrintNotaReport
         scenario={scenario}

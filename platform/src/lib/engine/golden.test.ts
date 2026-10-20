@@ -1,4 +1,5 @@
-import { readFileSync } from "fs";
+import { createHash } from "node:crypto";
+import { existsSync, readFileSync } from "fs";
 import path from "path";
 import { describe, expect, it } from "vitest";
 import { calculate } from "./calculate";
@@ -58,5 +59,31 @@ describe("engine golden vs risultati_v3_2.json", () => {
     const gPiemonte = golden.righe.find((r) => r.regione === "Piemonte")!;
     expect(piemonte.lo10).toBeCloseTo(gPiemonte.lo10, 3);
     expect(piemonte.hi90).toBeCloseTo(gPiemonte.hi90, 3);
+  });
+});
+
+const SYNC_FILES = [
+  "config_v3_2.json",
+  "eu2024.json",
+  "risultati_v3_2.json",
+  "scenario_congelato_18-10-2026.json",
+] as const;
+
+function sha256File(filePath: string): string {
+  const buf = readFileSync(filePath);
+  return createHash("sha256").update(buf).digest("hex");
+}
+
+describe("verifica allineamento byte-per-byte tra JSON in radice e platform/data/", () => {
+  it("hash SHA-256 identico quando il monorepo include i file in radice", () => {
+    for (const name of SYNC_FILES) {
+      const platformPath = path.join(dataDir, name);
+      const rootPath = path.resolve(process.cwd(), "..", name);
+      expect(existsSync(platformPath)).toBe(true);
+      if (!existsSync(rootPath)) {
+        continue;
+      }
+      expect(sha256File(platformPath)).toBe(sha256File(rootPath));
+    }
   });
 });

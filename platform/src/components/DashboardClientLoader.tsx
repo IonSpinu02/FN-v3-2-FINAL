@@ -1,5 +1,6 @@
 "use client";
 
+import { CinematicBackground } from "@/components/CinematicBackground";
 import type { FnConfig, ScenarioResult } from "@/lib/engine/types";
 import { useEffect, useState } from "react";
 import { DashboardClient } from "./DashboardClient";
@@ -35,15 +36,29 @@ export function DashboardClientLoader() {
 
   if (error) {
     return (
-      <p className="p-8 text-sm text-fn-danger" role="alert">
-        Impossibile caricare la dashboard ({error}). Ricarica la pagina.
-      </p>
+      <div className="relative min-h-screen p-8">
+        <CinematicBackground />
+        <p className="relative z-10 text-sm text-fn-danger" role="alert">
+          Impossibile caricare la dashboard ({error}). Ricarica la pagina.
+        </p>
+      </div>
     );
   }
 
   if (!boot) {
     return (
-      <p className="p-8 text-fn-text-muted">Caricamento scenario territoriale…</p>
+      <div className="fn-loader relative min-h-screen">
+        <CinematicBackground />
+        <div className="relative z-10 flex flex-col items-center gap-4">
+          <div className="fn-loader-ring" aria-hidden />
+          <p className="font-[family-name:var(--font-display)] text-lg font-semibold text-fn-text fn-heading-shine">
+            Futuro Nazionale
+          </p>
+          <p className="max-w-sm text-sm text-fn-text-muted">
+            Caricamento scenario territoriale e moduli operativi…
+          </p>
+        </div>
+      </div>
     );
   }
 

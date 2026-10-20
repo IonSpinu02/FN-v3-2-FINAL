@@ -39,13 +39,13 @@ export function LoginForm() {
           <span className="h-1 w-8 rounded-full bg-fn-border" />
           <span className="h-1 w-8 rounded-full bg-[var(--fn-italy-red)]" />
         </div>
-        <h1 className="font-[family-name:var(--font-fraunces)] text-2xl font-semibold text-fn-text">
+        <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold text-fn-text fn-heading-shine">
           Futuro Nazionale
         </h1>
       </div>
       <form onSubmit={onSubmit} className="flex flex-col gap-5">
         <div>
-          <h2 className="font-[family-name:var(--font-fraunces)] text-xl font-semibold">
+          <h2 className="font-[family-name:var(--font-display)] text-xl font-semibold">
             Accedi
           </h2>
           <p className="mt-1 text-sm text-fn-text-muted">

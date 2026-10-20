@@ -1,17 +1,31 @@
 "use client";
 
-import type { PostVoteResultExtended } from "@/lib/engine/historyAndEval";
+import { EntropyAndCalibrationChart } from "@/components/charts/AnalyticalChartsSuite";
+import { REGIONS } from "@/lib/engine/constants";
+import {
+  evaluatePostVoteWithPoll,
+  type PostVoteResultExtended,
+} from "@/lib/engine/historyAndEval";
 import type { ScenarioResult } from "@/lib/engine/types";
 import { pct } from "@/lib/format";
-import { Kpi, KpiGrid } from "@/components/ui/FnUi";
+import { Btn, Kpi, KpiGrid } from "@/components/ui/FnUi";
 import { useState } from "react";
 import { CsvDropzone } from "./CsvDropzone";
 
+type SnapshotOption = { id: string; label: string; scenario: ScenarioResult };
+
 export function PostVotePanel({
-  snapshot,
+  baselineOptions,
+  defaultBaselineId,
 }: {
-  snapshot: ScenarioResult;
+  baselineOptions: SnapshotOption[];
+  defaultBaselineId: string;
 }) {
+  const [baselineId, setBaselineId] = useState(defaultBaselineId);
+  const snapshot =
+    baselineOptions.find((o) => o.id === baselineId)?.scenario ??
+    baselineOptions[0]!.scenario;
+
   const [result, setResult] = useState<PostVoteResultExtended | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -41,9 +55,28 @@ export function PostVotePanel({
   return (
     <div className="flex flex-col gap-5">
       <p className="fn-alert text-xs">
-        Valutazione ex post vs snapshot <strong>18/10/2026</strong> congelato.
-        Verificare comparabilità esito (FN con simbolo proprio).
+        Modulo A — validazione ex post vs baseline snapshot. Non confondere con
+        Modulo C (eventi): una variazione temporale non prova causalità.
+        Comparabilità esito FN con simbolo proprio, 20 regioni.
       </p>
+
+      <label className="flex flex-wrap items-center gap-2 text-sm">
+        Baseline snapshot
+        <select
+          className="rounded border border-fn-border-subtle px-2 py-1"
+          value={baselineId}
+          onChange={(e) => {
+            setBaselineId(e.target.value);
+            setResult(null);
+          }}
+        >
+          {baselineOptions.map((o) => (
+            <option key={o.id} value={o.id}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      </label>
 
       <a
         href="/templates/esiti_futuri_TEMPLATE.csv"
@@ -59,6 +92,43 @@ export function PostVotePanel({
           void runEval(text);
         }}
       />
+
+      <Btn
+        variant="secondary"
+        className="w-fit font-mono text-[10px]"
+        onClick={() => {
+          const lines = REGIONS.map((r, i) => {
+            const row = snapshot.righe.find((x) => x.regione === r)!;
+            const valid = Math.max(
+              100000,
+              Math.round(row.elettori_ricostruiti * 0.48),
+            );
+            const noise = ((i * 17) % 7) * 0.0004 - 0.001;
+            const share = Math.min(
+              0.14,
+              Math.max(0.02, row.stima + noise),
+            );
+            const fn = Math.round(valid * share);
+            return `${r},${valid},${fn}`;
+          });
+          const csv = "regione,voti_validi,voti_fn\n" + lines.join("\n");
+          try {
+            setPending(true);
+            setErr(null);
+            const data = evaluatePostVoteWithPoll(snapshot, csv);
+            setResult(data);
+          } catch (e) {
+            setErr(e instanceof Error ? e.message : "Errore simulazione");
+            setResult(null);
+          } finally {
+            setPending(false);
+          }
+        }}
+      >
+        CARICA DATI DI SIMULAZIONE TEST POST-VOTO
+      </Btn>
+
+      <EntropyAndCalibrationChart mode="parity" postVote={result} />
 
       {pending && (
         <p className="text-sm text-fn-text-muted">Calcolo validazione…</p>

@@ -11,7 +11,7 @@ export function Panel({
 }) {
   return (
     <div
-      className={`${muted ? "fn-panel-muted" : "fn-panel"} ${className}`}
+      className={`fn-bento ${muted ? "fn-panel-muted" : "fn-panel"} ${className}`}
     >
       {children}
     </div>
@@ -94,7 +94,11 @@ export function Kpi({ label, value }: { label: string; value: string }) {
 export function StatusDot({ active }: { active?: boolean }) {
   return (
     <span
-      className={`inline-block h-2 w-2 rounded-full ${active ? "bg-fn-accent animate-pulse" : "bg-fn-border"}`}
+      className={`inline-block h-2 w-2 rounded-full ${
+        active
+          ? "bg-fn-accent animate-pulse shadow-[0_0_8px_var(--fn-glow)]"
+          : "bg-fn-border"
+      }`}
       aria-hidden
     />
   );

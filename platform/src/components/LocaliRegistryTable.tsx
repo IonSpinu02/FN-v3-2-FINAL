@@ -10,9 +10,11 @@ const CARICHE: CaricaLocale[] = ["dep", "creg", "sind", "com"];
 export function LocaliRegistryTable({
   entries,
   onChange,
+  onRestoreSeed,
 }: {
   entries: LocalRegistryEntry[];
   onChange: (entries: LocalRegistryEntry[]) => void;
+  onRestoreSeed?: () => void;
 }) {
   const [filterRegion, setFilterRegion] = useState<string>("");
   const [filterFn, setFilterFn] = useState<string>("all");
@@ -75,9 +77,9 @@ export function LocaliRegistryTable({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-[#1B2436] bg-[#080C14] p-3">
         <select
-          className="fn-input w-auto min-w-[140px]"
+          className="fn-input w-auto min-w-[120px] max-w-[160px] py-1 text-xs"
           value={filterRegion}
           onChange={(e) => setFilterRegion(e.target.value)}
         >
@@ -89,7 +91,7 @@ export function LocaliRegistryTable({
           ))}
         </select>
         <select
-          className="fn-input w-auto"
+          className="fn-input w-auto min-w-[88px] max-w-[120px] py-1 text-xs"
           value={filterFn}
           onChange={(e) => setFilterFn(e.target.value)}
         >
@@ -122,6 +124,11 @@ export function LocaliRegistryTable({
         >
           Template CSV
         </a>
+        {onRestoreSeed && (
+          <Btn variant="secondary" className="text-xs" onClick={onRestoreSeed}>
+            Ripristina seed
+          </Btn>
+        )}
       </div>
 
       <div className="fn-table-wrap max-h-[420px] overflow-y-auto">

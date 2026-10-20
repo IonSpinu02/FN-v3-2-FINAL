@@ -714,7 +714,10 @@ Test MC completo: `calculate(cfg, eu, 20000)` → `lo10`/`hi90` Piemonte vs gold
 | Simulatore sondaggio regionale | ✅ |
 | Export nota PDF (print) | ✅ |
 | GeoJSON locale | ✅ |
-| **Snapshot DB** (Neon + Drizzle, versioni, diff, audit) | 🔜 pianificato |
+| **Snapshot DB** (Neon + Drizzle, versioni, diff, audit) | ✅ |
+| Locali persistenza cloud (`locali_cloud_state`) + audit | ✅ |
+| Fallback senza `DATABASE_URL` (JSON/localStorage) | ✅ |
+| **Osservatorio integrato** (A/B/C, 20 regioni fabbisogni, cloud state, PDF scheda) | ✅ |
 
 ---
 

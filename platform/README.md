@@ -1,60 +1,64 @@
 # FN Scenario Territoriale — Piattaforma v3.2
 
-Dashboard interna per lo **scenario territoriale** Futuro Nazionale (motore v3.2, parità numerica con `modello_fn_v3_2.py`).
+Dashboard interna **Futuro Nazionale** (motore v3.2, parità numerica con `modello_fn_v3_2.py`).
+
+Documentazione: [`docs/RECAP-PIATTAFORMA.md`](docs/RECAP-PIATTAFORMA.md) · repo root [`RECAP_FUNZIONAMENTO.md`](../RECAP_FUNZIONAMENTO.md).
 
 ## Requisiti
 
 - Node 20+
-- Variabili d'ambiente (vedi `.env.example`)
+- Variabili d'ambiente: [`.env.example`](.env.example)
 
-## Sviluppo locale
+## Comandi
+
+Dalla **radice del monorepo** (`FN_v3_2_FINAL/`) puoi usare il bridge:
+
+```bash
+npm run test
+npm run dev
+npm run build
+npm run db:push
+npm run db:studio
+```
+
+Oppure sempre da `platform/`:
 
 ```bash
 cd platform
 cp .env.example .env.local
-# Imposta AUTH_SECRET, ALLOWLIST_EMAILS, PLATFORM_PASSWORD
 npm install
-npm run test    # golden test vs data/risultati_v3_2.json
+npm run test
 npm run dev
 ```
 
-Apri [http://localhost:3000](http://localhost:3000) → login → `/dashboard`.
-
-## Deploy Vercel
-
-Progetto collegato: **platform** (team `ionspinu29-4320s-projects`).
-
-- **URL produzione:** https://platform-sigma-beige.vercel.app  
-- **Dashboard progetto:** https://vercel.com/ionspinu29-4320s-projects/platform  
-
-### Variabili d’ambiente (obbligatorie)
-
-In [Settings → Environment Variables](https://vercel.com/ionspinu29-4320s-projects/platform/settings/environment-variables) aggiungi per **Production** (e opzionalmente Preview):
-
-| Nome | Esempio |
-|------|---------|
-| `AUTH_SECRET` | stringa casuale ≥ 32 caratteri (`openssl rand -base64 32`) |
-| `ALLOWLIST_EMAILS` | `tua@email.it` (più email separate da virgola) |
-| `PLATFORM_PASSWORD` | password scelta per lo staff |
-
-Poi **Redeploy** l’ultimo deployment (Deployments → ⋮ → Redeploy).
-
-### CLI
+## Database (Neon + Drizzle)
 
 ```bash
 cd platform
-npx vercel link
-npx vercel deploy --prod
+npx vercel env pull .env.local
+npm run db:push
 ```
 
-Root directory del repo su Vercel: cartella **`platform`** (se importi da Git).
+`drizzle.config.ts` carica `.env.local` / `.env` e accetta `DATABASE_URL`, `POSTGRES_URL`, `POSTGRES_PRISMA_URL`.  
+Senza URL, `npm run db:push` esce con messaggio diagnostico (script `scripts/db-push-safe.mjs`).
 
-## Struttura
+## Tab dashboard
 
-- `src/lib/engine/` — motore TypeScript (Monte Carlo con RNG compatibile CPython)
-- `data/` — config, EU 2024, snapshot e golden JSON
-- `src/app/dashboard/` — panorama metriche, mappa, tabella regioni
+Scenario (Landing / Stage / Console) · **Quadro FN** · Osservatorio (A/B/C) · **Rassegna stampa (tab 04)** · **Audit & Post-Voto (tab 05, WIP)**.
+
+## Dati
+
+- `data/` — seed allineati ai JSON in radice repo (test SHA-256 in `golden.test.ts`)
+- `src/lib/engine/calculate.ts` — motore MC (non alterare la matematica senza golden verdi)
+
+## Deploy Vercel
+
+Root Directory del progetto Git: **`platform`**.
+
+Variabili obbligatorie: `AUTH_SECRET`, `ALLOWLIST_EMAILS`, `PLATFORM_PASSWORD`.  
+Opzionali: `ALLOWLIST_CREDENTIALS`, `DATABASE_URL`, `NEWS_RSS_URLS`, `NEWS_KEYWORDS`, `NEWS_SCAN_MAX_ITEMS`.  
+Tab **04 Rassegna stampa**: solo RSS live (31 feed), refresh automatico ogni **30 min** (cache server allineata).
 
 ## Avvertenza
 
-Scenario **descrittivo**, non previsione elettorale validata (`predizione_validata: false`).
+Scenario **descrittivo** (`predizione_validata: false`).

@@ -2,6 +2,7 @@
 
 import { parseHistory } from "@/lib/engine/parseHistory";
 import type { ScenarioResult } from "@/lib/engine/types";
+import { EntropyAndCalibrationChart } from "@/components/charts/AnalyticalChartsSuite";
 import { Btn } from "@/components/ui/FnUi";
 import { useState } from "react";
 import { CsvDropzone } from "./CsvDropzone";
@@ -64,6 +65,16 @@ export function HistoryPanel({
           {err}
         </p>
       )}
+
+      <EntropyAndCalibrationChart
+        mode="entropy"
+        history={rows ?? undefined}
+        snapshotMetrics={{
+          hIsc: snapshot.metriche.H.iscritti,
+          hScen: snapshot.metriche.H.scenario,
+          js: snapshot.metriche.JS.scenario_benchmark,
+        }}
+      />
 
       {rows && (
         <div className="fn-table-wrap">

@@ -1,0 +1,1606 @@
+{
+  "version": 1,
+  "updatedAt": "2026-10-20",
+  "regions": {
+    "Piemonte": {
+      "indicatori": [
+        {
+          "id": "piemonte-sanita",
+          "tema": "Sanità / Accesso alle cure",
+          "indicatore": "Tempi di attesa programmata / rinuncia alle cure / mobilità sanitaria (slot AGENAS)",
+          "valore": null,
+          "unita": "giorni / %",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "AGENAS / ISTAT BesT 2025",
+            "territorio": "Piemonte",
+            "popolazioneRiferimento": "Utenti SSN e popolazione assistita",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Dato amministrativo certificato (AGENAS) + indicatori BesT",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "piemonte-lavoro",
+          "tema": "Lavoro e Reddito",
+          "indicatore": "Tasso di occupazione 20-64 anni e indici di reddito/disparità (BesT)",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT - Rilevazione Forze di Lavoro / BesT",
+            "territorio": "Piemonte",
+            "popolazioneRiferimento": "Popolazione residente 20-64 anni",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Rilevazione campionaria ISTAT (RFL)",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "piemonte-abitare",
+          "tema": "Costo dell'abitare e Prezzi",
+          "indicatore": "Sovraccarico costo abitazione / indice prezzi al consumo territoriale",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT",
+            "territorio": "Piemonte",
+            "popolazioneRiferimento": "Famiglie consumatrici (NUTS2)",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Indagine prezzi al consumo / conti economici territoriali",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "piemonte-trasporti",
+          "tema": "Trasporti e Servizi Locali",
+          "indicatore": "Qualità TPL, servizi comunali (OpenCivitas) e qualità ambientale (ARPA)",
+          "valore": null,
+          "unita": "indice / rating",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "OpenCivitas / ISTAT / ARPA",
+            "territorio": "Piemonte",
+            "popolazioneRiferimento": "Residenti e utenza servizi",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Benchmark servizi locali + monitoraggio ambientale",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        }
+      ],
+      "prioritaDichiarate": {
+        "stato": "non_rilevato",
+        "nota": "Non ancora rilevate — Occorre indagine rappresentativa"
+      }
+    },
+    "Valle d'Aosta": {
+      "indicatori": [
+        {
+          "id": "valle-daosta-sanita",
+          "tema": "Sanità / Accesso alle cure",
+          "indicatore": "Tempi di attesa programmata / rinuncia alle cure / mobilità sanitaria (slot AGENAS)",
+          "valore": null,
+          "unita": "giorni / %",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "AGENAS / ISTAT BesT 2025",
+            "territorio": "Valle d'Aosta",
+            "popolazioneRiferimento": "Utenti SSN e popolazione assistita",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Dato amministrativo certificato (AGENAS) + indicatori BesT",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "valle-daosta-lavoro",
+          "tema": "Lavoro e Reddito",
+          "indicatore": "Tasso di occupazione 20-64 anni e indici di reddito/disparità (BesT)",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT - Rilevazione Forze di Lavoro / BesT",
+            "territorio": "Valle d'Aosta",
+            "popolazioneRiferimento": "Popolazione residente 20-64 anni",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Rilevazione campionaria ISTAT (RFL)",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "valle-daosta-abitare",
+          "tema": "Costo dell'abitare e Prezzi",
+          "indicatore": "Sovraccarico costo abitazione / indice prezzi al consumo territoriale",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT",
+            "territorio": "Valle d'Aosta",
+            "popolazioneRiferimento": "Famiglie consumatrici (NUTS2)",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Indagine prezzi al consumo / conti economici territoriali",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "valle-daosta-trasporti",
+          "tema": "Trasporti e Servizi Locali",
+          "indicatore": "Qualità TPL, servizi comunali (OpenCivitas) e qualità ambientale (ARPA)",
+          "valore": null,
+          "unita": "indice / rating",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "OpenCivitas / ISTAT / ARPA",
+            "territorio": "Valle d'Aosta",
+            "popolazioneRiferimento": "Residenti e utenza servizi",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Benchmark servizi locali + monitoraggio ambientale",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        }
+      ],
+      "prioritaDichiarate": {
+        "stato": "non_rilevato",
+        "nota": "Non ancora rilevate — Occorre indagine rappresentativa"
+      }
+    },
+    "Liguria": {
+      "indicatori": [
+        {
+          "id": "liguria-sanita",
+          "tema": "Sanità / Accesso alle cure",
+          "indicatore": "Tempi di attesa programmata / rinuncia alle cure / mobilità sanitaria (slot AGENAS)",
+          "valore": null,
+          "unita": "giorni / %",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "AGENAS / ISTAT BesT 2025",
+            "territorio": "Liguria",
+            "popolazioneRiferimento": "Utenti SSN e popolazione assistita",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Dato amministrativo certificato (AGENAS) + indicatori BesT",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "liguria-lavoro",
+          "tema": "Lavoro e Reddito",
+          "indicatore": "Tasso di occupazione 20-64 anni e indici di reddito/disparità (BesT)",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT - Rilevazione Forze di Lavoro / BesT",
+            "territorio": "Liguria",
+            "popolazioneRiferimento": "Popolazione residente 20-64 anni",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Rilevazione campionaria ISTAT (RFL)",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "liguria-abitare",
+          "tema": "Costo dell'abitare e Prezzi",
+          "indicatore": "Sovraccarico costo abitazione / indice prezzi al consumo territoriale",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT",
+            "territorio": "Liguria",
+            "popolazioneRiferimento": "Famiglie consumatrici (NUTS2)",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Indagine prezzi al consumo / conti economici territoriali",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "liguria-trasporti",
+          "tema": "Trasporti e Servizi Locali",
+          "indicatore": "Qualità TPL, servizi comunali (OpenCivitas) e qualità ambientale (ARPA)",
+          "valore": null,
+          "unita": "indice / rating",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "OpenCivitas / ISTAT / ARPA",
+            "territorio": "Liguria",
+            "popolazioneRiferimento": "Residenti e utenza servizi",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Benchmark servizi locali + monitoraggio ambientale",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        }
+      ],
+      "prioritaDichiarate": {
+        "stato": "non_rilevato",
+        "nota": "Non ancora rilevate — Occorre indagine rappresentativa"
+      }
+    },
+    "Lombardia": {
+      "indicatori": [
+        {
+          "id": "lombardia-sanita",
+          "tema": "Sanità / Accesso alle cure",
+          "indicatore": "Tempi di attesa programmata / rinuncia alle cure / mobilità sanitaria (slot AGENAS)",
+          "valore": null,
+          "unita": "giorni / %",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "AGENAS / ISTAT BesT 2025",
+            "territorio": "Lombardia",
+            "popolazioneRiferimento": "Utenti SSN e popolazione assistita",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Dato amministrativo certificato (AGENAS) + indicatori BesT",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "lombardia-lavoro",
+          "tema": "Lavoro e Reddito",
+          "indicatore": "Tasso di occupazione 20-64 anni e indici di reddito/disparità (BesT)",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT - Rilevazione Forze di Lavoro / BesT",
+            "territorio": "Lombardia",
+            "popolazioneRiferimento": "Popolazione residente 20-64 anni",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Rilevazione campionaria ISTAT (RFL)",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "lombardia-abitare",
+          "tema": "Costo dell'abitare e Prezzi",
+          "indicatore": "Sovraccarico costo abitazione / indice prezzi al consumo territoriale",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT",
+            "territorio": "Lombardia",
+            "popolazioneRiferimento": "Famiglie consumatrici (NUTS2)",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Indagine prezzi al consumo / conti economici territoriali",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "lombardia-trasporti",
+          "tema": "Trasporti e Servizi Locali",
+          "indicatore": "Qualità TPL, servizi comunali (OpenCivitas) e qualità ambientale (ARPA)",
+          "valore": null,
+          "unita": "indice / rating",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "OpenCivitas / ISTAT / ARPA",
+            "territorio": "Lombardia",
+            "popolazioneRiferimento": "Residenti e utenza servizi",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Benchmark servizi locali + monitoraggio ambientale",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        }
+      ],
+      "prioritaDichiarate": {
+        "stato": "non_rilevato",
+        "nota": "Non ancora rilevate — Occorre indagine rappresentativa"
+      }
+    },
+    "Trentino-Alto Adige": {
+      "indicatori": [
+        {
+          "id": "trentino-alto-adige-sanita",
+          "tema": "Sanità / Accesso alle cure",
+          "indicatore": "Tempi di attesa programmata / rinuncia alle cure / mobilità sanitaria (slot AGENAS)",
+          "valore": null,
+          "unita": "giorni / %",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "AGENAS / ISTAT BesT 2025",
+            "territorio": "Trentino-Alto Adige",
+            "popolazioneRiferimento": "Utenti SSN e popolazione assistita",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Dato amministrativo certificato (AGENAS) + indicatori BesT",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "trentino-alto-adige-lavoro",
+          "tema": "Lavoro e Reddito",
+          "indicatore": "Tasso di occupazione 20-64 anni e indici di reddito/disparità (BesT)",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT - Rilevazione Forze di Lavoro / BesT",
+            "territorio": "Trentino-Alto Adige",
+            "popolazioneRiferimento": "Popolazione residente 20-64 anni",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Rilevazione campionaria ISTAT (RFL)",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "trentino-alto-adige-abitare",
+          "tema": "Costo dell'abitare e Prezzi",
+          "indicatore": "Sovraccarico costo abitazione / indice prezzi al consumo territoriale",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT",
+            "territorio": "Trentino-Alto Adige",
+            "popolazioneRiferimento": "Famiglie consumatrici (NUTS2)",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Indagine prezzi al consumo / conti economici territoriali",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "trentino-alto-adige-trasporti",
+          "tema": "Trasporti e Servizi Locali",
+          "indicatore": "Qualità TPL, servizi comunali (OpenCivitas) e qualità ambientale (ARPA)",
+          "valore": null,
+          "unita": "indice / rating",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "OpenCivitas / ISTAT / ARPA",
+            "territorio": "Trentino-Alto Adige",
+            "popolazioneRiferimento": "Residenti e utenza servizi",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Benchmark servizi locali + monitoraggio ambientale",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        }
+      ],
+      "prioritaDichiarate": {
+        "stato": "non_rilevato",
+        "nota": "Non ancora rilevate — Occorre indagine rappresentativa"
+      }
+    },
+    "Veneto": {
+      "indicatori": [
+        {
+          "id": "veneto-sanita",
+          "tema": "Sanità / Accesso alle cure",
+          "indicatore": "Tempi di attesa programmata / rinuncia alle cure / mobilità sanitaria (slot AGENAS)",
+          "valore": null,
+          "unita": "giorni / %",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "AGENAS / ISTAT BesT 2025",
+            "territorio": "Veneto",
+            "popolazioneRiferimento": "Utenti SSN e popolazione assistita",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Dato amministrativo certificato (AGENAS) + indicatori BesT",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "veneto-lavoro",
+          "tema": "Lavoro e Reddito",
+          "indicatore": "Tasso di occupazione 20-64 anni e indici di reddito/disparità (BesT)",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT - Rilevazione Forze di Lavoro / BesT",
+            "territorio": "Veneto",
+            "popolazioneRiferimento": "Popolazione residente 20-64 anni",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Rilevazione campionaria ISTAT (RFL)",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "veneto-abitare",
+          "tema": "Costo dell'abitare e Prezzi",
+          "indicatore": "Sovraccarico costo abitazione / indice prezzi al consumo territoriale",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT",
+            "territorio": "Veneto",
+            "popolazioneRiferimento": "Famiglie consumatrici (NUTS2)",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Indagine prezzi al consumo / conti economici territoriali",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "veneto-trasporti",
+          "tema": "Trasporti e Servizi Locali",
+          "indicatore": "Qualità TPL, servizi comunali (OpenCivitas) e qualità ambientale (ARPA)",
+          "valore": null,
+          "unita": "indice / rating",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "OpenCivitas / ISTAT / ARPA",
+            "territorio": "Veneto",
+            "popolazioneRiferimento": "Residenti e utenza servizi",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Benchmark servizi locali + monitoraggio ambientale",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        }
+      ],
+      "prioritaDichiarate": {
+        "stato": "non_rilevato",
+        "nota": "Non ancora rilevate — Occorre indagine rappresentativa"
+      }
+    },
+    "Friuli-Venezia Giulia": {
+      "indicatori": [
+        {
+          "id": "friuli-venezia-giulia-sanita",
+          "tema": "Sanità / Accesso alle cure",
+          "indicatore": "Tempi di attesa programmata / rinuncia alle cure / mobilità sanitaria (slot AGENAS)",
+          "valore": null,
+          "unita": "giorni / %",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "AGENAS / ISTAT BesT 2025",
+            "territorio": "Friuli-Venezia Giulia",
+            "popolazioneRiferimento": "Utenti SSN e popolazione assistita",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Dato amministrativo certificato (AGENAS) + indicatori BesT",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "friuli-venezia-giulia-lavoro",
+          "tema": "Lavoro e Reddito",
+          "indicatore": "Tasso di occupazione 20-64 anni e indici di reddito/disparità (BesT)",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT - Rilevazione Forze di Lavoro / BesT",
+            "territorio": "Friuli-Venezia Giulia",
+            "popolazioneRiferimento": "Popolazione residente 20-64 anni",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Rilevazione campionaria ISTAT (RFL)",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "friuli-venezia-giulia-abitare",
+          "tema": "Costo dell'abitare e Prezzi",
+          "indicatore": "Sovraccarico costo abitazione / indice prezzi al consumo territoriale",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT",
+            "territorio": "Friuli-Venezia Giulia",
+            "popolazioneRiferimento": "Famiglie consumatrici (NUTS2)",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Indagine prezzi al consumo / conti economici territoriali",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "friuli-venezia-giulia-trasporti",
+          "tema": "Trasporti e Servizi Locali",
+          "indicatore": "Qualità TPL, servizi comunali (OpenCivitas) e qualità ambientale (ARPA)",
+          "valore": null,
+          "unita": "indice / rating",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "OpenCivitas / ISTAT / ARPA",
+            "territorio": "Friuli-Venezia Giulia",
+            "popolazioneRiferimento": "Residenti e utenza servizi",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Benchmark servizi locali + monitoraggio ambientale",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        }
+      ],
+      "prioritaDichiarate": {
+        "stato": "non_rilevato",
+        "nota": "Non ancora rilevate — Occorre indagine rappresentativa"
+      }
+    },
+    "Emilia-Romagna": {
+      "indicatori": [
+        {
+          "id": "emilia-romagna-sanita",
+          "tema": "Sanità / Accesso alle cure",
+          "indicatore": "Tempi di attesa programmata / rinuncia alle cure / mobilità sanitaria (slot AGENAS)",
+          "valore": null,
+          "unita": "giorni / %",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "AGENAS / ISTAT BesT 2025",
+            "territorio": "Emilia-Romagna",
+            "popolazioneRiferimento": "Utenti SSN e popolazione assistita",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Dato amministrativo certificato (AGENAS) + indicatori BesT",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "emilia-romagna-lavoro",
+          "tema": "Lavoro e Reddito",
+          "indicatore": "Tasso di occupazione 20-64 anni e indici di reddito/disparità (BesT)",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT - Rilevazione Forze di Lavoro / BesT",
+            "territorio": "Emilia-Romagna",
+            "popolazioneRiferimento": "Popolazione residente 20-64 anni",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Rilevazione campionaria ISTAT (RFL)",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "emilia-romagna-abitare",
+          "tema": "Costo dell'abitare e Prezzi",
+          "indicatore": "Sovraccarico costo abitazione / indice prezzi al consumo territoriale",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT",
+            "territorio": "Emilia-Romagna",
+            "popolazioneRiferimento": "Famiglie consumatrici (NUTS2)",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Indagine prezzi al consumo / conti economici territoriali",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "emilia-romagna-trasporti",
+          "tema": "Trasporti e Servizi Locali",
+          "indicatore": "Qualità TPL, servizi comunali (OpenCivitas) e qualità ambientale (ARPA)",
+          "valore": null,
+          "unita": "indice / rating",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "OpenCivitas / ISTAT / ARPA",
+            "territorio": "Emilia-Romagna",
+            "popolazioneRiferimento": "Residenti e utenza servizi",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Benchmark servizi locali + monitoraggio ambientale",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        }
+      ],
+      "prioritaDichiarate": {
+        "stato": "non_rilevato",
+        "nota": "Non ancora rilevate — Occorre indagine rappresentativa"
+      }
+    },
+    "Toscana": {
+      "indicatori": [
+        {
+          "id": "toscana-sanita",
+          "tema": "Sanità / Accesso alle cure",
+          "indicatore": "Tempi di attesa programmata / rinuncia alle cure / mobilità sanitaria (slot AGENAS)",
+          "valore": null,
+          "unita": "giorni / %",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "AGENAS / ISTAT BesT 2025",
+            "territorio": "Toscana",
+            "popolazioneRiferimento": "Utenti SSN e popolazione assistita",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Dato amministrativo certificato (AGENAS) + indicatori BesT",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "toscana-lavoro",
+          "tema": "Lavoro e Reddito",
+          "indicatore": "Tasso di occupazione 20-64 anni e indici di reddito/disparità (BesT)",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT - Rilevazione Forze di Lavoro / BesT",
+            "territorio": "Toscana",
+            "popolazioneRiferimento": "Popolazione residente 20-64 anni",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Rilevazione campionaria ISTAT (RFL)",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "toscana-abitare",
+          "tema": "Costo dell'abitare e Prezzi",
+          "indicatore": "Sovraccarico costo abitazione / indice prezzi al consumo territoriale",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT",
+            "territorio": "Toscana",
+            "popolazioneRiferimento": "Famiglie consumatrici (NUTS2)",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Indagine prezzi al consumo / conti economici territoriali",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "toscana-trasporti",
+          "tema": "Trasporti e Servizi Locali",
+          "indicatore": "Qualità TPL, servizi comunali (OpenCivitas) e qualità ambientale (ARPA)",
+          "valore": null,
+          "unita": "indice / rating",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "OpenCivitas / ISTAT / ARPA",
+            "territorio": "Toscana",
+            "popolazioneRiferimento": "Residenti e utenza servizi",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Benchmark servizi locali + monitoraggio ambientale",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        }
+      ],
+      "prioritaDichiarate": {
+        "stato": "non_rilevato",
+        "nota": "Non ancora rilevate — Occorre indagine rappresentativa"
+      }
+    },
+    "Umbria": {
+      "indicatori": [
+        {
+          "id": "umbria-sanita",
+          "tema": "Sanità / Accesso alle cure",
+          "indicatore": "Tempi di attesa programmata / rinuncia alle cure / mobilità sanitaria (slot AGENAS)",
+          "valore": null,
+          "unita": "giorni / %",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "AGENAS / ISTAT BesT 2025",
+            "territorio": "Umbria",
+            "popolazioneRiferimento": "Utenti SSN e popolazione assistita",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Dato amministrativo certificato (AGENAS) + indicatori BesT",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "umbria-lavoro",
+          "tema": "Lavoro e Reddito",
+          "indicatore": "Tasso di occupazione 20-64 anni e indici di reddito/disparità (BesT)",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT - Rilevazione Forze di Lavoro / BesT",
+            "territorio": "Umbria",
+            "popolazioneRiferimento": "Popolazione residente 20-64 anni",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Rilevazione campionaria ISTAT (RFL)",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "umbria-abitare",
+          "tema": "Costo dell'abitare e Prezzi",
+          "indicatore": "Sovraccarico costo abitazione / indice prezzi al consumo territoriale",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT",
+            "territorio": "Umbria",
+            "popolazioneRiferimento": "Famiglie consumatrici (NUTS2)",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Indagine prezzi al consumo / conti economici territoriali",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "umbria-trasporti",
+          "tema": "Trasporti e Servizi Locali",
+          "indicatore": "Qualità TPL, servizi comunali (OpenCivitas) e qualità ambientale (ARPA)",
+          "valore": null,
+          "unita": "indice / rating",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "OpenCivitas / ISTAT / ARPA",
+            "territorio": "Umbria",
+            "popolazioneRiferimento": "Residenti e utenza servizi",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Benchmark servizi locali + monitoraggio ambientale",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        }
+      ],
+      "prioritaDichiarate": {
+        "stato": "non_rilevato",
+        "nota": "Non ancora rilevate — Occorre indagine rappresentativa"
+      }
+    },
+    "Marche": {
+      "indicatori": [
+        {
+          "id": "marche-sanita",
+          "tema": "Sanità / Accesso alle cure",
+          "indicatore": "Tempi di attesa programmata / rinuncia alle cure / mobilità sanitaria (slot AGENAS)",
+          "valore": null,
+          "unita": "giorni / %",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "AGENAS / ISTAT BesT 2025",
+            "territorio": "Marche",
+            "popolazioneRiferimento": "Utenti SSN e popolazione assistita",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Dato amministrativo certificato (AGENAS) + indicatori BesT",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "marche-lavoro",
+          "tema": "Lavoro e Reddito",
+          "indicatore": "Tasso di occupazione 20-64 anni e indici di reddito/disparità (BesT)",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT - Rilevazione Forze di Lavoro / BesT",
+            "territorio": "Marche",
+            "popolazioneRiferimento": "Popolazione residente 20-64 anni",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Rilevazione campionaria ISTAT (RFL)",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "marche-abitare",
+          "tema": "Costo dell'abitare e Prezzi",
+          "indicatore": "Sovraccarico costo abitazione / indice prezzi al consumo territoriale",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT",
+            "territorio": "Marche",
+            "popolazioneRiferimento": "Famiglie consumatrici (NUTS2)",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Indagine prezzi al consumo / conti economici territoriali",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "marche-trasporti",
+          "tema": "Trasporti e Servizi Locali",
+          "indicatore": "Qualità TPL, servizi comunali (OpenCivitas) e qualità ambientale (ARPA)",
+          "valore": null,
+          "unita": "indice / rating",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "OpenCivitas / ISTAT / ARPA",
+            "territorio": "Marche",
+            "popolazioneRiferimento": "Residenti e utenza servizi",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Benchmark servizi locali + monitoraggio ambientale",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        }
+      ],
+      "prioritaDichiarate": {
+        "stato": "non_rilevato",
+        "nota": "Non ancora rilevate — Occorre indagine rappresentativa"
+      }
+    },
+    "Lazio": {
+      "indicatori": [
+        {
+          "id": "lazio-sanita",
+          "tema": "Sanità / Accesso alle cure",
+          "indicatore": "Tempi di attesa programmata / rinuncia alle cure / mobilità sanitaria (slot AGENAS)",
+          "valore": null,
+          "unita": "giorni / %",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "AGENAS / ISTAT BesT 2025",
+            "territorio": "Lazio",
+            "popolazioneRiferimento": "Utenti SSN e popolazione assistita",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Dato amministrativo certificato (AGENAS) + indicatori BesT",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "lazio-lavoro",
+          "tema": "Lavoro e Reddito",
+          "indicatore": "Tasso di occupazione 20-64 anni e indici di reddito/disparità (BesT)",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT - Rilevazione Forze di Lavoro / BesT",
+            "territorio": "Lazio",
+            "popolazioneRiferimento": "Popolazione residente 20-64 anni",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Rilevazione campionaria ISTAT (RFL)",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "lazio-abitare",
+          "tema": "Costo dell'abitare e Prezzi",
+          "indicatore": "Sovraccarico costo abitazione / indice prezzi al consumo territoriale",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT",
+            "territorio": "Lazio",
+            "popolazioneRiferimento": "Famiglie consumatrici (NUTS2)",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Indagine prezzi al consumo / conti economici territoriali",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "lazio-trasporti",
+          "tema": "Trasporti e Servizi Locali",
+          "indicatore": "Qualità TPL, servizi comunali (OpenCivitas) e qualità ambientale (ARPA)",
+          "valore": null,
+          "unita": "indice / rating",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "OpenCivitas / ISTAT / ARPA",
+            "territorio": "Lazio",
+            "popolazioneRiferimento": "Residenti e utenza servizi",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Benchmark servizi locali + monitoraggio ambientale",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        }
+      ],
+      "prioritaDichiarate": {
+        "stato": "non_rilevato",
+        "nota": "Non ancora rilevate — Occorre indagine rappresentativa"
+      }
+    },
+    "Abruzzo": {
+      "indicatori": [
+        {
+          "id": "abruzzo-sanita",
+          "tema": "Sanità / Accesso alle cure",
+          "indicatore": "Tempi di attesa programmata / rinuncia alle cure / mobilità sanitaria (slot AGENAS)",
+          "valore": null,
+          "unita": "giorni / %",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "AGENAS / ISTAT BesT 2025",
+            "territorio": "Abruzzo",
+            "popolazioneRiferimento": "Utenti SSN e popolazione assistita",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Dato amministrativo certificato (AGENAS) + indicatori BesT",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "abruzzo-lavoro",
+          "tema": "Lavoro e Reddito",
+          "indicatore": "Tasso di occupazione 20-64 anni e indici di reddito/disparità (BesT)",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT - Rilevazione Forze di Lavoro / BesT",
+            "territorio": "Abruzzo",
+            "popolazioneRiferimento": "Popolazione residente 20-64 anni",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Rilevazione campionaria ISTAT (RFL)",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "abruzzo-abitare",
+          "tema": "Costo dell'abitare e Prezzi",
+          "indicatore": "Sovraccarico costo abitazione / indice prezzi al consumo territoriale",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT",
+            "territorio": "Abruzzo",
+            "popolazioneRiferimento": "Famiglie consumatrici (NUTS2)",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Indagine prezzi al consumo / conti economici territoriali",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "abruzzo-trasporti",
+          "tema": "Trasporti e Servizi Locali",
+          "indicatore": "Qualità TPL, servizi comunali (OpenCivitas) e qualità ambientale (ARPA)",
+          "valore": null,
+          "unita": "indice / rating",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "OpenCivitas / ISTAT / ARPA",
+            "territorio": "Abruzzo",
+            "popolazioneRiferimento": "Residenti e utenza servizi",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Benchmark servizi locali + monitoraggio ambientale",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        }
+      ],
+      "prioritaDichiarate": {
+        "stato": "non_rilevato",
+        "nota": "Non ancora rilevate — Occorre indagine rappresentativa"
+      }
+    },
+    "Molise": {
+      "indicatori": [
+        {
+          "id": "molise-sanita",
+          "tema": "Sanità / Accesso alle cure",
+          "indicatore": "Tempi di attesa programmata / rinuncia alle cure / mobilità sanitaria (slot AGENAS)",
+          "valore": null,
+          "unita": "giorni / %",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "AGENAS / ISTAT BesT 2025",
+            "territorio": "Molise",
+            "popolazioneRiferimento": "Utenti SSN e popolazione assistita",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Dato amministrativo certificato (AGENAS) + indicatori BesT",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "molise-lavoro",
+          "tema": "Lavoro e Reddito",
+          "indicatore": "Tasso di occupazione 20-64 anni e indici di reddito/disparità (BesT)",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT - Rilevazione Forze di Lavoro / BesT",
+            "territorio": "Molise",
+            "popolazioneRiferimento": "Popolazione residente 20-64 anni",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Rilevazione campionaria ISTAT (RFL)",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "molise-abitare",
+          "tema": "Costo dell'abitare e Prezzi",
+          "indicatore": "Sovraccarico costo abitazione / indice prezzi al consumo territoriale",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT",
+            "territorio": "Molise",
+            "popolazioneRiferimento": "Famiglie consumatrici (NUTS2)",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Indagine prezzi al consumo / conti economici territoriali",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "molise-trasporti",
+          "tema": "Trasporti e Servizi Locali",
+          "indicatore": "Qualità TPL, servizi comunali (OpenCivitas) e qualità ambientale (ARPA)",
+          "valore": null,
+          "unita": "indice / rating",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "OpenCivitas / ISTAT / ARPA",
+            "territorio": "Molise",
+            "popolazioneRiferimento": "Residenti e utenza servizi",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Benchmark servizi locali + monitoraggio ambientale",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        }
+      ],
+      "prioritaDichiarate": {
+        "stato": "non_rilevato",
+        "nota": "Non ancora rilevate — Occorre indagine rappresentativa"
+      }
+    },
+    "Campania": {
+      "indicatori": [
+        {
+          "id": "campania-sanita",
+          "tema": "Sanità / Accesso alle cure",
+          "indicatore": "Tempi di attesa programmata / rinuncia alle cure / mobilità sanitaria (slot AGENAS)",
+          "valore": null,
+          "unita": "giorni / %",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "AGENAS / ISTAT BesT 2025",
+            "territorio": "Campania",
+            "popolazioneRiferimento": "Utenti SSN e popolazione assistita",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Dato amministrativo certificato (AGENAS) + indicatori BesT",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "campania-lavoro",
+          "tema": "Lavoro e Reddito",
+          "indicatore": "Tasso di occupazione 20-64 anni e indici di reddito/disparità (BesT)",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT - Rilevazione Forze di Lavoro / BesT",
+            "territorio": "Campania",
+            "popolazioneRiferimento": "Popolazione residente 20-64 anni",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Rilevazione campionaria ISTAT (RFL)",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "campania-abitare",
+          "tema": "Costo dell'abitare e Prezzi",
+          "indicatore": "Sovraccarico costo abitazione / indice prezzi al consumo territoriale",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT",
+            "territorio": "Campania",
+            "popolazioneRiferimento": "Famiglie consumatrici (NUTS2)",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Indagine prezzi al consumo / conti economici territoriali",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "campania-trasporti",
+          "tema": "Trasporti e Servizi Locali",
+          "indicatore": "Qualità TPL, servizi comunali (OpenCivitas) e qualità ambientale (ARPA)",
+          "valore": null,
+          "unita": "indice / rating",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "OpenCivitas / ISTAT / ARPA",
+            "territorio": "Campania",
+            "popolazioneRiferimento": "Residenti e utenza servizi",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Benchmark servizi locali + monitoraggio ambientale",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        }
+      ],
+      "prioritaDichiarate": {
+        "stato": "non_rilevato",
+        "nota": "Non ancora rilevate — Occorre indagine rappresentativa"
+      }
+    },
+    "Puglia": {
+      "indicatori": [
+        {
+          "id": "puglia-sanita",
+          "tema": "Sanità / Accesso alle cure",
+          "indicatore": "Tempi di attesa programmata / rinuncia alle cure / mobilità sanitaria (slot AGENAS)",
+          "valore": null,
+          "unita": "giorni / %",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "AGENAS / ISTAT BesT 2025",
+            "territorio": "Puglia",
+            "popolazioneRiferimento": "Utenti SSN e popolazione assistita",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Dato amministrativo certificato (AGENAS) + indicatori BesT",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "puglia-lavoro",
+          "tema": "Lavoro e Reddito",
+          "indicatore": "Tasso di occupazione 20-64 anni e indici di reddito/disparità (BesT)",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT - Rilevazione Forze di Lavoro / BesT",
+            "territorio": "Puglia",
+            "popolazioneRiferimento": "Popolazione residente 20-64 anni",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Rilevazione campionaria ISTAT (RFL)",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "puglia-abitare",
+          "tema": "Costo dell'abitare e Prezzi",
+          "indicatore": "Sovraccarico costo abitazione / indice prezzi al consumo territoriale",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT",
+            "territorio": "Puglia",
+            "popolazioneRiferimento": "Famiglie consumatrici (NUTS2)",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Indagine prezzi al consumo / conti economici territoriali",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "puglia-trasporti",
+          "tema": "Trasporti e Servizi Locali",
+          "indicatore": "Qualità TPL, servizi comunali (OpenCivitas) e qualità ambientale (ARPA)",
+          "valore": null,
+          "unita": "indice / rating",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "OpenCivitas / ISTAT / ARPA",
+            "territorio": "Puglia",
+            "popolazioneRiferimento": "Residenti e utenza servizi",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Benchmark servizi locali + monitoraggio ambientale",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        }
+      ],
+      "prioritaDichiarate": {
+        "stato": "non_rilevato",
+        "nota": "Non ancora rilevate — Occorre indagine rappresentativa"
+      }
+    },
+    "Basilicata": {
+      "indicatori": [
+        {
+          "id": "basilicata-sanita",
+          "tema": "Sanità / Accesso alle cure",
+          "indicatore": "Tempi di attesa programmata / rinuncia alle cure / mobilità sanitaria (slot AGENAS)",
+          "valore": null,
+          "unita": "giorni / %",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "AGENAS / ISTAT BesT 2025",
+            "territorio": "Basilicata",
+            "popolazioneRiferimento": "Utenti SSN e popolazione assistita",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Dato amministrativo certificato (AGENAS) + indicatori BesT",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "basilicata-lavoro",
+          "tema": "Lavoro e Reddito",
+          "indicatore": "Tasso di occupazione 20-64 anni e indici di reddito/disparità (BesT)",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT - Rilevazione Forze di Lavoro / BesT",
+            "territorio": "Basilicata",
+            "popolazioneRiferimento": "Popolazione residente 20-64 anni",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Rilevazione campionaria ISTAT (RFL)",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "basilicata-abitare",
+          "tema": "Costo dell'abitare e Prezzi",
+          "indicatore": "Sovraccarico costo abitazione / indice prezzi al consumo territoriale",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT",
+            "territorio": "Basilicata",
+            "popolazioneRiferimento": "Famiglie consumatrici (NUTS2)",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Indagine prezzi al consumo / conti economici territoriali",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "basilicata-trasporti",
+          "tema": "Trasporti e Servizi Locali",
+          "indicatore": "Qualità TPL, servizi comunali (OpenCivitas) e qualità ambientale (ARPA)",
+          "valore": null,
+          "unita": "indice / rating",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "OpenCivitas / ISTAT / ARPA",
+            "territorio": "Basilicata",
+            "popolazioneRiferimento": "Residenti e utenza servizi",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Benchmark servizi locali + monitoraggio ambientale",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        }
+      ],
+      "prioritaDichiarate": {
+        "stato": "non_rilevato",
+        "nota": "Non ancora rilevate — Occorre indagine rappresentativa"
+      }
+    },
+    "Calabria": {
+      "indicatori": [
+        {
+          "id": "calabria-sanita",
+          "tema": "Sanità / Accesso alle cure",
+          "indicatore": "Tempi di attesa programmata / rinuncia alle cure / mobilità sanitaria (slot AGENAS)",
+          "valore": null,
+          "unita": "giorni / %",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "AGENAS / ISTAT BesT 2025",
+            "territorio": "Calabria",
+            "popolazioneRiferimento": "Utenti SSN e popolazione assistita",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Dato amministrativo certificato (AGENAS) + indicatori BesT",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "calabria-lavoro",
+          "tema": "Lavoro e Reddito",
+          "indicatore": "Tasso di occupazione 20-64 anni e indici di reddito/disparità (BesT)",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT - Rilevazione Forze di Lavoro / BesT",
+            "territorio": "Calabria",
+            "popolazioneRiferimento": "Popolazione residente 20-64 anni",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Rilevazione campionaria ISTAT (RFL)",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "calabria-abitare",
+          "tema": "Costo dell'abitare e Prezzi",
+          "indicatore": "Sovraccarico costo abitazione / indice prezzi al consumo territoriale",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT",
+            "territorio": "Calabria",
+            "popolazioneRiferimento": "Famiglie consumatrici (NUTS2)",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Indagine prezzi al consumo / conti economici territoriali",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "calabria-trasporti",
+          "tema": "Trasporti e Servizi Locali",
+          "indicatore": "Qualità TPL, servizi comunali (OpenCivitas) e qualità ambientale (ARPA)",
+          "valore": null,
+          "unita": "indice / rating",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "OpenCivitas / ISTAT / ARPA",
+            "territorio": "Calabria",
+            "popolazioneRiferimento": "Residenti e utenza servizi",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Benchmark servizi locali + monitoraggio ambientale",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        }
+      ],
+      "prioritaDichiarate": {
+        "stato": "non_rilevato",
+        "nota": "Non ancora rilevate — Occorre indagine rappresentativa"
+      }
+    },
+    "Sicilia": {
+      "indicatori": [
+        {
+          "id": "sicilia-sanita",
+          "tema": "Sanità / Accesso alle cure",
+          "indicatore": "Tempi di attesa programmata / rinuncia alle cure / mobilità sanitaria (slot AGENAS)",
+          "valore": null,
+          "unita": "giorni / %",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "AGENAS / ISTAT BesT 2025",
+            "territorio": "Sicilia",
+            "popolazioneRiferimento": "Utenti SSN e popolazione assistita",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Dato amministrativo certificato (AGENAS) + indicatori BesT",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "sicilia-lavoro",
+          "tema": "Lavoro e Reddito",
+          "indicatore": "Tasso di occupazione 20-64 anni e indici di reddito/disparità (BesT)",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT - Rilevazione Forze di Lavoro / BesT",
+            "territorio": "Sicilia",
+            "popolazioneRiferimento": "Popolazione residente 20-64 anni",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Rilevazione campionaria ISTAT (RFL)",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "sicilia-abitare",
+          "tema": "Costo dell'abitare e Prezzi",
+          "indicatore": "Sovraccarico costo abitazione / indice prezzi al consumo territoriale",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT",
+            "territorio": "Sicilia",
+            "popolazioneRiferimento": "Famiglie consumatrici (NUTS2)",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Indagine prezzi al consumo / conti economici territoriali",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "sicilia-trasporti",
+          "tema": "Trasporti e Servizi Locali",
+          "indicatore": "Qualità TPL, servizi comunali (OpenCivitas) e qualità ambientale (ARPA)",
+          "valore": null,
+          "unita": "indice / rating",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "OpenCivitas / ISTAT / ARPA",
+            "territorio": "Sicilia",
+            "popolazioneRiferimento": "Residenti e utenza servizi",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Benchmark servizi locali + monitoraggio ambientale",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        }
+      ],
+      "prioritaDichiarate": {
+        "stato": "non_rilevato",
+        "nota": "Non ancora rilevate — Occorre indagine rappresentativa"
+      }
+    },
+    "Sardegna": {
+      "indicatori": [
+        {
+          "id": "sardegna-sanita",
+          "tema": "Sanità / Accesso alle cure",
+          "indicatore": "Tempi di attesa programmata / rinuncia alle cure / mobilità sanitaria (slot AGENAS)",
+          "valore": null,
+          "unita": "giorni / %",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "AGENAS / ISTAT BesT 2025",
+            "territorio": "Sardegna",
+            "popolazioneRiferimento": "Utenti SSN e popolazione assistita",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Dato amministrativo certificato (AGENAS) + indicatori BesT",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "sardegna-lavoro",
+          "tema": "Lavoro e Reddito",
+          "indicatore": "Tasso di occupazione 20-64 anni e indici di reddito/disparità (BesT)",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT - Rilevazione Forze di Lavoro / BesT",
+            "territorio": "Sardegna",
+            "popolazioneRiferimento": "Popolazione residente 20-64 anni",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Rilevazione campionaria ISTAT (RFL)",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "sardegna-abitare",
+          "tema": "Costo dell'abitare e Prezzi",
+          "indicatore": "Sovraccarico costo abitazione / indice prezzi al consumo territoriale",
+          "valore": null,
+          "unita": "%",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "ISTAT",
+            "territorio": "Sardegna",
+            "popolazioneRiferimento": "Famiglie consumatrici (NUTS2)",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Indagine prezzi al consumo / conti economici territoriali",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        },
+        {
+          "id": "sardegna-trasporti",
+          "tema": "Trasporti e Servizi Locali",
+          "indicatore": "Qualità TPL, servizi comunali (OpenCivitas) e qualità ambientale (ARPA)",
+          "valore": null,
+          "unita": "indice / rating",
+          "periodoRiferimento": null,
+          "metadati": {
+            "fonte": "OpenCivitas / ISTAT / ARPA",
+            "territorio": "Sardegna",
+            "popolazioneRiferimento": "Residenti e utenza servizi",
+            "periodoMisurato": "Anno 2024",
+            "dataPubblicazione": "2025-12",
+            "metodo": "Benchmark servizi locali + monitoraggio ambientale",
+            "naturaDato": "osservato",
+            "gradoConfrontabilita": "Media — verificare omogeneità serie 2021-2024 prima del confronto"
+          }
+        }
+      ],
+      "prioritaDichiarate": {
+        "stato": "non_rilevato",
+        "nota": "Non ancora rilevate — Occorre indagine rappresentativa"
+      }
+    }
+  }
+}
