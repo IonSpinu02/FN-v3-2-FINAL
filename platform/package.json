@@ -10,9 +10,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "deploy": "vercel deploy",
-    "deploy:prod": "vercel deploy --prod"
+    "deploy:prod": "vercel deploy --prod",
+    "db:schema": "node scripts/apply-neon-schema.mjs"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.2.0",
     "d3-scale": "^4.0.2",
     "next": "16.4.2",
     "next-auth": "^5.0.0-beta.32",

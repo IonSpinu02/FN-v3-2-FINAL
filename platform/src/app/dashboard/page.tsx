@@ -1,4 +1,3 @@
-import { auth } from "@/auth";
 import { DashboardClient } from "@/components/DashboardClient";
 import { loadJson, runDefaultScenario } from "@/lib/engine/loadData";
 import type { FnConfig, ScenarioResult } from "@/lib/engine/types";
@@ -6,7 +5,9 @@ import type { FnConfig, ScenarioResult } from "@/lib/engine/types";
 export const instant = false;
 
 export default async function DashboardPage() {
-  const session = await auth();
+  // Mantiene render dinamico (come ex auth()) con cacheComponents attivo
+  const { connection } = await import("next/server");
+  await connection();
   const initialScenario = runDefaultScenario();
   const frozenSnapshot = loadJson<ScenarioResult>(
     "scenario_congelato_18-10-2026.json",
@@ -17,7 +18,6 @@ export default async function DashboardPage() {
       initialScenario={initialScenario}
       frozenSnapshot={frozenSnapshot}
       fnConfig={fnConfig}
-      userEmail={session?.user?.email}
     />
   );
 }

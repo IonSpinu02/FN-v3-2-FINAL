@@ -35,7 +35,6 @@ import { exportNotaPdf, PrintNotaReport } from "./PrintNotaReport";
 import { RegionPollDrawer } from "./RegionPollDrawer";
 import { RegionalPollControls } from "./RegionalPollControls";
 import { RegionalPollTable } from "./RegionalPollTable";
-import { SignOutButton } from "./SignOutButton";
 
 type Tab = "scenario" | "storico" | "postvoto" | "locali";
 
@@ -66,12 +65,10 @@ export function DashboardClient({
   initialScenario,
   frozenSnapshot,
   fnConfig,
-  userEmail,
 }: {
   initialScenario: ScenarioResult;
   frozenSnapshot: ScenarioResult;
   fnConfig: FnConfig;
-  userEmail?: string | null;
 }) {
   const [tab, setTab] = useState<Tab>("scenario");
   const [scenario, setScenario] = useState(initialScenario);
@@ -284,10 +281,7 @@ export function DashboardClient({
             ))}
           </nav>
           <div className="border-t border-white/10 p-4 text-xs text-white/45">
-            {userEmail && (
-              <p className="mb-2 truncate text-white/70">{userEmail}</p>
-            )}
-            <SignOutButton dark />
+            <p>Uso interno · accesso aperto (auth disabilitato)</p>
           </div>
         </aside>
 

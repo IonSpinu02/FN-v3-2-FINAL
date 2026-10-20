@@ -35,6 +35,7 @@ export function LocaliPanel({
   const [entries, setEntries] = useState<LocalRegistryEntry[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [browserSaved, setBrowserSaved] = useState(false);
+  const [cloudSaved, setCloudSaved] = useState(false);
   const [serverSeed, setServerSeed] = useState<LocalRegistryEntry[]>([]);
   const [summary, setSummary] = useState<IstituzioniDeltaSummary | null>(null);
   const [delta, setDelta] = useState<
@@ -57,23 +58,42 @@ export function LocaliPanel({
   useEffect(() => {
     fetch("/api/locali/registry")
       .then((r) => r.json())
-      .then((data: { registry?: { entries: LocalRegistryEntry[] } }) => {
-        const list = data.registry?.entries ?? [];
-        setServerSeed(list);
-        const cached = loadRegistryFromBrowser();
-        const useList = cached?.length ? cached : list;
-        setEntries(useList);
-        setBrowserSaved(Boolean(cached?.length));
-        recompute(useList);
-        setLoaded(true);
-      })
+      .then(
+        (data: {
+          registry?: { entries: LocalRegistryEntry[] };
+          persistence?: { source?: string };
+        }) => {
+          const list = data.registry?.entries ?? [];
+          setServerSeed(list);
+          const cached = loadRegistryFromBrowser();
+          const useList = cached?.length ? cached : list;
+          setEntries(useList);
+          setBrowserSaved(Boolean(cached?.length));
+          setCloudSaved(data.persistence?.source === "neon");
+          recompute(useList);
+          setLoaded(true);
+        },
+      )
       .catch(() => setLoaded(true));
   }, [recompute]);
+
+  function persistToCloud(list: LocalRegistryEntry[]) {
+    void fetch("/api/locali/registry", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ entries: list }),
+    })
+      .then((r) => {
+        if (r.ok) setCloudSaved(true);
+      })
+      .catch(() => {});
+  }
 
   function handleEntriesChange(list: LocalRegistryEntry[]) {
     setEntries(list);
     saveRegistryToBrowser(list);
     setBrowserSaved(true);
+    persistToCloud(list);
     recompute(list);
   }
 
@@ -99,6 +119,11 @@ export function LocaliPanel({
         {browserSaved && (
           <span className="rounded-md bg-emerald-50 px-2 py-1 text-emerald-800">
             Salvato nel browser
+          </span>
+        )}
+        {cloudSaved && (
+          <span className="rounded-md bg-sky-50 px-2 py-1 text-sky-900">
+            Sincronizzato Neon
           </span>
         )}
         <Btn variant="secondary" className="text-xs" onClick={restoreServerSeed}>

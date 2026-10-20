@@ -1,11 +1,6 @@
-import { auth } from "@/auth";
-
+/** Accesso aperto: riattivare il blocco sessione quando si ripristina il login. */
 export async function requireSession() {
-  const session = await auth();
-  if (!session?.user) {
-    return null;
-  }
-  return session;
+  return { user: { id: "interno", email: "interno@fn" } };
 }
 
 export function unauthorizedResponse() {
