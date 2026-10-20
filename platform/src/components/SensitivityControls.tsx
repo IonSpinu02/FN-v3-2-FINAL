@@ -1,8 +1,11 @@
 "use client";
 
 import {
+  FLUSSI_PRESETS,
+  OFFICIAL_FLUSSI,
   OFFICIAL_PESI,
   OFFICIAL_S,
+  type FlussiIpsos,
   WEIGHT_PRESETS,
 } from "@/lib/engine/defaults";
 import type { FnConfig } from "@/lib/engine/types";
@@ -35,23 +38,47 @@ export function pesiFromUi(u: WeightUi): FnConfig["pesi"] {
   };
 }
 
+function clampFlussiField(
+  flussi: FlussiIpsos,
+  key: keyof FlussiIpsos,
+  pct: number,
+): FlussiIpsos {
+  const v = Math.max(0, Math.min(1, pct / 100));
+  const next = { ...flussi, [key]: v };
+  const sum = next.FdI + next.Lega + next.ast;
+  if (sum <= 1 + 1e-9) return next;
+  const scale = (1 - v) / (sum - v);
+  if (key !== "FdI") next.FdI *= scale;
+  if (key !== "Lega") next.Lega *= scale;
+  if (key !== "ast") next.ast *= scale;
+  return next;
+}
+
 export function SensitivityControls({
   S,
   weights,
+  flussiIpsos,
   onSChange,
   onWeightsChange,
+  onFlussiChange,
   onReset,
   mcLoading,
 }: {
   S: number;
   weights: WeightUi;
+  flussiIpsos: FlussiIpsos;
   onSChange: (s: number) => void;
   onWeightsChange: (w: WeightUi) => void;
+  onFlussiChange: (f: FlussiIpsos) => void;
   onReset: () => void;
   mcLoading: boolean;
 }) {
   const normalized = pesiFromUi(weights);
   const sumUi = weights.flussi + weights.pref + weights.isc + weights.ist;
+  const altriPct = Math.max(
+    0,
+    100 - (flussiIpsos.FdI + flussiIpsos.Lega + flussiIpsos.ast) * 100,
+  );
 
   return (
     <Panel className="p-5">
@@ -144,8 +171,60 @@ export function SensitivityControls({
         ))}
       </div>
 
+      <div className="mt-6 border-t border-fn-border-subtle pt-5">
+        <p className="fn-label mb-1">Provenienza Flussi (FdI / Lega / Astensione)</p>
+        <p className="mb-3 text-xs text-fn-text-muted">
+          Flussi mercato 2026 (Ipsos) — residuo Altri:{" "}
+          <span className="font-mono font-medium text-fn-text">
+            {altriPct.toFixed(1)}%
+          </span>
+        </p>
+        {(
+          [
+            ["FdI", "FdI"],
+            ["Lega", "Lega"],
+            ["ast", "Astensione"],
+          ] as const
+        ).map(([key, label]) => (
+          <label key={key} className="mb-3 block text-sm">
+            <span className="text-fn-text-muted">
+              {label}:{" "}
+              <span className="font-mono text-fn-text">
+                {(flussiIpsos[key] * 100).toFixed(1)}%
+              </span>
+            </span>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={0.5}
+              value={flussiIpsos[key] * 100}
+              onChange={(e) =>
+                onFlussiChange(
+                  clampFlussiField(flussiIpsos, key, Number(e.target.value)),
+                )
+              }
+              className="fn-range mt-1"
+            />
+          </label>
+        ))}
+        <div className="mt-2 flex flex-wrap gap-2">
+          {Object.entries(FLUSSI_PRESETS).map(([name, f]) => (
+            <Btn
+              key={name}
+              variant="secondary"
+              className="text-xs"
+              onClick={() => onFlussiChange({ ...f })}
+            >
+              {name}
+            </Btn>
+          ))}
+        </div>
+      </div>
+
       <p className="mt-4 text-xs text-fn-text-muted">
-        Golden: S={(OFFICIAL_S * 100).toFixed(1)}%, pesi 35/25/25/15.
+        Golden: S={(OFFICIAL_S * 100).toFixed(1)}%, pesi 35/25/25/15, flussi
+        Ipsos 31/25/36.
       </p>
     </Panel>
   );

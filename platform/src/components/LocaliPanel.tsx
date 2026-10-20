@@ -7,7 +7,13 @@ import type {
 } from "@/lib/engine/localiTypes";
 import type { CalculateOverrides } from "@/lib/engine/calculate";
 import type { FnConfig } from "@/lib/engine/types";
+import {
+  clearRegistryBrowser,
+  loadRegistryFromBrowser,
+  saveRegistryToBrowser,
+} from "@/lib/engine/localiStorage";
 import { useCallback, useEffect, useState } from "react";
+import { Btn } from "@/components/ui/FnUi";
 import { LocaliDeltaBanner } from "./LocaliDeltaBanner";
 import { LocaliRegistryTable } from "./LocaliRegistryTable";
 import { NewsReviewPanel } from "./NewsReviewPanel";
@@ -28,6 +34,8 @@ export function LocaliPanel({
 }) {
   const [entries, setEntries] = useState<LocalRegistryEntry[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [browserSaved, setBrowserSaved] = useState(false);
+  const [serverSeed, setServerSeed] = useState<LocalRegistryEntry[]>([]);
   const [summary, setSummary] = useState<IstituzioniDeltaSummary | null>(null);
   const [delta, setDelta] = useState<
     CalculateOverrides["istituzioniDelta"] | undefined
@@ -51,8 +59,12 @@ export function LocaliPanel({
       .then((r) => r.json())
       .then((data: { registry?: { entries: LocalRegistryEntry[] } }) => {
         const list = data.registry?.entries ?? [];
-        setEntries(list);
-        recompute(list);
+        setServerSeed(list);
+        const cached = loadRegistryFromBrowser();
+        const useList = cached?.length ? cached : list;
+        setEntries(useList);
+        setBrowserSaved(Boolean(cached?.length));
+        recompute(useList);
         setLoaded(true);
       })
       .catch(() => setLoaded(true));
@@ -60,7 +72,16 @@ export function LocaliPanel({
 
   function handleEntriesChange(list: LocalRegistryEntry[]) {
     setEntries(list);
+    saveRegistryToBrowser(list);
+    setBrowserSaved(true);
     recompute(list);
+  }
+
+  function restoreServerSeed() {
+    clearRegistryBrowser();
+    setBrowserSaved(false);
+    setEntries(serverSeed);
+    recompute(serverSeed);
   }
 
   if (!loaded) {
@@ -74,6 +95,16 @@ export function LocaliPanel({
         Rollup su conteggi istituzionali FN per regione — scenario descrittivo,{" "}
         <strong>predizione_validata: false</strong>.
       </p>
+      <div className="flex flex-wrap items-center gap-2 text-xs">
+        {browserSaved && (
+          <span className="rounded-md bg-emerald-50 px-2 py-1 text-emerald-800">
+            Salvato nel browser
+          </span>
+        )}
+        <Btn variant="secondary" className="text-xs" onClick={restoreServerSeed}>
+          Ripristina seed iniziale server
+        </Btn>
+      </div>
       <LocaliDeltaBanner
         applyToScenario={applyToScenario}
         onApplyChange={onApplyToScenarioChange}

@@ -6,7 +6,22 @@ import type {
   NewsCandidate,
 } from "@/lib/engine/localiTypes";
 import { Btn } from "@/components/ui/FnUi";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+function matchRegistryId(
+  candidate: NewsCandidate,
+  entries: LocalRegistryEntry[],
+): string {
+  const comune = candidate.suggestedComune ?? candidate.comuneGuess;
+  const regione = candidate.suggestedRegion ?? candidate.regioneGuess;
+  if (!comune || !regione) return "";
+  const hit = entries.find(
+    (e) =>
+      e.comune.toLowerCase() === comune.toLowerCase() &&
+      e.regione === regione,
+  );
+  return hit?.id ?? "";
+}
 
 export function NewsReviewPanel({
   entries,
@@ -21,6 +36,20 @@ export function NewsReviewPanel({
   const [error, setError] = useState<string | null>(null);
   const [linkTarget, setLinkTarget] = useState<Record<string, string>>({});
   const [lastScanInfo, setLastScanInfo] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!candidates.length) return;
+    setLinkTarget((prev) => {
+      const next = { ...prev };
+      for (const c of candidates) {
+        if (!next[c.id]) {
+          const m = matchRegistryId(c, entries);
+          if (m) next[c.id] = m;
+        }
+      }
+      return next;
+    });
+  }, [candidates, entries]);
 
   async function scan() {
     setLoading(true);
@@ -61,14 +90,44 @@ export function NewsReviewPanel({
     }
   }
 
-  function approve(candidate: NewsCandidate) {
-    const registryId = linkTarget[candidate.id];
+  function approve(candidate: NewsCandidate, useSuggestion: boolean) {
+    let list = entries;
+    let registryId = linkTarget[candidate.id];
+    if (useSuggestion && !registryId) {
+      const comune = candidate.suggestedComune ?? candidate.comuneGuess;
+      const regione = candidate.suggestedRegion ?? candidate.regioneGuess;
+      if (!comune || !regione) {
+        alert("Suggerimento geo incompleto.");
+        return;
+      }
+      const existing = list.find(
+        (e) =>
+          e.comune.toLowerCase() === comune.toLowerCase() &&
+          e.regione === regione,
+      );
+      if (existing) {
+        registryId = existing.id;
+      } else {
+        const newEntry: LocalRegistryEntry = {
+          id: `local-news-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          comune,
+          regione,
+          carica: candidate.suggestedRole ?? "sind",
+          partito_fn: true,
+          note: `Da news: ${candidate.titolo.slice(0, 80)}`,
+          ultimo_aggiornamento: new Date().toISOString().slice(0, 10),
+        };
+        list = [...list, newEntry];
+        registryId = newEntry.id;
+        setLinkTarget({ ...linkTarget, [candidate.id]: newEntry.id });
+      }
+    }
     if (!registryId) {
       alert("Seleziona una voce registro da aggiornare.");
       return;
     }
     const action = candidate.suggestedAction ?? "cambio_giunta";
-    const next = entries.map((e) =>
+    const next = list.map((e) =>
       e.id === registryId ? applyEventToEntry(e, action) : e,
     );
     onApplyToRegistry(next);
@@ -123,9 +182,24 @@ export function NewsReviewPanel({
             </p>
             <p className="mt-1 text-xs">
               Keyword: {c.matchedKeywords.join(", ") || "—"}
-              {c.comuneGuess && ` · Comune?: ${c.comuneGuess}`}
-              {c.regioneGuess && ` · ${c.regioneGuess}`}
             </p>
+            <div className="mt-2 flex flex-wrap gap-1">
+              {c.suggestedRegion && (
+                <span className="rounded bg-violet-50 px-1.5 py-0.5 text-[10px] text-violet-900">
+                  Regione suggerita: {c.suggestedRegion}
+                </span>
+              )}
+              {c.suggestedComune && (
+                <span className="rounded bg-sky-50 px-1.5 py-0.5 text-[10px] text-sky-900">
+                  Comune rilevato: {c.suggestedComune}
+                </span>
+              )}
+              {c.suggestedRole && (
+                <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[10px] text-amber-900">
+                  Carica rilevata: {c.suggestedRole}
+                </span>
+              )}
+            </div>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <select
                 className="fn-input max-w-xs py-1 text-xs"
@@ -141,10 +215,19 @@ export function NewsReviewPanel({
                   </option>
                 ))}
               </select>
+              {(c.suggestedComune || c.suggestedRegion) && (
+                <Btn
+                  variant="primary"
+                  className="text-xs"
+                  onClick={() => approve(c, true)}
+                >
+                  Approva suggerimento (1 clic)
+                </Btn>
+              )}
               <Btn
                 variant="secondary"
                 className="text-xs"
-                onClick={() => approve(c)}
+                onClick={() => approve(c, false)}
               >
                 Approva ({c.suggestedAction ?? "cambio_giunta"})
               </Btn>

@@ -1,6 +1,19 @@
 "use client";
 
-import { isOfficialParams, OFFICIAL_PESI, OFFICIAL_S } from "@/lib/engine/defaults";
+import {
+  isOfficialFlussi,
+  isOfficialParams,
+  OFFICIAL_FLUSSI,
+  OFFICIAL_PESI,
+  OFFICIAL_S,
+  type FlussiIpsos,
+} from "@/lib/engine/defaults";
+import {
+  hasNonZeroIstituzioniDelta,
+  mergeIstituzioniDeltas,
+} from "@/lib/engine/mergeIstituzioniDelta";
+import type { Region } from "@/lib/engine/constants";
+import type { InstitutionalRow } from "@/lib/engine/calculate";
 import {
   DEFAULT_POLL_CONFIG,
   type RegionPollResult,
@@ -74,26 +87,49 @@ export function DashboardClient({
   const [pollLoading, setPollLoading] = useState(false);
   const mcTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reqId = useRef(0);
+  const [flussiIpsos, setFlussiIpsos] = useState<FlussiIpsos>({
+    ...OFFICIAL_FLUSSI,
+  });
   const [applyInstitutional, setApplyInstitutional] = useState(false);
-  const [istituzioniDelta, setIstituzioniDelta] = useState<
+  const [registryIstituzioniDelta, setRegistryIstituzioniDelta] = useState<
     CalculateOverrides["istituzioniDelta"]
   >();
+  const [quickInstDelta, setQuickInstDelta] = useState<
+    CalculateOverrides["istituzioniDelta"]
+  >();
+  const [compareSnapshot, setCompareSnapshot] = useState(false);
 
   const handleDeltaChange = useCallback(
     (
       delta: CalculateOverrides["istituzioniDelta"] | undefined,
       summary: IstituzioniDeltaSummary | null,
     ) => {
-      setIstituzioniDelta(delta);
+      setRegistryIstituzioniDelta(delta);
       if (!summary?.hasChanges) setApplyInstitutional(false);
     },
     [],
   );
 
+  const effectiveIstituzioniDelta = useMemo(
+    () =>
+      mergeIstituzioniDeltas(
+        applyInstitutional ? registryIstituzioniDelta : undefined,
+        quickInstDelta,
+      ),
+    [applyInstitutional, registryIstituzioniDelta, quickInstDelta],
+  );
+
   const pesi = pesiFromUi(weights);
-  const hasInstitutional =
-    applyInstitutional && istituzioniDelta !== undefined;
-  const isCustom = !isOfficialParams(S, pesi) || hasInstitutional;
+  const hasInstitutional = hasNonZeroIstituzioniDelta(
+    effectiveIstituzioniDelta,
+  );
+  const customFlussi = !isOfficialFlussi(flussiIpsos);
+  const isCustom = !isOfficialParams(
+    S,
+    pesi,
+    flussiIpsos,
+    effectiveIstituzioniDelta,
+  );
   const busy = mcLoading || pollLoading;
 
   const fetchScenario = useCallback(
@@ -111,7 +147,10 @@ export function DashboardClient({
             nSim,
             includePoll: true,
             pollConfig,
-            ...(hasInstitutional ? { istituzioniDelta } : {}),
+            ...(customFlussi ? { flussi_ipsos: flussiIpsos } : {}),
+            ...(hasInstitutional
+              ? { istituzioniDelta: effectiveIstituzioniDelta }
+              : {}),
           }),
         });
         if (!res.ok) throw new Error("Calcolo fallito");
@@ -132,7 +171,15 @@ export function DashboardClient({
         }
       }
     },
-    [S, pesi, pollConfig, hasInstitutional, istituzioniDelta],
+    [
+      S,
+      pesi,
+      pollConfig,
+      customFlussi,
+      flussiIpsos,
+      hasInstitutional,
+      effectiveIstituzioniDelta,
+    ],
   );
 
   useEffect(() => {
@@ -164,8 +211,38 @@ export function DashboardClient({
   const resetOfficial = () => {
     setS(OFFICIAL_S);
     setWeights(uiFromPesi(OFFICIAL_PESI));
+    setFlussiIpsos({ ...OFFICIAL_FLUSSI });
     setPollConfig({ ...DEFAULT_POLL_CONFIG });
+    setApplyInstitutional(false);
+    setQuickInstDelta(undefined);
   };
+
+  const adjustQuickInst = useCallback(
+    (region: Region, carica: keyof InstitutionalRow, delta: number) => {
+      setQuickInstDelta((prev) => {
+        const base = { ...(prev ?? {}) };
+        const row = { ...(base[region] ?? {}) };
+        row[carica] = (row[carica] ?? 0) + delta;
+        if (row[carica] === 0) delete row[carica];
+        if (Object.keys(row).length === 0) {
+          delete base[region];
+        } else {
+          base[region] = row;
+        }
+        return Object.keys(base).length ? base : undefined;
+      });
+    },
+    [],
+  );
+
+  const resetQuickInstRegion = useCallback((region: Region) => {
+    setQuickInstDelta((prev) => {
+      if (!prev?.[region]) return prev;
+      const next = { ...prev };
+      delete next[region];
+      return Object.keys(next).length ? next : undefined;
+    });
+  }, []);
 
   const pollRow = poll.find((p) => p.regione === selectedRegion);
   const scenarioRow = scenario.righe.find((r) => r.regione === selectedRegion);
@@ -258,11 +335,12 @@ export function DashboardClient({
                   <div className="fn-alert fn-alert-custom" role="status">
                     <strong>Scenario personalizzato</strong> — non certificato
                     golden v3.2
-                    {!isOfficialParams(S, pesi)
+                    {!isOfficialParams(S, pesi, OFFICIAL_FLUSSI)
                       ? " (S o pesi diversi dal default ufficiale)"
                       : ""}
+                    {customFlussi ? " · flussi Ipsos personalizzati" : ""}
                     {hasInstitutional
-                      ? " · adeguamento istituzionale da registro locali"
+                      ? " · adeguamento istituzionale (registro e/o campagna)"
                       : ""}
                     .
                   </div>
@@ -274,8 +352,10 @@ export function DashboardClient({
                   <SensitivityControls
                     S={S}
                     weights={weights}
+                    flussiIpsos={flussiIpsos}
                     onSChange={setS}
                     onWeightsChange={setWeights}
+                    onFlussiChange={setFlussiIpsos}
                     onReset={resetOfficial}
                     mcLoading={mcLoading}
                   />
@@ -311,6 +391,9 @@ export function DashboardClient({
                         poll={poll}
                         selectedRegion={selectedRegion}
                         onSelect={setSelectedRegion}
+                        frozenSnapshot={frozenSnapshot}
+                        compareSnapshot={compareSnapshot}
+                        onCompareSnapshotChange={setCompareSnapshot}
                       />
                     ) : (
                       <p className="text-sm text-fn-text-muted">
@@ -340,6 +423,16 @@ export function DashboardClient({
         <RegionPollDrawer
           poll={pollRow}
           row={scenarioRow}
+          fnConfig={fnConfig}
+          region={selectedRegion as Region}
+          quickDelta={quickInstDelta?.[selectedRegion as Region]}
+          mergedDelta={effectiveIstituzioniDelta?.[selectedRegion as Region]}
+          onAdjustInst={(carica, d) =>
+            adjustQuickInst(selectedRegion as Region, carica, d)
+          }
+          onResetRegion={() =>
+            resetQuickInstRegion(selectedRegion as Region)
+          }
           onClose={() => setSelectedRegion(null)}
         />
       )}
@@ -348,6 +441,8 @@ export function DashboardClient({
         scenario={scenario}
         S={S}
         pesi={pesi}
+        flussiIpsos={flussiIpsos}
+        istituzioniDelta={effectiveIstituzioniDelta}
         poll={poll}
         pollConfig={pollConfig}
       />

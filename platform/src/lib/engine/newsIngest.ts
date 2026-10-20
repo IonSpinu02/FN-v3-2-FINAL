@@ -1,4 +1,5 @@
 import { REGIONS, type Region } from "./constants";
+import { resolveGeoFromNews } from "./italianGeoLookup";
 import { DEFAULT_NEWS_RSS_URLS } from "./newsFeedCatalog";
 import type { LocalEventType, NewsCandidate } from "./localiTypes";
 
@@ -115,12 +116,22 @@ export function enrichNewsCandidates(
     );
     const comuneGuess = guessComune(`${item.titolo} ${item.snippet}`, comuniNames);
     const regioneGuess = guessRegion(`${item.titolo} ${item.snippet}`);
+    const geo = resolveGeoFromNews(
+      item.titolo,
+      item.snippet,
+      item.feedUrl,
+    );
+    const suggestedComune = geo.suggestedComune ?? comuneGuess;
+    const suggestedRegion = geo.suggestedRegion ?? regioneGuess;
     return {
       ...item,
       id: `news-${idx}-${hashStr(item.link)}`,
       matchedKeywords,
-      comuneGuess,
-      regioneGuess,
+      comuneGuess: suggestedComune ?? comuneGuess,
+      regioneGuess: suggestedRegion ?? regioneGuess,
+      suggestedRegion,
+      suggestedComune,
+      suggestedRole: geo.suggestedRole,
       suggestedAction: suggestAction(blob, matchedKeywords),
     };
   });

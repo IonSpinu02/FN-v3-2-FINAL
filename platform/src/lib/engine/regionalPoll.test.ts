@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   adjustPiHatForTurnout,
   classifyThresholdProbability,
+  classifyStatoTesseramento,
   computeRegionalPoll,
   DEFAULT_POLL_CONFIG,
   resolveSampleSize,
@@ -77,6 +78,26 @@ describe("regionalPoll", () => {
       expect(p.icLow).toBeLessThanOrEqual(p.piHat);
       expect(p.icHigh).toBeGreaterThanOrEqual(p.piHat);
       expect(p.contribFlussi + p.contribPreferenze + p.contribIscritti + p.contribIstituzioni).toBeCloseTo(1, 5);
+      expect(p.margineVotiSoglia).toBe(
+        p.votiStimatiSondaggio - p.votiSoglia,
+      );
+      expect(p.votiPerIscritto).toBeGreaterThan(0);
     }
+  });
+
+  it("classifyStatoTesseramento soglie", () => {
+    expect(classifyStatoTesseramento(1.5)).toBe("anomalia_tessere");
+    expect(classifyStatoTesseramento(0.5)).toBe("da_strutturare");
+    expect(classifyStatoTesseramento(1.0)).toBe("equilibrato");
+  });
+
+  it("margineVotiSoglia e validiAttesi con turnout", () => {
+    const cfg = { ...DEFAULT_POLL_CONFIG, turnoutDeltaPct: 2 };
+    const poll = computeRegionalPoll(scenario, cfg);
+    const row = scenario.righe[0];
+    const p = poll[0];
+    const expectedValidi = Math.round(row.validi2024 * 1.02);
+    expect(p.validiAttesi).toBe(expectedValidi);
+    expect(p.votiStimatiSondaggio).toBe(Math.round(p.piHat * expectedValidi));
   });
 });

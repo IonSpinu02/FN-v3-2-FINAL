@@ -28,6 +28,18 @@ describe("newsIngest", () => {
     expect(raw[0].titolo).toContain("Bergamo");
   });
 
+  it("enrich con geo lookup regione/comune/ruolo", () => {
+    const raw = parseRssItems(
+      `<?xml version="1.0"?><rss><channel><item><title>Sindaco di Firenze: novità</title><link>https://x</link><description>Giunta comunale</description></item></channel></rss>`,
+      "https://www.ansa.it/toscana/notizie/toscana_rss.xml",
+      5,
+    );
+    const enriched = enrichNewsCandidates(raw, ["sindaco", "giunta"], []);
+    expect(enriched[0].suggestedRegion).toBe("Toscana");
+    expect(enriched[0].suggestedComune).toBe("Firenze");
+    expect(enriched[0].suggestedRole).toBe("sind");
+  });
+
   it("enrich + filter lascia solo keyword rilevanti", () => {
     const raw = parseRssItems(SAMPLE_RSS, "https://feed.test", 10);
     const enriched = enrichNewsCandidates(raw, ["sindaco", "giunta", "passa a"], [

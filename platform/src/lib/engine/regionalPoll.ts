@@ -34,6 +34,11 @@ export const DEFAULT_POLL_CONFIG: RegionalPollConfig = {
   pollDraws: 10_000,
 };
 
+export type StatoTesseramento =
+  | "equilibrato"
+  | "da_strutturare"
+  | "anomalia_tessere";
+
 export interface RegionPollResult {
   regione: Region;
   stimaBase: number;
@@ -49,6 +54,12 @@ export interface RegionPollResult {
   classificazione: RegionPollClass;
   votiAttesi: number;
   validiAttesi: number;
+  votiStimatiSondaggio: number;
+  votiSoglia: number;
+  margineVotiSoglia: number;
+  rapportoIscrittiFlussi: number;
+  votiPerIscritto: number;
+  statoTesseramento: StatoTesseramento;
   fdiShare2024: number;
   legaShare2024: number;
   scartoVsBenchmark: number;
@@ -56,6 +67,14 @@ export interface RegionPollResult {
   contribPreferenze: number;
   contribIscritti: number;
   contribIstituzioni: number;
+}
+
+export function classifyStatoTesseramento(
+  rapportoIscrittiFlussi: number,
+): StatoTesseramento {
+  if (rapportoIscrittiFlussi > 1.35) return "anomalia_tessere";
+  if (rapportoIscrittiFlussi < 0.7) return "da_strutturare";
+  return "equilibrato";
 }
 
 const Z_SCORE: Record<ConfidenceLevel, number> = {
@@ -196,12 +215,19 @@ export function computeRegionalPoll(
     const icLow = Math.max(0, piHat - moe);
     const icHigh = Math.min(1, piHat + moe);
 
-    const newAff = Math.max(
-      25,
-      Math.min(85, row.affluenza2024 + config.turnoutDeltaPct),
+    const validiAttesi = Math.round(
+      row.validi2024 * (1 + config.turnoutDeltaPct / 100),
     );
-    const validiAttesi = row.elettori_ricostruiti * (newAff / 100);
-    const votiAttesi = validiAttesi * piHat;
+    const votiStimatiSondaggio = Math.round(piHat * validiAttesi);
+    const votiSoglia = Math.round(
+      (config.thresholdPct / 100) * validiAttesi,
+    );
+    const margineVotiSoglia = votiStimatiSondaggio - votiSoglia;
+    const rapportoIscrittiFlussi = row.s / Math.max(1e-6, row.f);
+    const votiPerIscritto =
+      row.voti_di_scenario / Math.max(1, row.iscritti);
+    const statoTesseramento = classifyStatoTesseramento(rapportoIscrittiFlussi);
+    const votiAttesi = votiStimatiSondaggio;
 
     const seed = config.pollSeed + idx * 997;
     const probAboveThreshold = simulateThresholdProbability(
@@ -229,6 +255,12 @@ export function computeRegionalPoll(
       classificazione: classifyThresholdProbability(probAboveThreshold),
       votiAttesi,
       validiAttesi,
+      votiStimatiSondaggio,
+      votiSoglia,
+      margineVotiSoglia,
+      rapportoIscrittiFlussi,
+      votiPerIscritto,
+      statoTesseramento,
       fdiShare2024: row.FdI2024 / row.validi2024,
       legaShare2024: row.Lega2024 / row.validi2024,
       scartoVsBenchmark: piHat - row.benchmark,

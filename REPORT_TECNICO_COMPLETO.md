@@ -448,7 +448,7 @@ Sequenza:
 
 ### 9.3 Export PDF
 
-`PrintNotaReport.tsx` + `@media print` — stampa browser / PDF locale (“Nota Demoscopica & Scenario Dirigenza”).
+`PrintNotaReport.tsx` + `@media print` — stampa browser / PDF locale (“Nota Demoscopica & Scenario Dirigenza”). Include flussi Ipsos attivi, riepilogo delta istituzionale, colonne margine soglia e salute tessere.
 
 ---
 
@@ -503,7 +503,35 @@ export function computeRegionalPoll(
 ### 10.3 UI
 
 - `RegionalPollControls`, `RegionalPollTable`, `RegionPollDrawer`
-- `ItalyMap` — modalità colore: stima, prob. soglia, classificazione, ecc.
+- `ItalyMap` — modalità colore: stima, prob. soglia, scarto benchmark
+- Toggle **Confronta snapshot 18-10-2026** (Δ pp vs `scenario_congelato` per regione)
+- Colonne **Margine Soglia (voti)** e **Salute Tessere** (`statoTesseramento`)
+
+### 10.4 Metriche territoriali (estensione 2026)
+
+Per ogni regione, oltre ai campi storici del poll:
+
+| Campo | Definizione |
+|-------|-------------|
+| `validiAttesi` | `round(validi2024 × (1 + turnoutDeltaPct/100))` |
+| `votiStimatiSondaggio` | `round(piHat × validiAttesi)` |
+| `votiSoglia` | `round((thresholdPct/100) × validiAttesi)` |
+| `margineVotiSoglia` | `votiStimatiSondaggio − votiSoglia` |
+| `rapportoIscrittiFlussi` | `row.s / max(1e-6, row.f)` |
+| `votiPerIscritto` | `voti_di_scenario / max(1, iscritti)` |
+| `statoTesseramento` | `anomalia_tessere` se rapporto > 1.35; `da_strutturare` se < 0.70; altrimenti `equilibrato` |
+
+**Drawer regionale — Campagna Acquisti:** delta istituzionale rapido (`dep/creg/sind/com`) per la regione aperta, sommato via `mergeIstituzioniDelta.ts` al delta del registro Locali (se applicato) e inviato come `istituzioniDelta` a `/api/scenario`.
+
+### 10.5 Flussi mercato 2026 (UI Scenario)
+
+- `OFFICIAL_FLUSSI` in `defaults.ts` (31/25/36) allineato a `config_v3_2.json`
+- Slider + preset in `SensitivityControls.tsx`; payload `flussi_ipsos` solo se ≠ ufficiale
+- `isOfficialParams(S, pesi, flussi_ipsos?, istituzioniDelta?)` — scenario “golden” solo se tutti allineati e delta istituzionale nullo
+
+### 10.6 News — geo lookup (`italianGeoLookup.ts`)
+
+Lookup deterministico (no API esterne): comuni/capoluoghi in `italianGeoData.ts`, slug feed ANSA regionali, keyword ruolo (`sind`, `creg`, `com`, `dep`). Output su `NewsCandidate`: `suggestedRegion`, `suggestedComune`, `suggestedRole`. Persistenza registro client: `localiStorage.ts` (localStorage).
 
 ---
 

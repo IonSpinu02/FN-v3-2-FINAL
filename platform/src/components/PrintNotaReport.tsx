@@ -1,6 +1,10 @@
 "use client";
 
-import { isOfficialParams } from "@/lib/engine/defaults";
+import type { CalculateOverrides } from "@/lib/engine/calculate";
+import {
+  isOfficialParams,
+  type FlussiIpsos,
+} from "@/lib/engine/defaults";
 import type {
   RegionPollResult,
   RegionalPollConfig,
@@ -8,20 +12,30 @@ import type {
 import type { FnConfig, ScenarioResult } from "@/lib/engine/types";
 import { pct, pp } from "@/lib/format";
 
+const TESSERE_LABEL: Record<RegionPollResult["statoTesseramento"], string> = {
+  equilibrato: "Equilibrato",
+  da_strutturare: "Aprire sedi",
+  anomalia_tessere: "Verifica conversione",
+};
+
 export function PrintNotaReport({
   scenario,
   S,
   pesi,
+  flussiIpsos,
+  istituzioniDelta,
   poll,
   pollConfig,
 }: {
   scenario: ScenarioResult;
   S: number;
   pesi: FnConfig["pesi"];
+  flussiIpsos: FlussiIpsos;
+  istituzioniDelta?: CalculateOverrides["istituzioniDelta"];
   poll: RegionPollResult[];
   pollConfig: RegionalPollConfig;
 }) {
-  const official = isOfficialParams(S, pesi);
+  const official = isOfficialParams(S, pesi, flussiIpsos, istituzioniDelta);
   const pollMap = Object.fromEntries(poll.map((p) => [p.regione, p]));
   const gap =
     scenario.parametri.iscritti_totali_dichiarati -
@@ -97,6 +111,22 @@ export function PrintNotaReport({
               </td>
             </tr>
             <tr>
+              <td>Flussi Ipsos (FdI/Lega/ast)</td>
+              <td>
+                {(flussiIpsos.FdI * 100).toFixed(1)}% /{" "}
+                {(flussiIpsos.Lega * 100).toFixed(1)}% /{" "}
+                {(flussiIpsos.ast * 100).toFixed(1)}%
+              </td>
+            </tr>
+            <tr>
+              <td>Delta istituzionale attivo</td>
+              <td>
+                {istituzioniDelta
+                  ? `${Object.keys(istituzioniDelta).length} regioni con Δ`
+                  : "Nessuno (golden config)"}
+              </td>
+            </tr>
+            <tr>
               <td>Voti scenario</td>
               <td>
                 {scenario.righe
@@ -134,6 +164,8 @@ export function PrintNotaReport({
               <th>± MoE</th>
               <th>lo10–hi90</th>
               <th>P(≥ soglia)</th>
+              <th>Margine soglia (voti)</th>
+              <th>Salute tessere</th>
               <th>Voti att.</th>
               <th>Iscr.</th>
             </tr>
@@ -155,6 +187,14 @@ export function PrintNotaReport({
                   </td>
                   <td>
                     {p ? `${(p.probAboveThreshold * 100).toFixed(1)}%` : "—"}
+                  </td>
+                  <td>
+                    {p
+                      ? p.margineVotiSoglia.toLocaleString("it-IT")
+                      : "—"}
+                  </td>
+                  <td>
+                    {p ? TESSERE_LABEL[p.statoTesseramento] : "—"}
                   </td>
                   <td>
                     {p

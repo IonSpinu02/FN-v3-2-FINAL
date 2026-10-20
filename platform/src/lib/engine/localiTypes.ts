@@ -50,6 +50,9 @@ export interface NewsCandidate {
   regioneGuess?: Region;
   suggestedAction?: LocalEventType;
   feedUrl: string;
+  suggestedRegion?: Region;
+  suggestedComune?: string;
+  suggestedRole?: CaricaLocale;
 }
 
 export interface IstituzioniDeltaSummary {

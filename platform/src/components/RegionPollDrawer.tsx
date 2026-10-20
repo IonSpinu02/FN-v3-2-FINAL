@@ -1,17 +1,44 @@
 "use client";
 
+import type { InstitutionalRow } from "@/lib/engine/calculate";
+import type { Region } from "@/lib/engine/constants";
 import type { RegionPollResult } from "@/lib/engine/regionalPoll";
-import type { ScenarioRow } from "@/lib/engine/types";
+import type { FnConfig, ScenarioRow } from "@/lib/engine/types";
 import { pct } from "@/lib/format";
 import { Btn } from "@/components/ui/FnUi";
+
+const CARICHE: { key: keyof InstitutionalRow; label: string }[] = [
+  { key: "dep", label: "Deputati" },
+  { key: "creg", label: "Cons. Regionali" },
+  { key: "sind", label: "Sindaci" },
+  { key: "com", label: "Cons. Comunali" },
+];
+
+const TESSERE_LABEL: Record<RegionPollResult["statoTesseramento"], string> = {
+  equilibrato: "Equilibrato",
+  da_strutturare: "Aprire sedi (alti flussi)",
+  anomalia_tessere: "Verifica conversione",
+};
 
 export function RegionPollDrawer({
   poll,
   row,
+  fnConfig,
+  region,
+  quickDelta,
+  mergedDelta,
+  onAdjustInst,
+  onResetRegion,
   onClose,
 }: {
   poll: RegionPollResult;
   row: ScenarioRow;
+  fnConfig: FnConfig;
+  region: Region;
+  quickDelta?: Partial<InstitutionalRow>;
+  mergedDelta?: Partial<InstitutionalRow>;
+  onAdjustInst: (carica: keyof InstitutionalRow, delta: number) => void;
+  onResetRegion: () => void;
   onClose: () => void;
 }) {
   const classLabel = {
@@ -19,6 +46,17 @@ export function RegionPollDrawer({
     contesa: "Contesa / In bilico (35–89%)",
     critica: "Sotto soglia / Critica (<35%)",
   }[poll.classificazione];
+
+  function displayCount(k: keyof InstitutionalRow): number {
+    const b = fnConfig.presenze_istituzionali[k]?.[region] ?? 0;
+    const d = mergedDelta?.[k] ?? 0;
+    return b + d;
+  }
+
+  const margineFmt =
+    poll.margineVotiSoglia >= 0
+      ? `+${poll.margineVotiSoglia.toLocaleString("it-IT")}`
+      : poll.margineVotiSoglia.toLocaleString("it-IT");
 
   return (
     <div
@@ -58,27 +96,79 @@ export function RegionPollDrawer({
             Forbice {pct(poll.icLow, 2)} – {pct(poll.icHigh, 2)} · N=
             {poll.Nr.toLocaleString("it-IT")}
           </p>
-          <div className="relative mt-3 h-2 w-full rounded-full bg-white/80">
-            <div
-              className="absolute h-2 rounded-full bg-fn-accent"
-              style={{
-                left: `${poll.icLow * 100}%`,
-                width: `${Math.max(1, (poll.icHigh - poll.icLow) * 100)}%`,
-              }}
-            />
-          </div>
         </div>
 
         <dl className="grid grid-cols-2 gap-2 text-sm">
           <Stat label="Prob. ≥ soglia" value={`${(poll.probAboveThreshold * 100).toFixed(1)}%`} />
           <Stat label="Classificazione" value={classLabel} />
-          <Stat label="Voti attesi FN" value={Math.round(poll.votiAttesi).toLocaleString("it-IT")} />
-          <Stat label="Validi attesi" value={Math.round(poll.validiAttesi).toLocaleString("it-IT")} />
-          <Stat label="FdI 2024" value={pct(poll.fdiShare2024)} />
-          <Stat label="Lega 2024" value={pct(poll.legaShare2024)} />
+          <Stat
+            label="Voti stimati sondaggio"
+            value={poll.votiStimatiSondaggio.toLocaleString("it-IT")}
+          />
+          <Stat label="Voti soglia" value={poll.votiSoglia.toLocaleString("it-IT")} />
+          <Stat label="Margine soglia (voti)" value={margineFmt} />
+          <Stat label="Validi attesi" value={poll.validiAttesi.toLocaleString("it-IT")} />
+          <Stat
+            label="Salute tessere"
+            value={TESSERE_LABEL[poll.statoTesseramento]}
+          />
+          <Stat
+            label="Voti / iscritto"
+            value={`${poll.votiPerIscritto.toFixed(1)} voti attesi per iscritto`}
+          />
           <Stat label="Scarto vs benchmark" value={`${(poll.scartoVsBenchmark * 100).toFixed(2)} pp`} />
           <Stat label="Sensibilità pesi" value={`${pct(row.lo10, 2)} – ${pct(row.hi90, 2)}`} />
         </dl>
+
+        <h3 className="fn-label mb-2 mt-8">
+          What-If Istituzionale Rapido (Campagna Acquisti)
+        </h3>
+        <p className="mb-3 text-xs text-fn-text-muted">
+          Modifica i delta istituzionali per {region} (si sommano al registro
+          Locali se applicato). Conteggi mostrati = config v3.2 + delta totale.
+        </p>
+        <ul className="space-y-2 text-sm">
+          {CARICHE.map(({ key, label }) => (
+            <li
+              key={key}
+              className="flex items-center justify-between rounded-lg border border-fn-border-subtle px-3 py-2"
+            >
+              <span>
+                {label}:{" "}
+                <span className="font-mono font-medium">{displayCount(key)}</span>
+                {quickDelta?.[key] ? (
+                  <span className="ml-1 text-xs text-fn-accent">
+                    (Δ rapido {quickDelta[key]! > 0 ? "+" : ""}
+                    {quickDelta[key]})
+                  </span>
+                ) : null}
+              </span>
+              <span className="flex gap-1">
+                <Btn
+                  variant="secondary"
+                  className="px-2 py-0.5 text-xs"
+                  onClick={() => onAdjustInst(key, -1)}
+                >
+                  −
+                </Btn>
+                <Btn
+                  variant="secondary"
+                  className="px-2 py-0.5 text-xs"
+                  onClick={() => onAdjustInst(key, 1)}
+                >
+                  +
+                </Btn>
+              </span>
+            </li>
+          ))}
+        </ul>
+        <Btn
+          variant="ghost"
+          className="mt-2 text-xs"
+          onClick={onResetRegion}
+        >
+          Azzera modifiche regione
+        </Btn>
 
         <h3 className="fn-label mb-2 mt-8">Origine consenso (mix)</h3>
         <ul className="space-y-2 text-sm">

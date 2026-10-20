@@ -112,11 +112,14 @@ CSV `mese,regione,iscritti`:
 
 ## 4. Piattaforma web (`platform/`)
 
-### 4.1 Path
+### 4.1 Repository e cartelle
 
-```
-C:\Users\User\Desktop\FN_v3_2_FINAL\platform
-```
+| Risorsa | Percorso |
+|---------|----------|
+| **Repository GitHub** | https://github.com/IonSpinu02/FN-v3-2-FINAL |
+| **App Next.js** | cartella `platform/` nel repo (su Vercel: **Root Directory** = `platform`) |
+| **Dati motore (seed)** | `platform/data/` — copia allineata ai JSON in radice |
+| **Documentazione** | `RECAP_FUNZIONAMENTO.md` (questo file), `REPORT_TECNICO_COMPLETO.md`, `README.md` |
 
 ### 4.2 Stack
 
@@ -129,68 +132,90 @@ C:\Users\User\Desktop\FN_v3_2_FINAL\platform
 | Auth | Auth.js v5, credentials + allowlist email |
 | Deploy | Vercel (progetto **platform**) |
 
-### 4.3 Struttura codice
+### 4.3 Struttura codice (sintesi)
 
 ```
 platform/
-  data/                          # config, eu2024, risultati golden, snapshot
-  src/
-    app/
-      page.tsx                   # redirect → /dashboard o /login
-      login/page.tsx             # form accesso
-      dashboard/page.tsx         # calcolo + UI
-      api/auth/[...nextauth]/    # Auth.js
-    lib/engine/
-      calculate.ts               # motore principale
-      constants.ts, math.ts, types.ts
-      pythonDistributions.ts     # gauss / gammavariate
-      loadData.ts                # lettura JSON da data/
-      golden.test.ts
-    components/                  # Dashboard, mappa, tabella, disclaimer
-    auth.ts                      # configurazione Auth.js
-    middleware.ts                # protezione /dashboard
+  data/
+    config_v3_2.json, eu2024.json, risultati_v3_2.json
+    scenario_congelato_18-10-2026.json
+    locali_registry.json, locali_events.json   # seed registro locali (read-only su server)
+  public/geo/regioni-italia.geojson
+  public/templates/                            # CSV per storico, post-voto, registro locali
+  src/app/
+    login/, dashboard/
+    api/scenario/          # POST: S, pesi, nSim, includePoll, overrides (istituzioniDelta, …)
+    api/regional-poll/
+    api/locali/registry/   # GET seed registro + eventi
+    api/locali/compute-delta/
+    api/news/scan/         # POST: scan RSS → candidati (sessione richiesta)
+    api/auth/[...nextauth]/
+  src/lib/engine/
+    calculate.ts           # motore + CalculateOverrides
+    localInstitutions.ts   # rollup registro → istituzioniDelta
+    newsIngest.ts, newsFeedCatalog.ts
+    regionalPoll.ts, historyAndEval.ts, golden.test.ts, …
+  src/components/
+    DashboardClient.tsx    # tab sidebar + integrazione scenario/locali
+    LocaliPanel.tsx, NewsReviewPanel.tsx, …
+  auth.ts, middleware.ts
 ```
 
-### 4.4 Flusso utente
+**Vincolo golden:** `calculate(cfg, eu)` **senza** override resta identico al pacchetto v3.2; test `golden.test.ts` sempre verde. Adeguamenti (S, pesi, delta istituzionale, flussi Ipsos) passano **solo** via `CalculateOverrides` nelle API.
+
+### 4.4 Flusso utente e API
 
 ```mermaid
 flowchart LR
   A[Utente] --> B{/login}
-  B -->|email in allowlist + password| C[Sessione JWT]
+  B -->|allowlist + PLATFORM_PASSWORD| C[Sessione Auth.js]
   C --> D[/dashboard]
-  D --> E[runDefaultScenario]
-  E --> F[calculate config + eu2024]
-  F --> G[Metriche + mappa + tabella]
+  D --> E[POST /api/scenario]
+  E --> F[calculate + optional overrides]
+  F --> G[Mappa metriche PDF]
+  D --> H[Tab Locali e News]
+  H --> I[POST /api/news/scan]
+  I --> J[Revisione umana registro]
+  J --> K[istituzioniDelta opzionale]
+  K --> E
 ```
 
-1. Apertura URL → redirect a **login** se non autenticati.
-2. **Email** deve essere in `ALLOWLIST_EMAILS` (env, minuscolo, trim).
-3. **Password** = valore di `PLATFORM_PASSWORD` (env).
-4. Dashboard: ricalcolo server-side (20k sim MC) e rendering.
+1. Apertura URL → **login** se non autenticati (`middleware` su `/dashboard`).
+2. **Email** in `ALLOWLIST_EMAILS` (virgola, trim, confronto case-insensitive).
+3. **Password** = `PLATFORM_PASSWORD` (env, non committare).
+4. Le route API di calcolo (`/api/scenario`, `/api/regional-poll`, `/api/news/scan`, `/api/locali/*`) richiedono **sessione** (`requireSession()`).
+5. Dashboard: stato client (S, pesi, sondaggio simulato) → `POST /api/scenario` con `includePoll: true`; debounce MC ~250 ms (20k sim).
 
-### 4.5 Dashboard (tab)
+### 4.5 Dashboard (tab sidebar)
 
-Navigazione: **Scenario & Sensibilità** · **Storico Iscritti** · **Validazione Post-Voto**.
+Navigazione: **Scenario** · **Locali & News** · **Storico iscritti** · **Post-voto**.
 
-**Scenario & Sensibilità**
+**Scenario**
 
-- Banner **disclaimer**; badge **SCENARIO PERSONALIZZATO (NON UFFICIALE)** se S/pesi ≠ default v3.2.
-- Slider **S** (1–20%) e pesi mix (normalizzati dal motore); preset e **Ripristina Default (v3.2)**.
-- Ricalcolo: deterministico immediato (`nSim=0`), Monte Carlo 20k con debounce 300 ms (`POST /api/scenario`).
-- Mappa choropleth da **`/geo/regioni-italia.geojson`** (locale, ex Openpolis).
-- Tabella regioni; **Esporta Nota Dirigenza (PDF)** via stampa browser (`@media print`).
+- Disclaimer; badge **Scenario personalizzato** se S/pesi ≠ ufficiale v3.2 **oppure** se è attivo l’adeguamento istituzionale da registro locali.
+- Slider **S** e pesi (preset, ripristino default); pannello **Provenienza Flussi (FdI / Lega / Astensione)** con preset Ipsos v3.2 / Ex-Lega / Astensione; invio `flussi_ipsos` a `/api/scenario` solo se diversi dal default golden.
+- Controlli **sondaggio regionale simulato** (campione, soglia, affluenza); tabella con **Margine Soglia (voti)**, **Salute Tessere**, toggle **Confronta snapshot 18-10-2026**; drawer regionale con **Campagna Acquisti** (Δ istituzionale rapido per regione, combinato con registro Locali).
+- Mappa: stima sondaggio, prob. soglia, scarto vs benchmark (`regionalPoll`).
+- **Esporta report PDF** (stampa browser).
 
-**Storico Iscritti**
+**Locali & News (MVP)**
 
-- Upload CSV (`mese,regione,iscritti`); template in `/templates/storico_iscritti_TEMPLATE.csv`.
-- Motore `parseHistory()` vs snapshot congelato → H, ΔH, JS, H scenario condizionato.
+- **Registro** comuni/cariche FN: seed da `GET /api/locali/registry`, edit in memoria, **export/import JSON** (su Vercel il filesystem non è scrivibile).
+- **Scansiona feed**: `POST /api/news/scan` — RSS da catalogo predefinito (`newsFeedCatalog.ts`) se `NEWS_RSS_URLS` non è in env; filtro keyword; NER leggero via `italianGeoLookup.ts` (comune/provincia/feed ANSA → regione, ruolo istituzionale).
+- Coda **revisione**: tag suggeriti + **Approva suggerimento (1 clic)**; registro persistito in **localStorage** (`localiStorage.ts`) con indicatore «Salvato nel browser» e ripristino seed server.
+- Rollup `computeIstituzioniDelta(config, registro)` vs baseline **`config_v3_2.json`** `presenze_istituzionali` (non lo snapshot congelato).
+- Toggle **Applica al scenario** → le chiamate a `/api/scenario` includono `istituzioniDelta`.
+- Copy: notizie non verificate, `predizione_validata: false`.
 
-**Validazione Post-Voto**
+**Storico iscritti**
 
-- Upload CSV 20 righe (`regione,voti_validi,voti_fn`); template in `/templates/esiti_futuri_TEMPLATE.csv`.
-- Motore `evaluatePostVote()` **solo** su `scenario_congelato_18-10-2026.json` → MAE, RMSE, skill, copertura lo10–hi90.
+- Upload CSV; `parseHistory()` vs snapshot congelato.
 
-**Auth:** sign out → login.
+**Post-voto**
+
+- Upload CSV 20 regioni; valutazione ex post sullo **snapshot 18/10/2026** (+ metriche sondaggio dove previsto).
+
+**Auth:** sign out in sidebar.
 
 ### 4.6 Variabili d’ambiente
 
@@ -198,10 +223,15 @@ Navigazione: **Scenario & Sensibilità** · **Storico Iscritti** · **Validazion
 |-----------|--------------|-------------|
 | `AUTH_SECRET` | Sì | Secret Auth.js (≥ 32 caratteri casuali) |
 | `ALLOWLIST_EMAILS` | Sì | Email autorizzate, separate da virgola |
-| `PLATFORM_PASSWORD` | Sì | Password condivisa per lo staff (interna) |
+| `PLATFORM_PASSWORD` | Sì | Password condivisa staff (interna) |
+| `NEWS_RSS_URLS` | No | Override feed RSS (virgola). Se assente: **catalogo integrato** (31 sorgenti: nazionali + ANSA 20 regioni + campioni locali) |
+| `NEWS_KEYWORDS` | No | Keyword aggiuntive (virgola); default in `newsIngest.ts` |
+| `NEWS_SCAN_MAX_ITEMS` | No | Max candidati in risposta scan (default 30, cap 50) |
 
 File esempio: `platform/.env.example`  
-Sviluppo locale: `platform/.env.local` (non committare).
+Sviluppo locale: `platform/.env.local` (in `.gitignore`, **non** pushare).
+
+**RSS — condizioni d’uso:** rispettare i termini degli editori (es. [ANSA RSS](https://www.ansa.it/sito/static/ansa_rss.html): uso non commerciale su aggregatore/reader interno).
 
 ### 4.7 Comandi sviluppo
 
@@ -215,27 +245,33 @@ npm run build
 
 ---
 
-## 5. Deploy Vercel
+## 5. Deploy Vercel e CI Git
 
 | | |
 |---|---|
 | **URL produzione** | https://platform-sigma-beige.vercel.app |
-| **Alias alternativo** | https://platform-ionspinu29-4320s-projects.vercel.app |
-| **Progetto** | https://vercel.com/ionspinu29-4320s-projects/platform |
-| **Env vars** | Settings → Environment Variables → **Redeploy** obbligatorio dopo modifica |
+| **Progetto Vercel** | https://vercel.com/ionspinu29-4320s-projects/platform |
+| **Repo collegato** | `IonSpinu02/FN-v3-2-FINAL`, branch **`master`** |
+| **Root Directory** | `platform` (monorepo: codice Next.js non è in radice repo) |
+| **Env Production** | `AUTH_SECRET`, `ALLOWLIST_EMAILS`, `PLATFORM_PASSWORD` (valori solo in dashboard Vercel, mai in git) |
 
-**Sintomi se mancano le env:**
+**Deploy automatico:** push su `master` → build Vercel sulla cartella `platform/`.
 
-- Pagina login visibile (HTTP 200) ma **login fallisce** o API auth in errore (es. 400 senza `AUTH_SECRET`).
-
-**Deployment Protection (opzionale Vercel):** se compare login Vercel prima del form FN, disattivare o autorizzare in Settings → Deployment Protection.
-
-**Redeploy da CLI:**
+**Deploy manuale (CLI):**
 
 ```bash
 cd platform
+npx vercel link          # una tantum, progetto platform
 npx vercel deploy --prod
 ```
+
+**Dopo modifica env:** Settings → Environment Variables → **Redeploy** production.
+
+**Sintomi env mancanti/errate:** login visibile ma credenziali rifiutate; errori Auth.js senza `AUTH_SECRET`.
+
+**Deployment Protection:** su alcuni URL di preview può comparire login Vercel; il dominio alias di produzione sopra serve l’app FN (`/login` → `/dashboard`). Regolare in Settings → Deployment Protection se necessario.
+
+**Hobby plan:** scan news con ~31 feed in parallelo può richiedere fino a ~60 s (`maxDuration` su `/api/news/scan`); in caso di timeout ridurre feed via `NEWS_RSS_URLS`.
 
 ---
 
@@ -257,7 +293,11 @@ npx vercel deploy --prod
 4. **Post-voto** — `evaluatePostVoteWithPoll` (MAE/RMSE/skill + copertura forbice sondaggio), tab esiti.
 5. **Export PDF** — Nota Demoscopica & Scenario Dirigenza (stampa A4).
 6. **GeoJSON locale** — `public/geo/regioni-italia.geojson`.
-7. **Locali & News (MVP)** — tab dashboard: registro comuni/cariche FN (`locali_registry.json`), rollup su `presenze_istituzionali` in `config_v3_2.json` → `istituzioniDelta` (motore `localInstitutions.ts`); toggle **Applica al scenario** passa il delta a `POST /api/scenario` **senza** alterare il golden default. Scan RSS rule-based (`newsIngest.ts`, catalogo `newsFeedCatalog.ts`, `POST /api/news/scan`) con revisione umana obbligatoria — **nessuna** auto-scrittura al registro. **Feed predefiniti** (se `NEWS_RSS_URLS` assente): ANSA politica/cronaca, AGI, Rai, Repubblica, Adnkronos, Sole 24 Ore, Quotidiano.net, ANSA per tutte e 20 le regioni, campioni CityToday/Repubblica local. Override opzionale via env. Persistenza registro: export/import JSON in UI. Env opz.: `NEWS_RSS_URLS`, `NEWS_KEYWORDS`, `NEWS_SCAN_MAX_ITEMS`.
+7. **Locali & News (MVP)** — vedi §4.5; API §4.3; catalogo RSS in `src/lib/engine/newsFeedCatalog.ts`.
+8. **Auth API** — calcolo e news protetti da sessione; nSim clamp e validazione S lato server.
+9. **Override motore** — `istituzioniDelta`, `flussi_ipsos` (Fase 1 hardening) via body `/api/scenario`; `isOfficialParams` considera anche flussi e delta istituzionali.
+10. **Intelligenza territoriale poll** — `margineVotiSoglia`, `statoTesseramento`, `votiPerIscritto` in `regionalPoll.ts`.
+11. **Geo lookup news** — `italianGeoLookup.ts` + `italianGeoData.ts` (capoluoghi e comuni principali → 20 regioni).
 
 **Disclaimer operativo (news/locali):** titoli RSS e keyword **non sono verificati**; collegamento comune/regione manuale; output scenario con delta istituzionale resta **descrittivo** (`predizione_validata: false`).
 
@@ -278,15 +318,17 @@ npx vercel deploy --prod
 
 **Piattaforma locale:**
 
-- [ ] `.env.local` con AUTH_SECRET, ALLOWLIST_EMAILS, PLATFORM_PASSWORD; opz. `NEWS_RSS_URLS` per scan feed
-- [ ] `npm run test` verde
-- [ ] `npm run dev` → login → dashboard
+- [ ] `platform/.env.local` da `.env.example` (AUTH_SECRET, ALLOWLIST_EMAILS, PLATFORM_PASSWORD)
+- [ ] `npm run test` verde (`golden.test.ts` incluso)
+- [ ] `npm run dev` → login → tutte e 4 le tab
 
 **Piattaforma Vercel:**
 
-- [ ] Tre env in Production (+ redeploy)
+- [ ] Repo GitHub collegato, Root Directory = `platform`
+- [ ] Tre env obbligatorie in Production (+ redeploy dopo cambio)
 - [ ] Login con email in allowlist
-- [ ] Dashboard carica mappa e tabella
+- [ ] Tab Scenario + Locali (scan feed opzionale senza env RSS)
+- [ ] Push su `master` → deploy automatico
 
 ---
 
@@ -298,4 +340,4 @@ npx vercel deploy --prod
 
 ---
 
-*Ultimo aggiornamento recap: piattaforma v3.2 con sensibilità, storico, post-voto, export PDF, GeoJSON locale, tab Locali & News (MVP).*
+*Ultimo aggiornamento recap: ottobre 2026 — UI flussi Ipsos 2026, margine soglia/salute tessere, campagna acquisti drawer, geo lookup news, localStorage registro, PDF esteso.*
