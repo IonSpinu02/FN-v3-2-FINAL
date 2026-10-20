@@ -162,7 +162,7 @@ export function DashboardClient({
   const [freezeName, setFreezeName] = useState("");
   const [freezeNotes, setFreezeNotes] = useState("");
   const [scenarioView, setScenarioView] =
-    useState<ScenarioViewMode>("map-matrix");
+    useState<ScenarioViewMode>("showcase");
 
   const handleDeltaChange = useCallback(
     (
