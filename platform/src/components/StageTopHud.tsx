@@ -3,9 +3,11 @@
 import { Btn } from "@/components/ui/FnUi";
 import { TricolorMark } from "@/components/ui/TelemetryUi";
 import { FileDown } from "lucide-react";
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 export function StageTopHud({
+  brandHref,
   brandExtra,
   methodologyPill,
   scenarioControls,
@@ -13,6 +15,8 @@ export function StageTopHud({
   busy,
   frostedBar = true,
 }: {
+  /** Link al showcase pubblico (es. `/`). */
+  brandHref?: string;
   brandExtra?: ReactNode;
   methodologyPill: ReactNode;
   scenarioControls?: ReactNode;
@@ -30,17 +34,35 @@ export function StageTopHud({
       }`}
     >
       <div className="pointer-events-auto mx-auto flex max-w-[1600px] items-center justify-between gap-3">
-      <div className="flex items-center gap-3 rounded-full border border-white/10 bg-[#070D19]/80 px-4 py-2 shadow-lg backdrop-blur-md">
-        <TricolorMark />
-        <span className="text-xs font-bold tracking-wide text-white/90">
-          FUTURO NAZIONALE · v3.2
-        </span>
-        <span className="relative flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-40" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-        </span>
-        {brandExtra}
-      </div>
+      {brandHref ? (
+        <Link
+          href={brandHref}
+          title="Torna allo showcase"
+          className="flex items-center gap-3 rounded-full border border-white/10 bg-[#070D19]/80 px-4 py-2 shadow-lg backdrop-blur-md transition hover:border-emerald-500/35"
+        >
+          <TricolorMark />
+          <span className="text-xs font-bold tracking-wide text-white/90">
+            FUTURO NAZIONALE · v3.2
+          </span>
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-40" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+          </span>
+          {brandExtra}
+        </Link>
+      ) : (
+        <div className="flex items-center gap-3 rounded-full border border-white/10 bg-[#070D19]/80 px-4 py-2 shadow-lg backdrop-blur-md">
+          <TricolorMark />
+          <span className="text-xs font-bold tracking-wide text-white/90">
+            FUTURO NAZIONALE · v3.2
+          </span>
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-40" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+          </span>
+          {brandExtra}
+        </div>
+      )}
 
       <div className="pointer-events-auto hidden max-w-md flex-1 justify-center md:flex">
         {methodologyPill}

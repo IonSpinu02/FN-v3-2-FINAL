@@ -64,6 +64,7 @@ export function DashboardClientLoader() {
 
   return (
     <DashboardClient
+      variant="app"
       initialScenario={boot.initialScenario}
       frozenSnapshot={boot.frozenSnapshot}
       fnConfig={boot.fnConfig}

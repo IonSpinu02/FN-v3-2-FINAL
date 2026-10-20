@@ -5,8 +5,8 @@ const nextConfig: NextConfig = {
   cacheComponents: false,
   async redirects() {
     return [
-      { source: "/", destination: "/dashboard", permanent: false },
-      { source: "/login", destination: "/dashboard", permanent: false },
+      { source: "/dashboard", destination: "/app/scenario", permanent: false },
+      { source: "/login", destination: "/app/scenario", permanent: false },
     ];
   },
   turbopack: {

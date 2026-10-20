@@ -1,5 +1,6 @@
-import { DashboardClientLoader } from "@/components/DashboardClientLoader";
+import { redirect } from "next/navigation";
 
-export default function DashboardPage() {
-  return <DashboardClientLoader />;
+/** Compatibilità link legacy */
+export default function DashboardRedirectPage() {
+  redirect("/app/scenario");
 }

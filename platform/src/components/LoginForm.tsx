@@ -8,7 +8,7 @@ import { useState } from "react";
 export function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const callbackUrl = params.get("callbackUrl") ?? "/dashboard";
+  const callbackUrl = params.get("callbackUrl") ?? "/app/scenario";
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 

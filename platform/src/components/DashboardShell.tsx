@@ -10,12 +10,14 @@ import {
   Radar,
   type LucideIcon,
 } from "lucide-react";
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 export type ShellNavItem = {
   id: string;
   label: string;
   desc: string;
+  href: string;
   icon?: LucideIcon;
 };
 
@@ -30,7 +32,6 @@ const NAV_ICONS: Record<string, LucideIcon> = {
 export function DashboardShell({
   nav,
   tab,
-  onTabChange,
   children,
   contentClassName = "",
   overrideActive,
@@ -40,7 +41,6 @@ export function DashboardShell({
 }: {
   nav: ShellNavItem[];
   tab: string;
-  onTabChange: (id: string) => void;
   title?: string;
   subtitle?: ReactNode;
   headerActions?: ReactNode;
@@ -71,11 +71,11 @@ export function DashboardShell({
           const active = tab === item.id;
           const Icon = item.icon ?? NAV_ICONS[item.id] ?? Map;
           return (
-            <button
+            <Link
               key={item.id}
-              type="button"
+              href={item.href}
               title={item.desc}
-              onClick={() => onTabChange(item.id)}
+              aria-current={active ? "page" : undefined}
               className={`group relative flex flex-col items-center gap-0.5 rounded-lg px-3 py-1.5 transition-all hover:-translate-y-0.5 ${
                 active
                   ? "bg-emerald-500 text-slate-950 shadow-[0_0_20px_rgba(16,185,129,0.45)]"
@@ -87,7 +87,7 @@ export function DashboardShell({
               {overrideActive && item.id === "scenario" && (
                 <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-amber-400" />
               )}
-            </button>
+            </Link>
           );
         })}
       </nav>

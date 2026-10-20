@@ -2,6 +2,8 @@
 
 Dashboard interna **Futuro Nazionale** (motore v3.2, parità numerica con `modello_fn_v3_2.py`).
 
+**Routing:** `/` = showcase (landing); area operativa sotto `/app/scenario`, `/app/quadro`, `/app/osservatorio`, `/app/news`, `/app/audit`. I link legacy `/dashboard` reindirizzano a `/app/scenario`.
+
 Documentazione: [`docs/RECAP-PIATTAFORMA.md`](docs/RECAP-PIATTAFORMA.md) · repo root [`RECAP_FUNZIONAMENTO.md`](../RECAP_FUNZIONAMENTO.md).
 
 ## Requisiti

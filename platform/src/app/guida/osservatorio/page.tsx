@@ -60,7 +60,7 @@ export default function GuidaOsservatorioPage() {
       </section>
 
       <p className="mt-10">
-        <Link href="/dashboard" className="text-fn-accent underline">
+        <Link href="/app/scenario" className="text-fn-accent underline">
           ← Torna alla dashboard
         </Link>
       </p>

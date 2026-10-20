@@ -25,11 +25,10 @@ import type { FnConfig, ScenarioResult } from "@/lib/engine/types";
 import { pesiFromUi, uiFromPesi } from "@/components/SensitivityControls";
 import { DashboardShell, DashboardSubtitle } from "@/components/DashboardShell";
 import { AwwwardsLandingHero } from "@/components/AwwwardsLandingHero";
-import {
-  ScenarioViewSwitch,
-  StageTopHud,
-  type ScenarioViewMode,
-} from "@/components/StageTopHud";
+import { StageTopHud } from "@/components/StageTopHud";
+import { appPath, tabFromPathname, type AppTab } from "@/lib/appRoutes";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { MethodologyStatusBar } from "./MethodologyStatusBar";
 import dynamic from "next/dynamic";
 import { AnimatePresence } from "framer-motion";
@@ -77,46 +76,69 @@ const FuturoNazionaleQuadroPanel = dynamic(
     ),
   },
 );
-type Tab = "scenario" | "quadro" | "osservatorio" | "locali" | "audit";
+type Tab = AppTab;
 
-const NAV: { id: Tab; label: string; desc: string }[] = [
+const NAV: { id: Tab; label: string; desc: string; href: string }[] = [
   {
     id: "scenario",
     label: "01 · Scenario",
-    desc: "Mappa tattica e showcase",
+    desc: "Mappa tattica e command center",
+    href: appPath("scenario"),
   },
   {
     id: "quadro",
     label: "02 · Quadro FN",
     desc: "Matrice integrata 20 regioni (Moduli A · B · C)",
+    href: appPath("quadro"),
   },
   {
     id: "osservatorio",
     label: "03 · Osservatorio",
     desc: "Moduli A/B/C, scheda mensile, storico iscritti",
+    href: appPath("osservatorio"),
   },
   {
     id: "locali",
     label: "04 · Rassegna stampa",
     desc: "Scanner RSS, NER istituzionale, dispacci certificati Typeflow",
+    href: appPath("locali"),
   },
   {
     id: "audit",
     label: "05 · Audit & Post-Voto (WIP)",
     desc: "Work in progress · anteprima snapshot, post-voto e audit trail",
+    href: appPath("audit"),
   },
 ];
 
 export function DashboardClient({
+  variant = "app",
   initialScenario,
   frozenSnapshot,
   fnConfig,
 }: {
+  variant?: "app" | "landing";
   initialScenario: ScenarioResult;
   frozenSnapshot: ScenarioResult;
   fnConfig: FnConfig;
 }) {
-  const [tab, setTab] = useState<Tab>("scenario");
+  const pathname = usePathname();
+  const router = useRouter();
+  const tabFromUrl = tabFromPathname(pathname);
+  const tab: Tab = variant === "app" ? (tabFromUrl ?? "scenario") : "scenario";
+
+  const navigateTab = useCallback(
+    (next: Tab) => {
+      router.push(appPath(next));
+    },
+    [router],
+  );
+
+  useEffect(() => {
+    if (variant !== "app") return;
+    if (!pathname.startsWith("/app")) return;
+    if (!tabFromUrl) router.replace(appPath("scenario"));
+  }, [variant, pathname, tabFromUrl, router]);
   const [scenario, setScenario] = useState(initialScenario);
   const [S, setS] = useState(OFFICIAL_S);
   const [weights, setWeights] = useState(uiFromPesi(OFFICIAL_PESI));
@@ -161,8 +183,6 @@ export function DashboardClient({
   ]);
   const [freezeName, setFreezeName] = useState("");
   const [freezeNotes, setFreezeNotes] = useState("");
-  const [scenarioView, setScenarioView] =
-    useState<ScenarioViewMode>("showcase");
 
   const handleDeltaChange = useCallback(
     (
@@ -365,25 +385,85 @@ export function DashboardClient({
   const pollRow = poll.find((p) => p.regione === selectedRegion);
   const scenarioRow = scenario.righe.find((r) => r.regione === selectedRegion);
 
+  if (variant === "landing") {
+    return (
+      <>
+        <div className="relative min-h-screen">
+          <header className="fixed left-0 right-0 top-0 z-[60] border-b border-white/10 bg-[#03050A]/80 backdrop-blur-xl">
+            <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-6 py-3">
+              <Link
+                href="/"
+                className="font-[family-name:var(--font-display)] text-sm font-bold tracking-tight text-white"
+              >
+                Futuro Nazionale
+              </Link>
+              <nav
+                className="flex flex-wrap items-center gap-2 text-[11px] font-semibold"
+                aria-label="Accesso piattaforma"
+              >
+                <Link
+                  href={appPath("scenario")}
+                  className="rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-3 py-1.5 text-emerald-100 transition hover:bg-emerald-500/25"
+                >
+                  Command center →
+                </Link>
+                <Link
+                  href={appPath("osservatorio")}
+                  className="rounded-lg border border-white/10 px-3 py-1.5 text-slate-300 transition hover:border-white/25 hover:text-white"
+                >
+                  Osservatorio
+                </Link>
+                <Link
+                  href={appPath("locali")}
+                  className="hidden rounded-lg border border-white/10 px-3 py-1.5 text-slate-300 transition hover:border-white/25 hover:text-white sm:inline"
+                >
+                  Rassegna stampa
+                </Link>
+              </nav>
+            </div>
+          </header>
+          <AwwwardsLandingHero
+            scenario={scenario}
+            poll={poll}
+            mapValues={mapValues}
+            pesi={pesi}
+            onSChange={setS}
+            onFlussiChange={setFlussiIpsos}
+            onOpenCommandCenter={() => router.push(appPath("scenario"))}
+            onOpenOsservatorio={() => router.push(appPath("osservatorio"))}
+            onExportPdf={() => exportNotaPdf()}
+          />
+        </div>
+        <PrintNotaReport
+          scenario={scenario}
+          S={S}
+          pesi={pesi}
+          flussiIpsos={flussiIpsos}
+          istituzioniDelta={effectiveIstituzioniDelta}
+          poll={poll}
+          pollConfig={pollConfig}
+        />
+      </>
+    );
+  }
+
   return (
     <>
       <DashboardShell
         nav={NAV}
         tab={tab}
-        onTabChange={(id) => setTab(id as Tab)}
-        fullBleed={tab === "scenario" && scenarioView === "map-matrix"}
+        fullBleed={tab === "scenario"}
         contentClassName={
-          tab === "scenario" && scenarioView === "map-matrix"
+          tab === "scenario"
             ? "!m-0 !h-screen !max-h-screen !overflow-hidden !p-0 !pt-0"
             : "space-y-4"
         }
-        lockViewport={tab === "scenario" && scenarioView === "map-matrix"}
+        lockViewport={tab === "scenario"}
         overrideActive={isCustom || hasInstitutional}
         topHud={
           <StageTopHud
-            frostedBar={
-              !(tab === "scenario" && scenarioView === "map-matrix")
-            }
+            frostedBar={tab !== "scenario"}
+            brandHref="/"
             brandExtra={
               <DashboardSubtitle
                 busy={busy}
@@ -392,37 +472,16 @@ export function DashboardClient({
               />
             }
             methodologyPill={<MethodologyStatusBar hudPill />}
-            scenarioControls={
-              tab === "scenario" ? (
-                <ScenarioViewSwitch mode={scenarioView} onChange={setScenarioView} />
-              ) : undefined
-            }
             onExportPdf={() => exportNotaPdf()}
             busy={busy}
           />
         }
       >
-        {tab === "scenario" && scenarioView === "showcase" ? (
-          <AwwwardsLandingHero
-            scenario={scenario}
-            poll={poll}
-            mapValues={mapValues}
-            pesi={pesi}
-            onSChange={setS}
-            onFlussiChange={setFlussiIpsos}
-            onOpenCommandCenter={() => setScenarioView("map-matrix")}
-            onOpenOsservatorio={() => {
-              setTab("osservatorio");
-            }}
-            onExportPdf={() => exportNotaPdf()}
-          />
-        ) : null}
-
-        {tab === "scenario" && scenarioView === "map-matrix" ? (
+        {tab === "scenario" ? (
             <ScenarioTerritoryStage
               immersive
               hideRegionalTable
-              onOpenMatrixView={() => setTab("quadro")}
+              onOpenMatrixView={() => navigateTab("quadro")}
               scenario={scenario}
               baselineGolden={frozenSnapshot}
               baselineForTable={baselineScenario}
@@ -479,11 +538,10 @@ export function DashboardClient({
             <FuturoNazionaleQuadroPanel
               scenario={scenario}
               poll={poll}
-              onOpenTab={setTab}
+              onOpenTab={navigateTab}
               onOpenScenarioRegion={(region) => {
                 setSelectedRegion(region);
-                setTab("scenario");
-                setScenarioView("map-matrix");
+                navigateTab("scenario");
               }}
             />
           </div>
@@ -497,7 +555,7 @@ export function DashboardClient({
                 baselineScenario={baselineScenario}
                 liveS={S}
                 onRestoreBaselineS={() => setS(OFFICIAL_S)}
-                onOpenTab={setTab}
+                onOpenTab={navigateTab}
               />
             )}
 
@@ -538,8 +596,7 @@ export function DashboardClient({
         {pollRow &&
           scenarioRow &&
           selectedRegion &&
-          tab === "scenario" &&
-          scenarioView === "map-matrix" && (
+          tab === "scenario" && (
           <RegionPollDrawer
             key={selectedRegion}
             poll={pollRow}
