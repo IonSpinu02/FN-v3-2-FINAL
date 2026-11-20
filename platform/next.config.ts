@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    agentUpgrade: "security",
+  },
   /* PPR/cacheComponents off: evita crash client "This page couldn't load" (Next 16). */
   cacheComponents: false,
   devIndicators: false,

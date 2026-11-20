@@ -30,7 +30,7 @@
     "drizzle-orm": "^0.45.4",
     "framer-motion": "^14.4.0",
     "lucide-react": "^1.60.0",
-    "next": "16.4.2",
+    "next": "16.4.6",
     "next-auth": "^5.0.0-beta.32",
     "python-random": "^1.0.0",
     "react": "19.3.0",
