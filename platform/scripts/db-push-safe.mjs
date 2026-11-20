@@ -26,7 +26,7 @@ Oppure sincronizza da Vercel (nella cartella platform/):
   npx vercel env pull .env.local
   npm run db:push
 
-Tabelle attese: snapshots, locali_cloud_state, osservatorio_cloud_state, audit_logs.
+Tabelle attese: snapshots, locali_cloud_state, osservatorio_cloud_state, tavily_daily_cache, audit_logs.
 `);
   process.exit(0);
 }

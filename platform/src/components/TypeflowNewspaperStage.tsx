@@ -99,8 +99,7 @@ export function RssTelemetryScannerHUD({
       />
       <div className="relative flex flex-wrap items-center justify-between gap-2">
         <p className="font-mono text-[10px] font-semibold uppercase tracking-wide text-slate-300">
-          SYS.SCANNER // ACQUISIZIONE PARALLELA 31 FLUSSI RSS &amp; PARSING NER
-          GEOGRAFICO
+          RICERCA NOTIZIE E RICONOSCIMENTO DI LUOGHI E CARICHE
         </p>
         <p className="font-mono text-lg tabular-nums text-emerald-400">
           {progress}%
@@ -127,7 +126,7 @@ export function RssTelemetryScannerHUD({
 
       <p className="mt-3 truncate font-mono text-[10px] text-slate-400">
         {liveLog ??
-          "NER.EXTRACTOR >> In attesa primo match territoriale…"}
+          "Ricerca di luoghi e cariche nelle notizie…"}
       </p>
     </div>
   );

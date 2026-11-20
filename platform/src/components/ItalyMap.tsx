@@ -3,19 +3,23 @@
 import { Panel } from "@/components/ui/FnUi";
 import { ITALY_CAPITALS } from "@/lib/italyCapitals";
 import { ClassStatusMark, regionPodiumLabel } from "@/components/ui/TelemetryUi";
-import { cartographicFill, type MapColorMode } from "@/lib/mapDisplay";
+import { cartographicFill, STIMA_LEGEND_BANDS, type MapColorMode } from "@/lib/mapDisplay";
 import type { Region } from "@/lib/engine/constants";
+import { RegionalGrowthMapTooltip } from "@/components/RegionalGrowthMapTooltip";
+import type { ScenarioRegionalV4View } from "@/lib/scenarioRegionalV4";
 import type { RegionPollResult } from "@/lib/engine/regionalPollShared";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import { geoMercator, geoPath, type GeoPermissibleObjects } from "d3-geo";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const GEO_URL = "/geo/regioni-italia.geojson";
 const MAP_W = 800;
 const MAP_H = 730;
-const MAP_SAFE = { minX: 110, maxX: 690, minY: 35, maxY: 695 };
+const MAP_SAFE = { minX: 100, maxX: 700, minY: 28, maxY: 702 };
+/** Padding ridotto → Italia ~6–8% più grande nello stage scenario. */
 const FIT_EXTENT: [[number, number], [number, number]] = [
-  [70, 38],
-  [730, 690],
+  [48, 24],
+  [752, 706],
 ];
 
 export type { MapColorMode };
@@ -196,13 +200,13 @@ function PodiumCalloutPlate({
 }) {
   return (
     <div
-      className="pointer-events-none absolute z-30 flex font-mono text-[10px] font-semibold leading-none text-slate-100 shadow-lg"
+      className="pointer-events-none absolute z-30 flex font-mono text-[11px] font-semibold leading-none text-[var(--ink-primary)] shadow-lg"
       style={style}
     >
-      <span className="rounded-l border border-r-0 border-[#222E44] bg-[#162032] px-2 py-1.5 tabular-nums text-emerald-400">
+      <span className="rounded-l border border-r-0 border-[var(--border-default)] bg-[var(--surface-2)] px-2 py-1.5 tabular-nums text-[var(--signal-positive)]">
         RNK {rankCode}
       </span>
-      <span className="rounded-r border border-[#222E44] bg-[#080C14]/95 px-2 py-1.5 tracking-tight">
+      <span className="rounded-r border border-[var(--border-default)] bg-[var(--surface-1)]/95 px-2 py-1.5 tracking-tight">
         {regionLine}
       </span>
     </div>
@@ -224,19 +228,22 @@ function FloatingTooltip({
   return (
     <div
       ref={tooltipRef}
-      className="pointer-events-none fixed left-0 top-0 z-50 w-56 rounded-lg border border-[#222E44] bg-[#080C14]/95 p-3 shadow-2xl will-change-transform"
+      className="pointer-events-none fixed left-0 top-0 z-50 w-56 rounded-lg border border-[var(--border-default)] bg-[var(--surface-1)]/95 p-3 text-[var(--ink-primary)] shadow-lg will-change-transform"
       style={{ transform: "translate3d(-9999px, -9999px, 0)" }}
     >
       <div className="flex items-center justify-between gap-2">
-        <p className="font-mono text-[10px] tracking-wide text-slate-400">
-          {poll.regione.toUpperCase()} // RANK #{String(rank).padStart(2, "0")} DI 20
+        <p className="text-[13px] font-semibold tracking-tight text-[var(--ink-primary)]">
+          {poll.regione}
+          <span className="ml-1 font-mono text-[11px] font-medium text-[var(--ink-muted)]">
+            RANK #{String(rank).padStart(2, "0")}
+          </span>
         </p>
         <ClassStatusMark classificazione={poll.classificazione} />
       </div>
-      <p className="mt-2 font-mono text-2xl font-bold tabular-nums text-white">
+      <p className="mt-1 font-mono text-[14px] font-bold tabular-nums text-[var(--ink-primary)]">
         {pctVal.toFixed(2).replace(".", ",")}%
       </p>
-      <p className="font-mono text-[10px] tabular-nums text-slate-400">
+      <p className="font-mono text-[11px] tabular-nums text-[var(--ink-muted)]">
         ± {(poll.moe * 100).toFixed(1)} pp
         {votes != null && (
           <>
@@ -251,7 +258,7 @@ function FloatingTooltip({
         <div className="bg-sky-500" style={{ width: `${poll.contribIscritti * 100}%` }} />
         <div className="bg-violet-500" style={{ width: `${poll.contribIstituzioni * 100}%` }} />
       </div>
-      <p className="mt-1 font-mono text-[9px] uppercase text-slate-500">
+      <p className="mt-1 font-mono text-[11px] uppercase text-[var(--ink-muted)]">
         F · P · I · M · margine 3%{" "}
         {poll.margineVotiSoglia >= 0 ? "+" : ""}
         {poll.margineVotiSoglia.toLocaleString("it-IT")} voti
@@ -276,6 +283,8 @@ export function ItalyMap({
   showRegionLabels = true,
   showCapitals = true,
   showLatLonGrid = false,
+  regionalV4ByRegion,
+  regionalV4AsOf,
 }: {
   valuesByRegion: Record<string, number>;
   colorMode: MapColorMode;
@@ -301,18 +310,23 @@ export function ItalyMap({
   showFlows?: boolean;
   showRadar?: boolean;
   energySurgeKey?: number;
+  regionalV4ByRegion?: Record<string, ScenarioRegionalV4View>;
+  regionalV4AsOf?: Date;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const { theme } = useTheme();
 
-  const [geoData, setGeoData] = useState<GeoCollection | null>(() => cachedGeoJson);
+  /** Sempre `null` al primo render (SSR = client hydrate): la cache GeoJSON si applica solo in effect. */
+  const [geoData, setGeoData] = useState<GeoCollection | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
 
   const isHero = variant === "hero";
+  const reliefFill = theme === "light" ? "#cbd5e1" : "#152033";
 
   useEffect(() => {
     let cancelled = false;
-    loadGeoJson().then((data) => {
+    void loadGeoJson().then((data) => {
       if (!cancelled) setGeoData(data);
     });
     return () => {
@@ -375,6 +389,16 @@ export function ItalyMap({
   const rankByRegion = useMemo(
     () => new Map(ranked.map((p, i) => [p.regione, i + 1])),
     [ranked],
+  );
+
+  const v4Ranked = useMemo(() => {
+    if (!regionalV4ByRegion) return [];
+    return Object.values(regionalV4ByRegion).sort((a, b) => b.addedVotes - a.addedVotes);
+  }, [regionalV4ByRegion]);
+
+  const v4RankByRegion = useMemo(
+    () => new Map(v4Ranked.map((row, i) => [row.regione, i + 1])),
+    [v4Ranked],
   );
 
   const podiumLayouts = useMemo((): PodiumLayout[] => {
@@ -449,6 +473,8 @@ export function ItalyMap({
   }, [mapPack, selectedRegion, hovered, highlightedRegion]);
 
   const hoverPoll = hovered && pollByRegion ? pollByRegion[hovered] : undefined;
+  const hoverRegional =
+    hovered && regionalV4ByRegion ? regionalV4ByRegion[hovered] : undefined;
 
   const hubArcs = useMemo(() => {
     if (!mapPack) return [];
@@ -465,21 +491,30 @@ export function ItalyMap({
   const mapCore = (
     <div
       ref={rootRef}
-      className="relative h-full min-h-[420px] w-full max-w-full overflow-hidden bg-transparent"
+      className="fn-italy-map relative h-full min-h-0 w-full max-w-full overflow-hidden bg-[var(--map-canvas)]"
+      style={
+        theme === "light"
+          ? undefined
+          : {
+              backgroundImage:
+                "radial-gradient(ellipse at center, rgba(148,163,184,0.07), transparent 68%)",
+            }
+      }
       onMouseMove={onRootMouseMove}
       onMouseLeave={onRootMouseLeave}
     >
       <svg
         viewBox={`0 0 ${MAP_W} ${MAP_H}`}
-        className="relative z-10 h-full w-full max-h-full max-w-full"
-        style={{ display: "block", width: "100%", height: "100%" }}
+        preserveAspectRatio="xMidYMid meet"
+        className="relative z-10 h-full max-h-full w-full max-w-full"
+        style={{ display: "block" }}
         role="img"
         aria-label="Mappa regioni Italia"
       >
         <defs>
           <linearGradient id="map-tier-0" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#131C2E" />
-            <stop offset="100%" stopColor="#1E293B" />
+            <stop offset="0%" stopColor={theme === "light" ? "#cbd5e1" : "#243044"} />
+            <stop offset="100%" stopColor={theme === "light" ? "#94a3b8" : "#34506A"} />
           </linearGradient>
           <linearGradient id="map-tier-1" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="#0C4A6E" />
@@ -500,9 +535,24 @@ export function ItalyMap({
         </defs>
 
         {!mapPack && (
-          <text x={MAP_W / 2} y={MAP_H / 2} textAnchor="middle" className="fill-slate-500 font-mono text-xs">
-            CARICAMENTO GEO…
-          </text>
+          <g aria-hidden>
+            <rect
+              x={MAP_W / 2 - 120}
+              y={MAP_H / 2 - 18}
+              width={240}
+              height={36}
+              rx={8}
+              className="fill-slate-800/50"
+            />
+            <text
+              x={MAP_W / 2}
+              y={MAP_H / 2 + 5}
+              textAnchor="middle"
+              className="fill-slate-500 font-mono text-xs"
+            >
+              Mappa in caricamento…
+            </text>
+          </g>
         )}
 
         {mapPack && (
@@ -519,14 +569,34 @@ export function ItalyMap({
             )}
 
             <g id="hub-arcs" pointerEvents="none" fill="none">
-              {hubArcs.map(({ hub, d }) => (
+              {hubArcs.map(({ hub, d }) => {
+                const lit = hovered === hub || selectedRegion === hub;
+                return (
+                  <path
+                    key={`arc-${hub}`}
+                    d={d}
+                    stroke="var(--signal-observed)"
+                    strokeOpacity={lit ? 0.55 : 0.06}
+                    strokeWidth={lit ? 1.25 : 1}
+                  />
+                );
+              })}
+            </g>
+
+            {/* 2.5D extrusion / rilievo */}
+            <g
+              id="italia-relief"
+              pointerEvents="none"
+              transform="translate(0, 5)"
+              opacity={0.55}
+            >
+              {mapPack.regions.map((r) => (
                 <path
-                  key={`arc-${hub}`}
-                  d={d}
-                  stroke="#38BDF8"
-                  strokeOpacity={0.22}
-                  strokeWidth={1}
-                  strokeDasharray="3 5"
+                  key={`relief-${r.region}`}
+                  d={r.pathD}
+                  fill={reliefFill}
+                  stroke="rgba(52,211,153,0.12)"
+                  strokeWidth={0.8}
                 />
               ))}
             </g>
@@ -543,7 +613,7 @@ export function ItalyMap({
                 const hot = hovered === r.region || highlightedRegion === r.region;
                 const active = selected || hot;
                 const dim =
-                  (selectedRegion && !selected) ||
+                  (selectedRegion != null && selectedRegion !== "" && !selected) ||
                   (classFilter !== "all" &&
                     pollByRegion?.[r.region]?.classificazione !== classFilter);
 
@@ -552,12 +622,20 @@ export function ItalyMap({
                     key={`${r.region}-${colorMode}`}
                     d={r.pathD}
                     fill={fill}
-                    stroke={active ? "#6EE7B7" : "#060A12"}
-                    strokeWidth={active ? 1.6 : 1}
+                    stroke={
+                      active
+                        ? theme === "light"
+                          ? "rgba(15,23,42,0.72)"
+                          : "rgba(226,232,240,0.9)"
+                        : theme === "light"
+                          ? "rgba(71,85,105,0.45)"
+                          : "rgba(148,163,184,0.28)"
+                    }
+                    strokeWidth={active ? 1.75 : 1}
                     vectorEffect="non-scaling-stroke"
                     className="cursor-pointer"
                     style={{
-                      opacity: dim ? 0.45 : 1,
+                      opacity: dim ? 0.55 : 1,
                       transition: "opacity 180ms ease-out",
                     }}
                     onClick={() => onRegionClick?.(r.region)}
@@ -577,7 +655,7 @@ export function ItalyMap({
                   key={`cap-${r.region}`}
                   cx={r.capitalXY[0]}
                   cy={r.capitalXY[1]}
-                  r={2.5}
+                  r={2.2}
                   fill="#F8FAFC"
                   pointerEvents="none"
                 />
@@ -595,6 +673,70 @@ export function ItalyMap({
                       stroke="#334155"
                       strokeWidth={1}
                     />
+                  </g>
+                );
+              })}
+            </g>
+
+            {/* Target lock-on reticle + HUD tags (selected + top 3) */}
+            <g pointerEvents="none">
+              {podiumLayouts.map((b, idx) => {
+                const geom = mapPack.byRegion.get(b.region);
+                if (!geom) return null;
+                const [cx, cy] = geom.centroid;
+                const isSel = selectedRegion === b.region || hovered === b.region || b.rankCode === "SEL";
+                const ringR = isSel ? 13 : 9;
+                const short = regionPodiumLabel(b.region).slice(0, 3).toUpperCase();
+                const tagX = b.side === "right" ? cx + 48 : cx - 48;
+                const tagY = cy - 18;
+                const midX = (cx + tagX) / 2;
+                return (
+                  <g key={`reticle-${b.region}-${b.rankCode}`}>
+                    <circle
+                      cx={cx}
+                      cy={cy}
+                      r={ringR}
+                      fill="none"
+                      stroke={isSel ? "var(--map-stroke-active)" : "var(--ink-muted)"}
+                      strokeOpacity={isSel ? 0.9 : 0.7}
+                      strokeWidth={isSel ? 1.25 : 0.8}
+                      className="fn-map-reticle-ring"
+                    />
+                    <circle
+                      cx={cx}
+                      cy={cy}
+                      r={2.2}
+                      fill={isSel ? "var(--map-stroke-active)" : "var(--ink-secondary)"}
+                      className="fn-map-reticle-dot"
+                    />
+                    <polyline
+                      points={`${cx},${cy} ${midX},${tagY} ${tagX},${tagY}`}
+                      fill="none"
+                      stroke={isSel ? "#34d399" : "#64748b"}
+                      strokeOpacity={0.7}
+                      strokeWidth={1}
+                    />
+                    <g transform={`translate(${tagX + (b.side === "right" ? 4 : -4)}, ${tagY})`}>
+                      <rect
+                        x={b.side === "right" ? 0 : -132}
+                        y={-10}
+                        width={132}
+                        height={20}
+                        rx={3}
+                        fill="#080C14"
+                        fillOpacity={0.92}
+                        stroke="#1B2436"
+                      />
+                      <text
+                        x={b.side === "right" ? 8 : -124}
+                        y={4}
+                        className="fill-emerald-300 font-mono"
+                        style={{ fontSize: 11 }}
+                      >
+                        {short} {b.pctLabel}
+                      </text>
+                    </g>
+                    {idx === 0 ? null : null}
                   </g>
                 );
               })}
@@ -620,20 +762,26 @@ export function ItalyMap({
         );
       })}
 
-      <div className="pointer-events-none absolute inset-0 z-[25] font-mono text-[10px] tracking-wider text-slate-500">
-        <div className="absolute left-3 top-3">CRS // WGS84 · FIT-EXTENT AUTO</div>
-        <div className="absolute right-3 top-3 text-right">20 REGIONI // 20.000 SIM MC</div>
-        <div className="absolute bottom-3 left-3 flex items-center gap-2">
+      <div className="pointer-events-none absolute inset-x-2 bottom-2 z-[25] flex flex-wrap items-end justify-between gap-2 font-mono text-[10px] tabular-nums text-[var(--ink-muted)]">
+        <div className="flex max-w-[70%] flex-wrap gap-x-2 gap-y-1 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-1)]/90 px-3 py-1.5 backdrop-blur-sm">
+          {STIMA_LEGEND_BANDS.map((band) => (
+            <span key={band.label} className="inline-flex items-center gap-1">
+              <span className="h-2 w-3 rounded-sm" style={{ background: band.color }} />
+              {band.label.replace(".", ",")}
+            </span>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
           <span>0</span>
-          <div className="h-px w-14 bg-slate-600" />
+          <div className="h-px w-14 bg-[var(--border-default)]" />
           <span>100</span>
-          <div className="h-px w-14 bg-slate-600" />
+          <div className="h-px w-14 bg-[var(--border-default)]" />
           <span>200 KM</span>
         </div>
         {onClearSelection && selectedRegion && (
           <button
             type="button"
-            className="pointer-events-auto absolute bottom-3 right-3 border border-[#1B2436] bg-[#080C14]/90 px-2 py-1 text-[10px] font-semibold uppercase text-slate-300 hover:border-emerald-500/40 hover:text-emerald-300"
+            className="pointer-events-auto border border-[var(--border-default)] bg-[var(--surface-1)]/95 px-2 py-1 text-[10px] font-semibold uppercase text-[var(--ink-secondary)] hover:text-[var(--ink-primary)]"
             onClick={onClearSelection}
           >
             [ × RESET SELEZIONE ]
@@ -641,7 +789,17 @@ export function ItalyMap({
         )}
       </div>
 
-      {hoverPoll && (
+      {hoverRegional && regionalV4AsOf && (
+        <RegionalGrowthMapTooltip
+          tooltipRef={tooltipRef}
+          regional={hoverRegional}
+          asOf={regionalV4AsOf}
+          rank={v4RankByRegion.get(hoverRegional.regione) ?? 0}
+          currentVotes={votesByRegion?.[hoverRegional.regione] ?? 0}
+          currentShare={pollByRegion?.[hoverRegional.regione]?.piHat ?? hoverRegional.startPct / 100}
+        />
+      )}
+      {hoverPoll && !hoverRegional && (
         <FloatingTooltip
           tooltipRef={tooltipRef}
           poll={hoverPoll}

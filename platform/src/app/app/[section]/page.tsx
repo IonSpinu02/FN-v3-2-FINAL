@@ -1,6 +1,8 @@
+import { DashboardClient } from "@/components/DashboardClient";
 import { APP_SECTIONS } from "@/lib/appRoutes";
-import { DashboardClientLoader } from "@/components/DashboardClientLoader";
+import { loadDashboardBoot } from "@/lib/engine/dashboardBoot";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 
 export default async function AppSectionPage({
   params,
@@ -11,5 +13,17 @@ export default async function AppSectionPage({
   if (!APP_SECTIONS.includes(section)) {
     redirect("/app/scenario");
   }
-  return <DashboardClientLoader />;
+
+  const { initialScenario, frozenSnapshot, fnConfig } = loadDashboardBoot();
+
+  return (
+    <Suspense fallback={null}>
+      <DashboardClient
+        variant="app"
+        initialScenario={initialScenario}
+        frozenSnapshot={frozenSnapshot}
+        fnConfig={fnConfig}
+      />
+    </Suspense>
+  );
 }

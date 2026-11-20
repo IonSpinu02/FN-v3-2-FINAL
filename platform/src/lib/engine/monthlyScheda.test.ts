@@ -26,7 +26,7 @@ describe("buildMonthlyScheda", () => {
         "",
       );
       expect(scheda.length).toBeGreaterThanOrEqual(6);
-      expect(scheda[0]!.dimensione).toContain("Modulo A");
+      expect(scheda[0]!.dimensione).toContain("Scenario elettorale");
     });
   }
 });

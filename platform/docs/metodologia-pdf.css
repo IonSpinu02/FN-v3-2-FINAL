@@ -1,0 +1,364 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+
+@page {
+  size: A4;
+  margin: 20mm 18mm 24mm 18mm;
+}
+
+@page :first {
+  margin: 0;
+}
+
+html {
+  font-size: 10.5pt;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+body {
+  font-family: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  line-height: 1.62;
+  color: #0f172a;
+  background: #ffffff;
+  max-width: 100%;
+  orphans: 3;
+  widows: 3;
+}
+
+/* —— Cover —— */
+.cover {
+  page-break-after: always;
+  min-height: 297mm;
+  box-sizing: border-box;
+  padding: 32mm 24mm 28mm;
+  background: linear-gradient(165deg, #070b14 0%, #0c1220 45%, #0a1628 100%);
+  color: #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10mm;
+}
+
+.cover > p:empty {
+  display: none;
+  margin: 0;
+  padding: 0;
+}
+
+.cover-kicker {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9pt;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #34d399;
+  margin: 0 0 8mm;
+}
+
+.cover h1 {
+  font-size: 25pt;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #f8fafc;
+  margin: 0 0 8mm;
+  border: none;
+  padding: 0;
+}
+
+.cover-sub {
+  font-size: 12.5pt;
+  font-weight: 500;
+  line-height: 1.55;
+  color: #94a3b8;
+  margin: 0;
+  max-width: 92%;
+}
+
+.cover-meta {
+  font-size: 9.5pt;
+  line-height: 1.65;
+  color: #64748b;
+  border-top: 1px solid rgba(148, 163, 184, 0.25);
+  padding-top: 10mm;
+  margin: 0;
+  margin-top: auto;
+}
+
+.cover-meta strong {
+  color: #cbd5e1;
+}
+
+.cover-badge {
+  display: inline-block;
+  margin-top: 8mm;
+  padding: 3.5mm 6mm;
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  background: rgba(16, 185, 129, 0.12);
+  border-radius: 4px;
+  font-size: 8.5pt;
+  line-height: 1.45;
+  color: #6ee7b7;
+}
+
+/* —— Typography —— */
+h1 {
+  font-size: 19pt;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 6mm;
+  padding-bottom: 3mm;
+  border-bottom: 2px solid #10b981;
+  page-break-after: avoid;
+}
+
+h1 + ol,
+h1 + ul {
+  margin: 0 0 12mm;
+  padding-left: 6mm;
+  line-height: 1.75;
+}
+
+h1 + ol li,
+h1 + ul li {
+  margin-bottom: 2.5mm;
+}
+
+h2 {
+  font-size: 13pt;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 14mm 0 5mm;
+  padding-top: 6mm;
+  border-top: 1px solid #e2e8f0;
+  page-break-after: avoid;
+  page-break-inside: avoid;
+}
+
+hr + h2 {
+  margin-top: 6mm;
+  padding-top: 0;
+  border-top: none;
+}
+
+h3 {
+  font-size: 10.5pt;
+  font-weight: 600;
+  color: #334155;
+  margin: 7mm 0 3mm;
+  page-break-after: avoid;
+}
+
+h2 + p,
+h3 + p {
+  margin-top: 1mm;
+}
+
+p {
+  margin: 0 0 4mm;
+}
+
+p + ul,
+p + ol,
+p + table,
+p + pre,
+p + blockquote,
+p + .source-box {
+  margin-top: 2mm;
+}
+
+a {
+  color: #047857;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+strong {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+/* —— Callouts —— */
+blockquote {
+  margin: 6mm 0 7mm;
+  padding: 5mm 6mm;
+  border-left: 3px solid #f59e0b;
+  background: #fffbeb;
+  color: #78350f;
+  font-size: 9.5pt;
+  line-height: 1.58;
+  page-break-inside: avoid;
+}
+
+blockquote p {
+  margin: 0;
+}
+
+h2 + blockquote {
+  margin-top: 4mm;
+}
+
+.disclaimer {
+  border-left-color: #ef4444;
+  background: #fef2f2;
+  color: #7f1d1d;
+}
+
+.source-box {
+  border-left: 3px solid #10b981;
+  background: #ecfdf5;
+  padding: 6mm 7mm;
+  margin: 5mm 0 8mm;
+  font-size: 9pt;
+  line-height: 1.65;
+  page-break-inside: avoid;
+}
+
+.source-box p {
+  margin: 0 0 3.5mm;
+}
+
+.source-box p:last-child {
+  margin-bottom: 0;
+}
+
+/* —— Tables —— */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 5mm 0 9mm;
+  font-size: 8.75pt;
+  line-height: 1.5;
+  page-break-inside: auto;
+}
+
+table.table-compact {
+  font-size: 9pt;
+  page-break-inside: avoid;
+}
+
+table thead {
+  display: table-header-group;
+}
+
+table tr {
+  page-break-inside: avoid;
+  page-break-after: auto;
+}
+
+thead {
+  background: #0f172a;
+  color: #f1f5f9;
+}
+
+tbody tr:first-child td {
+  padding-top: 4mm;
+}
+
+th {
+  text-align: left;
+  padding: 3.5mm 3.5mm;
+  font-weight: 600;
+  font-size: 8pt;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.35;
+}
+
+td {
+  padding: 3.5mm 3.5mm;
+  border-bottom: 1px solid #e2e8f0;
+  vertical-align: top;
+}
+
+td:first-child,
+th:first-child {
+  padding-left: 4mm;
+}
+
+td:last-child,
+th:last-child {
+  padding-right: 4mm;
+}
+
+tbody tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+td code,
+th code {
+  font-size: 8pt;
+}
+
+/* —— Code —— */
+code {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 8.5pt;
+  background: #f1f5f9;
+  padding: 0.5px 4px;
+  border-radius: 3px;
+  color: #0f766e;
+}
+
+pre {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 8pt;
+  line-height: 1.55;
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 5mm 6mm;
+  border-radius: 4px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  margin: 5mm 0 7mm;
+}
+
+h3 + pre {
+  margin-top: 3mm;
+}
+
+pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+/* —— Lists —— */
+ul,
+ol {
+  margin: 3mm 0 6mm;
+  padding-left: 6mm;
+}
+
+li {
+  margin-bottom: 2.5mm;
+  padding-left: 1mm;
+}
+
+li > ul,
+li > ol {
+  margin-top: 2mm;
+  margin-bottom: 2mm;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #e2e8f0;
+  margin: 12mm 0;
+  height: 0;
+}
+
+.page-break {
+  page-break-before: always;
+}
+
+/* —— Footer note on each section —— */
+.fn-footer-note {
+  font-size: 8pt;
+  color: #64748b;
+  margin-top: 8mm;
+  padding-top: 3mm;
+  border-top: 1px dashed #cbd5e1;
+}

@@ -1,3 +1,9 @@
+import type { TavilyGateMeta } from "@/lib/cache/tavilyDailyMeta";
+import { cacheUsesProcessMemory } from "@/lib/cache/cachePolicy";
+import {
+  readDomainCacheEntry,
+  writeDomainCacheEntry,
+} from "@/lib/db/domainCacheRepository";
 import type { LocalRegistryEntry } from "./localiTypes";
 import type { NewsCandidate } from "./localiTypes";
 
@@ -13,6 +19,9 @@ export type NewsScanMeta = {
   rejectedNoiseCount: number;
   verifiedItemsCount: number;
   timestamp: string;
+  /** `rss+tavily`: feed RSS a ogni scansione più la ricerca Tavily del giorno. */
+  provider?: "rss" | "rss+tavily";
+  tavily?: TavilyGateMeta;
 };
 
 export type NewsScanCachePayload = {
@@ -44,28 +53,58 @@ export function registryEntriesKey(entries: LocalRegistryEntry[]): string {
     .join("|");
 }
 
-export function getNewsScanCache(
+function domainKey(entriesKey: string): string {
+  return `news:scan:${entriesKey}`;
+}
+
+export async function getNewsScanCache(
   entriesKey: string,
   now = Date.now(),
-): { payload: NewsScanCachePayload; cachedAt: string } | null {
-  if (!memoryCache) return null;
-  if (memoryCache.entriesKey !== entriesKey) return null;
-  if (now - memoryCache.cachedAt > NEWS_SCAN_CACHE_TTL_MS) return null;
-  if (calendarDayItaly(memoryCache.cachedAt) !== calendarDayItaly(now)) {
-    return null;
+): Promise<{ payload: NewsScanCachePayload; cachedAt: string } | null> {
+  if (cacheUsesProcessMemory() && memoryCache?.entriesKey === entriesKey) {
+    if (now - memoryCache.cachedAt <= NEWS_SCAN_CACHE_TTL_MS) {
+      if (calendarDayItaly(memoryCache.cachedAt) === calendarDayItaly(now)) {
+        return {
+          payload: memoryCache.payload,
+          cachedAt: new Date(memoryCache.cachedAt).toISOString(),
+        };
+      }
+    }
+  }
+
+  const row = await readDomainCacheEntry<CacheEntry>(domainKey(entriesKey));
+  if (!row?.payload) return null;
+  const entry = row.payload;
+  if (entry.entriesKey !== entriesKey) return null;
+  if (now - entry.cachedAt > NEWS_SCAN_CACHE_TTL_MS) return null;
+  if (calendarDayItaly(entry.cachedAt) !== calendarDayItaly(now)) return null;
+
+  if (cacheUsesProcessMemory()) {
+    memoryCache = entry;
   }
   return {
-    payload: memoryCache.payload,
-    cachedAt: new Date(memoryCache.cachedAt).toISOString(),
+    payload: entry.payload,
+    cachedAt: new Date(entry.cachedAt).toISOString(),
   };
 }
 
-export function setNewsScanCache(
+export async function setNewsScanCache(
   entriesKey: string,
   payload: NewsScanCachePayload,
   now = Date.now(),
-): void {
-  memoryCache = { cachedAt: now, entriesKey, payload };
+): Promise<void> {
+  const entry: CacheEntry = { cachedAt: now, entriesKey, payload };
+  if (cacheUsesProcessMemory()) {
+    memoryCache = entry;
+  }
+  await writeDomainCacheEntry({
+    key: domainKey(entriesKey),
+    payload: entry,
+    computedAt: now,
+    expiresAt: now + NEWS_SCAN_CACHE_TTL_MS,
+    etag: entriesKey,
+    sourceStatus: null,
+  });
 }
 
 /** Solo per test Vitest */

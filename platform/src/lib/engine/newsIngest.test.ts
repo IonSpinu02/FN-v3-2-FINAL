@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  decodeRssPlainText,
   enrichNewsCandidates,
   filterRelevantCandidates,
   parseRssItems,
@@ -22,10 +23,27 @@ const SAMPLE_RSS = `<?xml version="1.0"?>
 </channel></rss>`;
 
 describe("newsIngest", () => {
+  it("decodeRssPlainText rimuove &nbsp; e tag HTML", () => {
+    expect(
+      decodeRssPlainText(
+        "Titolo articolo&nbsp;&nbsp;- <b>FirenzeToday</b>",
+      ),
+    ).toBe("Titolo articolo - FirenzeToday");
+  });
+
   it("parseRssItems estrae titoli", () => {
     const raw = parseRssItems(SAMPLE_RSS, "https://feed.test", 10);
     expect(raw).toHaveLength(2);
     expect(raw[0].titolo).toContain("Bergamo");
+  });
+
+  it("parseRssItems decodifica &nbsp; in description", () => {
+    const raw = parseRssItems(
+      `<?xml version="1.0"?><rss><channel><item><title>Test</title><link>https://x</link><description>Snippet&nbsp;&nbsp;Fonte</description></item></channel></rss>`,
+      "https://feed.test",
+      5,
+    );
+    expect(raw[0].snippet).toBe("Snippet Fonte");
   });
 
   it("enrich con geo lookup regione/comune/ruolo", () => {

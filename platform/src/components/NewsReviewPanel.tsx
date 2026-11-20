@@ -2,10 +2,8 @@
 
 import { applyEventToEntry } from "@/lib/engine/localInstitutions";
 import { analyzeInstitutionalArticle } from "@/lib/engine/newsInstitutionalAnalyzer";
-import {
-  NEWS_RSS_REFRESH_INTERVAL_MS,
-  type NewsScanMeta,
-} from "@/lib/engine/newsScanCache";
+import { useRealtimeDomain } from "@/components/realtime/RealtimeSyncProvider";
+import { type NewsScanMeta } from "@/lib/engine/newsScanCache";
 import { CIRC, REGIONS, type Region } from "@/lib/engine/constants";
 import type {
   CaricaLocale,
@@ -113,7 +111,7 @@ function ArticleFullReader({
   const displayTitle = remoteTitle || article.titolo;
 
   return (
-    <div className="mt-3 rounded-lg border border-[#1B2436] bg-[#0C101A]">
+    <div className="mt-3 flex min-h-[min(72dvh,920px)] flex-col rounded-lg border border-[#1B2436] bg-[#0C101A]">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#1B2436] px-3 py-2">
         <p className="font-mono text-[9px] uppercase tracking-wider text-slate-500">
           Lettura completa // dispaccio
@@ -124,7 +122,7 @@ function ArticleFullReader({
           </span>
         ) : null}
       </div>
-      <div className="max-h-[min(58vh,520px)] overflow-y-auto px-4 py-3">
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
         <h3 className="text-base font-semibold leading-snug text-white">
           {highlightTextDark(displayTitle, highlightOpts)}
         </h3>
@@ -133,7 +131,7 @@ function ArticleFullReader({
         </div>
         {fetchError ? (
           <p className="mt-3 font-mono text-[9px] text-slate-500">
-            Estrazione remota non riuscita ({fetchError}). Testo da feed RSS /
+            Estrazione remota non riuscita ({fetchError}). Testo disponibile dalla fonte /
             seed sotto.
           </p>
         ) : null}
@@ -587,16 +585,20 @@ export function NewsReviewPanel({
         const b = candidateToBroadsheet(cleaned[0]);
         setSelectedId(b.id);
         setScanLog(
-          `NER.EXTRACTOR >> Rilevato [${b.suggestedRegion} · ${b.suggestedComune}] -> Carica: ${caricaLabel(b.suggestedRole)}`,
+          `Informazioni riconosciute: [${b.suggestedRegion} · ${b.suggestedComune}] -> Carica: ${caricaLabel(b.suggestedRole)}`,
         );
       } else if (opts?.selectFirstLive) {
-        setScanLog("NER.EXTRACTOR >> Nessun nuovo match editoriale in coda.");
+        setScanLog("Nessuna nuova informazione da verificare.");
       }
       setScanMeta(data.meta ?? null);
+      const provider =
+        data.meta?.provider === "rss+tavily"
+          ? "Fonti monitorate + ricerca web giornaliera"
+          : "Fonti monitorate";
       setCacheLabel(
         data.cachedAt
-          ? `Feed RSS live · ${formatDispaccioWireDate(data.cachedAt)} · refresh ogni 30 min`
-          : "Feed RSS live · scan in corso",
+          ? `${provider} · ultimo controllo ${formatDispaccioWireDate(data.cachedAt)} · controllo ogni 30 min`
+          : `${provider} live · scan in corso`,
       );
     },
     [],
@@ -606,7 +608,7 @@ export function NewsReviewPanel({
     async (forceRefresh = true) => {
       setIsScanning(true);
       setError(null);
-      setScanLog("NER.EXTRACTOR >> Avvio pipeline 31 feed…");
+      setScanLog("Ricerca di nuove notizie in corso…");
       const started = Date.now();
       try {
         const res = await fetch("/api/news/scan", {
@@ -638,12 +640,12 @@ export function NewsReviewPanel({
     [entries, applyScanPayload],
   );
 
+  useRealtimeDomain("news", () => {
+    void scan(true);
+  });
+
   useEffect(() => {
     void scan(true);
-    const timer = window.setInterval(() => {
-      void scan(true);
-    }, NEWS_RSS_REFRESH_INTERVAL_MS);
-    return () => window.clearInterval(timer);
   }, [scan]);
 
   function approveArticle(
@@ -702,37 +704,37 @@ export function NewsReviewPanel({
       <div className="mb-4 grid grid-cols-1 divide-y divide-[#1B2436] rounded-xl border border-[#1B2436] bg-[#080C14] sm:grid-cols-2 lg:grid-cols-5 sm:divide-x sm:divide-y-0">
         <KpiCell
           code="01"
-          title="SORGENTI RSS PRESIDIATE"
+          title="FONTI MONITORATE"
           value="31 / 31"
           sub="20 redazioni ANSA + 11 nazionali"
         />
         <KpiCell
           code="02"
-          title="ARTICOLI RSS LIVE"
+          title="ARTICOLI RACCOLTI"
           value={`${filteredArticles.length} / ${allArticles.length}`}
           valueClass="text-emerald-400"
-          sub="Solo feed reali · no seed editoriali"
+          sub="Notizie raccolte dalle fonti monitorate"
         />
         <KpiCell
           code="03"
-          title="RUMORE SCARTATO (BLACKLIST)"
+          title="ARTICOLI ESCLUSI DAI FILTRI"
           value={`${rejectedCount} ART.`}
           valueClass="text-rose-300"
           sub="Meteo, cronaca, sindacati esclusi"
         />
         <KpiCell
           code="04"
-          title="AFFIDABILITÀ MEDIA NER"
+          title="SICUREZZA DEL RICONOSCIMENTO AUTOMATICO"
           value={avgConfidence ? `${avgConfidence}%` : "—"}
           valueClass="text-cyan-300"
-          sub="Match geografico + carica verificato"
+          sub="Riguarda luoghi e cariche, non la veridicità della notizia"
         />
         <KpiCell
           code="05"
           title="INSERITI NEL REGISTRO"
           value={String(approvedCount)}
           valueClass="text-amber-300"
-          sub="Sincronizzati con Modulo A"
+          sub="Inclusi nei dati del consenso"
         />
       </div>
 
@@ -831,7 +833,7 @@ export function NewsReviewPanel({
             disabled={isScanning}
             onClick={() => void scan(true)}
           >
-            {isScanning ? "…" : "[ SCANSIONA 31 RSS LIVE ]"}
+            {isScanning ? "…" : "Cerca nuove notizie"}
           </Btn>
         </div>
         {cacheLabel ? (
@@ -845,22 +847,22 @@ export function NewsReviewPanel({
         </p>
       ) : null}
 
-      <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-12">
-        <section className="xl:col-span-8">
-          <p className="mb-2 font-mono text-[10px] uppercase tracking-wider text-slate-500">
+      <div className="grid min-h-[calc(100dvh-13rem)] grid-cols-1 items-stretch gap-4 xl:grid-cols-12">
+        <section className="flex min-h-0 flex-col xl:col-span-8">
+          <p className="mb-2 shrink-0 font-mono text-[10px] uppercase tracking-wider text-slate-500">
             FILO DIRETTO AGENZIE // VISTA OPERATIVA
           </p>
-          <div className="overflow-hidden rounded-xl border border-[#1B2436] bg-[#080C14]">
+          <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-[#1B2436] bg-[#080C14]">
             {filteredArticles.length === 0 ? (
               <p className="p-6 font-mono text-xs leading-relaxed text-slate-500">
                 {isScanning
-                  ? "Acquisizione feed RSS in corso (31 sorgenti)…"
+                  ? "Raccolta delle notizie in corso…"
                   : allArticles.length === 0
-                    ? "Nessun articolo istituzionale dai feed RSS al momento. Prossimo refresh automatico entro 30 minuti, oppure usa [ SCANSIONA 31 RSS LIVE ]."
+                    ? "Nessun articolo istituzionale disponibile al momento. Nuovo controllo entro 30 minuti, oppure usa Cerca nuove notizie."
                     : "Nessun dispaccio in coda con i filtri attivi."}
               </p>
             ) : (
-              <ul className="divide-y divide-[#1B2436]">
+              <ul className="max-h-full divide-y divide-[#1B2436] overflow-y-auto">
                 {filteredArticles.map((a) => {
                   const selected = a.id === selectedId;
                   const approved = approvedIds.has(a.id);
@@ -891,7 +893,7 @@ export function NewsReviewPanel({
                           </p>
                           {a.confidenceScore ? (
                             <span className="mt-1 inline-block rounded border border-emerald-500/40 bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[9px] text-emerald-300">
-                              NER {a.confidenceScore}%
+                              Riconoscimento automatico: {a.confidenceScore}%
                             </span>
                           ) : null}
                         </div>
@@ -906,7 +908,7 @@ export function NewsReviewPanel({
                             )}
                           </p>
                           <p className="mt-1 font-mono text-[8px] leading-relaxed text-slate-500">
-                            PROVA NER: GEO:{" "}
+                            RICONOSCIMENTO AUTOMATICO · LUOGO:{" "}
                             {a.matchedGeoKeyword ??
                               `${a.suggestedComune} -> ${a.suggestedRegion}`}{" "}
                             // RUOLO: &quot;
@@ -956,10 +958,13 @@ export function NewsReviewPanel({
           </div>
         </section>
 
-        <aside ref={inspectorRef} className="space-y-4 xl:col-span-4">
-          <div className="rounded-xl border border-[#1B2436] bg-[#080C14] p-4">
+        <aside
+          ref={inspectorRef}
+          className="flex min-h-0 flex-col gap-4 xl:col-span-4 xl:max-h-[calc(100dvh-13rem)] xl:overflow-y-auto"
+        >
+          <div className="shrink-0 rounded-xl border border-[#1B2436] bg-[#080C14] p-4">
             <p className="font-mono text-[10px] uppercase tracking-wider text-slate-500">
-              DOSSIER ARTICOLO &amp; VERIFICA NER
+              ARTICOLO E VERIFICA DELLE INFORMAZIONI
             </p>
             {selectedArticle ? (
               <>

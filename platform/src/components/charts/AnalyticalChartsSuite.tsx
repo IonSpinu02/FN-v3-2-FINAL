@@ -164,7 +164,7 @@ export function MonteCarloForestChart({
     <ChartFrame
       code="CHART.01"
       title="FOREST PLOT MONTE CARLO"
-      subtitle="CI 80% lo10–hi90 · 20.000 iterazioni · MOD.A"
+      subtitle="Fascia di variabilità della stima · 80% delle simulazioni"
     >
       <svg viewBox={`0 0 ${svgW} ${svgH}`} className="h-auto w-full select-none">
         {Array.from({ length: 16 }, (_, i) => xMin + i).map((tick) => (
@@ -244,7 +244,7 @@ export function MonteCarloForestChart({
             fontSize={9}
             className="font-mono"
           >
-            MEDIA NAZIONALE LIVE {fmtPctIt(nationalSPct, 2)}%
+            STIMA NAZIONALE ATTUALE {fmtPctIt(nationalSPct, 2)}%
           </text>
         </g>
         {sorted.map((row, i) => {
@@ -430,7 +430,7 @@ export function QuadrantCorrelationMatrix({
     <div className="flex flex-wrap gap-2">
       {(
         [
-          ["stress", "STRESS TERRITORIALE MOD. B (0-100)"],
+          ["stress", "DIFFICOLTÀ DEL TERRITORIO (0–100)"],
           ["astenuti", "QUOTA ASTENUTI 2024"],
           ["vi", "RAPPORTO V/I (VOTI/ISCRITTO)"],
         ] as const
@@ -1090,8 +1090,8 @@ export function EventStudyTrendsChart({
 
   if (!effectiveSeries || !metrics) {
     return (
-      <ChartFrame code="CHART.04" title="EVENT STUDY TRENDS MOD.C" subtitle="Serie Google Trends 0–100">
-        <p className="p-4 font-mono text-xs text-slate-500">Seleziona una regione per la curva baseline.</p>
+      <ChartFrame code="CHART.04" title="EVENT STUDY TRENDS" subtitle="Serie Google Trends 0–100">
+        <p className="p-4 font-mono text-xs text-slate-500">Seleziona una regione per vedere l’andamento di riferimento.</p>
       </ChartFrame>
     );
   }
@@ -1111,7 +1111,7 @@ export function EventStudyTrendsChart({
       : `${fmtPctIt(metrics.deltaAttention, 1)} pt post-evento`;
 
   return (
-    <ChartFrame code="CHART.04" title="EVENT STUDY TRENDS MOD.C" subtitle={`${plotSeries.query} · ${plotSeries.windowStart} → ${plotSeries.windowEnd}`}>
+    <ChartFrame code="CHART.04" title="EVENT STUDY TRENDS" subtitle={`${plotSeries.query} · ${plotSeries.windowStart} → ${plotSeries.windowEnd}`}>
       <div className="mb-1 grid grid-cols-2 gap-1 px-1 font-mono text-[9px] text-slate-400 md:grid-cols-5">
         <span>INDICE ATTUALE {fmtPctIt(metrics.last, 0)}</span>
         <span>PICCO MAX {fmtPctIt(metrics.max, 0)}</span>
@@ -1375,7 +1375,7 @@ export function EntropyAndCalibrationChart({
       title="PARITY PLOT & RESIDUI POST-VOTO"
       subtitle={
         postVote
-          ? `MAE ${fmtPctIt(postVote.validazione_predittiva.mae_punti_scenario * 100, 2)} pp · RMSE ${fmtPctIt(postVote.validazione_predittiva.rmse_punti_scenario * 100, 2)} pp · COPERTURA CI ${fmtPctIt(postVote.validazione_predittiva.copertura_regioni_sensibilita * 100, 0)}%`
+          ? `Errore medio ${fmtPctIt(postVote.validazione_predittiva.mae_punti_scenario * 100, 2)} punti · Errore quadratico medio ${fmtPctIt(postVote.validazione_predittiva.rmse_punti_scenario * 100, 2)} punti · Risultati entro la fascia stimata ${fmtPctIt(postVote.validazione_predittiva.copertura_regioni_sensibilita * 100, 0)}%`
           : "Carica CSV esiti o simulazione test"
       }
     >
@@ -1436,7 +1436,7 @@ export function SnapshotDivergingDeltaChart({
   return (
     <ChartFrame
       code="CHART.06"
-      title="DIVERGING DELTA SNAPSHOT A vs B"
+      title="DIFFERENZE TRA LE DUE SITUAZIONI SALVATE"
       subtitle={subtitle ?? "Delta stima pp · Delta voti"}
     >
       <svg viewBox={`0 0 ${w} ${h}`} className="h-auto w-full">

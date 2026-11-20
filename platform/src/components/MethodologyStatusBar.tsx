@@ -56,9 +56,7 @@ export function MethodologyStatusBar({
         >
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-400" aria-hidden />
-            <p className="truncate">
-              Scenario non validato · input 7,2% · non equivale a voto
-            </p>
+            <p className="truncate">Scenario descrittivo · input 7,2%</p>
           </div>
           {detailsButton}
         </div>
@@ -70,10 +68,9 @@ export function MethodologyStatusBar({
         >
           <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400" aria-hidden />
           <p className="min-w-0 flex-1 truncate text-xs text-amber-100/90">
-            Scenario descrittivo non validato (
+            Scenario descrittivo (
             <span className="font-mono tabular-nums">predizione_validata: false</span>
-            ) · 7,2% input demoscopico · Contesto e attenzione non equivalgono a
-            voto
+            ) · input demoscopico 7,2%
           </p>
           {detailsButton}
         </div>
@@ -95,7 +92,7 @@ export function MethodologyStatusBar({
           >
             <div className="mb-4 flex items-start justify-between gap-3">
               <h2 id="method-title" className="fn-display text-lg font-semibold">
-                Metodologia &amp; limiti interpretativi
+                Metodologia
               </h2>
               <button
                 type="button"
@@ -109,17 +106,21 @@ export function MethodologyStatusBar({
             <div className="space-y-3 text-sm leading-relaxed text-fn-text-muted">
               <p>
                 <strong className="text-fn-text">Osservatorio integrato</strong>{" "}
-                — scenario descrittivo, non previsione validata. Modulo A: il 7,2%
-                è input demoscopico, non output dell&apos;entropia.
+                — scenario territoriale, fabbisogni BesT/AGENAS, eventi e Google Trends
+                (0–100). Input consenso nazionale: 7,2% (ottobre 2026,{" "}
+                <a
+                  href="https://www.youtrend.it/la-supermedia/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-fn-accent underline"
+                >
+                  Supermedia YouTrend/AGI
+                </a>
+                ).
               </p>
               <p>
-                I fabbisogni (Modulo B) e l&apos;attenzione mediatica (Modulo C)
-                non equivalgono alle intenzioni di voto. Confronti benchmark
-                FdI+Lega 2024: diagnostici.
-              </p>
-              <p>
-                Margine e probabilità soglia nel sondaggio simulato sono strumenti
-                interni di esplorazione, non rilevazioni certificate.
+                Confronti benchmark FdI+Lega 2024 e simulazioni Monte Carlo sono strumenti
+                di esplorazione interna.
               </p>
               <p className="text-xs">
                 Uso interno · accesso riservato al team di scenario.

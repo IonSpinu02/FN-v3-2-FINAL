@@ -1,0 +1,246 @@
+/* Presentation layer only: no model, data or API overrides. */
+.fn-workspace {
+  --ws-bg: #0b0e12;
+  --ws-panel: #10151b;
+  --ws-line: #29313b;
+  --ws-text: #edf0ed;
+  --ws-muted: #9caab6;
+  --ws-accent: #a7edce;
+  background: var(--ws-bg);
+  color: var(--ws-text);
+}
+html.light .fn-workspace {
+  --ws-bg: #e9eeec;
+  --ws-panel: #f8faf7;
+  --ws-line: #c6d2cd;
+  --ws-text: #182b27;
+  --ws-muted: #4e665f;
+  --ws-accent: #00674d;
+}
+.fn-workspace-header { background: var(--ws-bg); border-color: var(--ws-line); box-shadow: none; }
+.fn-workspace-header > div > :first-child { border: 0; border-radius: 0; background: transparent; box-shadow: none; padding-left: 0; }
+.fn-workspace-header > div > :first-child > span:first-of-type { color: var(--ws-text); letter-spacing: .08em; }
+.fn-workspace [data-workspace-nav] { bottom: 16px; gap: 5px; padding: 6px; border-radius: 14px; background: var(--ws-panel); border-color: var(--ws-line); box-shadow: 0 10px 30px #0003; }
+.fn-workspace [data-workspace-nav] a { flex-direction: row; gap: 9px; padding: 12px 18px; color: var(--ws-muted); border-radius: 9px; min-height: 44px; }
+.fn-workspace [data-workspace-nav] a[aria-current] { color: var(--ws-accent); }
+.fn-workspace [data-workspace-nav] a > span:first-child { box-shadow: none; border-color: var(--ws-line); background: color-mix(in srgb, var(--ws-accent) 9%, transparent); }
+.fn-workspace [data-workspace-nav] a > span.h-\[2px\] { display: none; }
+.fn-workspace [data-workspace-nav] a > span.relative { font-size: 12px; font-weight: 500; max-width: none; }
+.fn-workspace :is(button,a,input,select):focus-visible, .forecast-modal :is(button,a):focus-visible { outline: 2px solid #7dd9bf; outline-offset: 4px; }
+.fn-workspace .fn-scenario-stage { background: var(--ws-bg); position: relative; display: flex; flex-direction: column; min-height: 0; height: 100%; max-height: 100%; overflow: hidden; grid-template: none; }
+.fn-scenario-metrics, .fn-scenario-detail { position: relative; inset: auto; width: auto; scrollbar-gutter: stable; }
+.fn-scenario-metrics > div, .fn-scenario-detail > div { background: var(--ws-panel); border: 1px solid var(--ws-line); border-radius: 16px; box-shadow: none; }
+.fn-scenario-metrics > div > div:first-child { padding: 22px; }
+.fn-scenario-metrics .text-\[44px\] { font-size: clamp(40px, 3.6vw, 56px); font-weight: 500; letter-spacing: -.075em; color: var(--ws-text); }
+.fn-scenario-metrics a { text-underline-offset: 3px; }
+.fn-scenario-map { position: relative; inset: auto; width: auto; border-radius: 20px; background: radial-gradient(ellipse at center, #223c3a35, transparent 70%); }
+.fn-map-caption { position: absolute; top: 14px; left: 22px; z-index: 2; pointer-events: none; display: grid; gap: 5px; }
+.fn-map-caption span { font: 9px var(--font-mono), monospace; letter-spacing: .18em; color: var(--ws-accent); }
+.fn-map-caption strong { font: 500 clamp(18px, 1.6vw, 27px) var(--font-display), sans-serif; letter-spacing: -.04em; }
+.fn-map-caption small { color: var(--ws-muted); font-size: 11px; }
+.fn-scenario-ticker { position: relative; inset: auto; border-radius: 8px; background: var(--ws-panel); border-color: var(--ws-line); box-shadow: none; }
+.fn-export-dossier-fab { position: relative; inset: auto; bottom: auto; }
+.fn-export-dossier-wrap { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.fn-export-dossier-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 14px 8px 8px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, #22d3ee 28%, #1B2436);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, #0B1220 88%, #22d3ee), #080C14 55%);
+  color: #E2E8F0;
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: border-color .18s ease, background .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+.fn-export-dossier-btn:hover:not(:disabled) {
+  border-color: color-mix(in srgb, #22d3ee 55%, #1B2436);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, #0F172A 70%, #22d3ee), #0B1220 60%);
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.5),
+    0 0 0 1px color-mix(in srgb, #22d3ee 18%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transform: translateY(-1px);
+}
+.fn-export-dossier-btn:focus-visible {
+  outline: 2px solid #22d3ee;
+  outline-offset: 3px;
+}
+.fn-export-dossier-btn:disabled,
+.fn-export-dossier-btn.is-busy {
+  cursor: wait;
+  opacity: 0.92;
+  transform: none;
+}
+.fn-export-dossier-glyph {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, #22d3ee 35%, #1B2436);
+  background: color-mix(in srgb, #22d3ee 12%, #0B1220);
+  color: #67E8F9;
+  flex-shrink: 0;
+}
+.fn-export-dossier-icon { display: block; }
+.fn-export-dossier-icon.is-busy {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 2px solid color-mix(in srgb, #67E8F9 35%, transparent);
+  border-top-color: #67E8F9;
+  animation: fn-export-spin .7s linear infinite;
+}
+@keyframes fn-export-spin { to { transform: rotate(360deg); } }
+.fn-export-dossier-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: left;
+  min-width: 0;
+}
+.fn-export-dossier-label {
+  font: 600 12px/1.2 var(--font-sans), system-ui, sans-serif;
+  letter-spacing: -.01em;
+  color: #F8FAFC;
+  white-space: nowrap;
+}
+.fn-export-dossier-error {
+  max-width: 240px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, #f43f5e 35%, #1B2436);
+  background: color-mix(in srgb, #0B1220 85%, #f43f5e);
+  color: #FDA4AF;
+  font: 500 10px/1.35 ui-monospace, var(--font-mono), monospace;
+}
+html.light .fn-export-dossier-btn {
+  border-color: color-mix(in srgb, var(--ws-accent) 35%, var(--ws-line));
+  background: linear-gradient(180deg, #fff, color-mix(in srgb, var(--ws-panel) 92%, var(--ws-accent)));
+  color: var(--ws-text);
+  box-shadow: 0 8px 20px #0001;
+}
+html.light .fn-export-dossier-btn:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--ws-accent) 55%, var(--ws-line));
+  background: #fff;
+}
+html.light .fn-export-dossier-glyph {
+  border-color: color-mix(in srgb, var(--ws-accent) 40%, var(--ws-line));
+  background: color-mix(in srgb, var(--ws-accent) 10%, #fff);
+  color: var(--ws-accent);
+}
+html.light .fn-export-dossier-label { color: var(--ws-text); }
+.fn-workspace .forecast-widget { padding: 20px 18px; }
+.fn-workspace .forecast-widget-header { margin-bottom: 16px; }
+.fn-workspace .forecast-widget-body { border-radius: 10px; padding: 14px; background: color-mix(in srgb, var(--ws-panel) 94%, white); }
+.fn-workspace .forecast-segments { border-radius: 8px; padding: 4px; }
+.fn-workspace .forecast-segments button { min-height: 34px; font-size: 11px; }
+.fn-workspace .forecast-driver-chip { min-height: 30px; font-size: 10px; }
+.fn-workspace .forecast-signal-grid { display: flex; flex-direction: column; align-items: stretch; gap: 10px; margin-top: 16px; }
+.fn-workspace .forecast-main-number { gap: 10px; font-size: 34px; line-height: 1.25; margin: 6px 0; }
+.fn-workspace .forecast-main-number strong { font-weight: 500; }
+.fn-workspace .forecast-start { font-size: 18px; }
+.fn-workspace .forecast-number-arrow { font-size: 16px; }
+.fn-workspace .forecast-delta { font-size: 13px; }
+.fn-workspace .forecast-fan { height: 76px; }
+.fn-workspace .forecast-analyze-button { min-height: 36px; height: 36px; width: 100%; justify-content: center; border-radius: 8px; border-color: color-mix(in srgb, #10b981 35%, transparent); background: color-mix(in srgb, #10b981 10%, transparent); color: #6ee7b7; font: 500 12px/1.2 var(--font-sans), sans-serif; letter-spacing: 0; }
+.fn-workspace .forecast-analyze-button:hover { background: color-mix(in srgb, #10b981 15%, transparent); }
+html.light .fn-workspace .forecast-analyze-button { color: #047857; }
+.fn-scenario-metrics .fn-export-dossier-btn { height: 36px; min-height: 36px; width: 100%; justify-content: center; border-radius: 8px; border: 1px solid var(--border-default); background: var(--surface-2); color: var(--ink-primary); box-shadow: none; font: 500 12px/1.2 var(--font-sans), sans-serif; }
+.fn-scenario-metrics .fn-export-dossier-btn:hover:not(:disabled) { background: color-mix(in srgb, var(--surface-2) 88%, var(--ink-primary)); }
+.fn-workspace .forecast-widget-footnote { font-size: 10px; line-height: 1.5; }
+.forecast-factor-disclosure { border-top: 1px solid var(--forecast-line); margin-top: 12px; }
+.forecast-factor-disclosure summary, .fn-source-disclosure > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; list-style: none; color: var(--ws-muted); font-size: 11px; min-height: 42px; }
+.forecast-factor-disclosure summary::-webkit-details-marker, .fn-source-disclosure > summary::-webkit-details-marker { display: none; }
+.forecast-factor-disclosure summary > span, .fn-source-disclosure > summary > span { font-size: 18px; transition: transform .2s; }
+.forecast-factor-disclosure[open] summary > span, .fn-source-disclosure[open] > summary > span { transform: rotate(45deg); }
+.forecast-factor-disclosure summary:hover, .fn-source-disclosure > summary:hover { color: var(--ws-text); }
+.forecast-factor-disclosure summary:focus-visible, .fn-source-disclosure > summary:focus-visible { outline: 2px solid var(--ws-accent); outline-offset: 2px; }
+.fn-source-disclosure > summary { padding: 12px 20px; min-height: 52px; color: var(--ws-text); }
+.fn-source-disclosure > div { border-top: 1px solid var(--ws-line); }
+.fn-scenario-detail > div > div > div { background: var(--ws-panel); border-color: var(--ws-line); }
+.fn-consensus-stats > div > p:first-child { font-size: 9px; line-height: 1.5; min-height: 27px; }
+.fn-consensus-stats > div > p:last-child { font-size: 14px; line-height: 1.5; font-weight: 500; }
+.fn-scenario-detail li > div:first-child { flex-wrap: wrap; row-gap: 6px; }
+.fn-scenario-detail li > div:first-child > button:first-child { flex-basis: 100%; }
+.fn-scenario-detail li > div:first-child > button:first-child .truncate { overflow: visible; text-overflow: clip; white-space: normal; }
+.fn-scenario-detail li > div:first-child > div { margin-left: 24px; }
+@media (min-width: 1051px) {
+  .fn-scenario-ticker { min-height: 32px; }
+  .fn-scenario-metrics > div > div:first-child { padding: 20px 18px; }
+}
+html.light .fn-scenario-metrics :is(.text-white,.text-slate-300) { color: var(--ws-text); }
+html.light .fn-scenario-metrics .text-slate-500 { color: var(--ws-muted); }
+html.light .fn-workspace-header .text-emerald-200 { color: #00674d; }
+html.light .fn-scenario-detail :is(.text-white,.text-slate-100,.text-slate-200,.text-slate-300) { color: var(--ws-text); }
+html.light .fn-scenario-detail :is(.text-slate-400,.text-slate-500) { color: var(--ws-muted); }
+html.light .fn-scenario-detail :is(.text-emerald-300,.text-emerald-400) { color: #00674d; }
+html.light .fn-scenario-detail .text-cyan-300 { color: #006578; }
+html.light .fn-scenario-detail .text-amber-300\/90 { color: #825300; }
+.forecast-modal > div { border-radius: 20px; border-color: var(--forecast-line); box-shadow: 0 30px 100px #0005; }
+.forecast-modal .forecast-topbar { padding: 16px 32px 12px; }
+.forecast-modal .forecast-topbar-title h2 { font: 500 clamp(22px, 2.6vw, 32px)/1.15 var(--font-display), sans-serif; letter-spacing: -.05em; }
+.forecast-modal .forecast-executive-header { padding: 28px 32px 20px; }
+.forecast-modal .forecast-executive-header h2 { font: 500 clamp(24px, 3vw, 36px)/1.15 var(--font-display), sans-serif; letter-spacing: -.05em; }
+.forecast-modal .forecast-report-toolbar { padding-inline: 32px; }
+.forecast-modal .forecast-report-nav { padding-inline: 32px; gap: 32px; }
+.forecast-modal .forecast-report-nav button { min-height: 48px; font-size: 13px; }
+.forecast-modal .forecast-horizon-card { border-radius: 12px; padding: 16px; transition: background .2s, border-color .2s; }
+.forecast-modal .forecast-horizon-card:hover { border-color: var(--forecast-accent); }
+.forecast-modal .forecast-hero-card { border-radius: 14px; }
+.forecast-modal .forecast-hero-passage strong { font-size: clamp(40px, 4.5vw, 56px); }
+.forecast-modal .forecast-executive-number { font-size: clamp(56px, 6vw, 84px); letter-spacing: -.08em; }
+.forecast-modal .forecast-plain-list li { border-radius: 12px; padding: 18px 20px; }
+@media (max-width: 1050px) {
+  .fn-workspace { height: auto !important; max-height: none !important; overflow: visible !important; }
+  .fn-workspace > main { height: auto !important; max-height: none !important; overflow: visible !important; }
+  .fn-workspace .fn-scenario-stage { height: auto; overflow: visible; }
+  .fn-scenario-detail > div, .fn-scenario-detail > div > div { height: auto; }
+}
+@media (max-width: 640px) {
+  .fn-scenario-stage { grid-template-columns: minmax(0,1fr); padding: 64px 12px 104px; gap: 14px; }
+  .fn-scenario-map { height: 430px; }
+  .fn-map-caption { left: 12px; top: 8px; }
+  .fn-workspace-header .inline-flex.rounded-full { display: none; }
+  .fn-workspace [data-workspace-nav] { width: calc(100% - 24px); bottom: 12px; justify-content: center; }
+  .fn-workspace [data-workspace-nav] a { flex: 1; flex-direction: column; padding: 8px; gap: 5px; }
+  .fn-workspace [data-workspace-nav] a > span.relative { font-size: 10px; }
+  .forecast-modal { padding: 8px; }
+  .forecast-modal .forecast-topbar { padding: 12px 18px 8px; }
+  .forecast-modal .forecast-executive-header { padding: 20px 18px; }
+  .forecast-modal .forecast-report-toolbar, .forecast-modal .forecast-report-nav { padding-inline: 18px; }
+}
+@media (prefers-reduced-motion: reduce) { .fn-workspace *, .forecast-modal * { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }
+/* Important utility classes live in Tailwind's utilities layer. An earlier
+   layer is needed to release the immersive viewport on small screens. */
+@layer base {
+  html.light .fn-workspace-header .truncate,
+  html.light .fn-consensus-stats .text-slate-100,
+  html.light .fn-scenario-metrics .text-white,
+  html.light .fn-scenario-detail :is(.text-white,.text-slate-100,.text-slate-200,.text-slate-300) { color: var(--ws-text) !important; }
+  html.light .fn-scenario-detail :is(.text-slate-400,.text-slate-500) { color: var(--ws-muted) !important; }
+  html.light .fn-scenario-detail :is(.text-emerald-300,.text-emerald-400) { color: #00674d !important; }
+  html.light .fn-scenario-detail .text-cyan-300 { color: #006578 !important; }
+  html.light .fn-scenario-metrics a { color: #006578 !important; }
+  html.light .fn-scenario-detail .text-amber-300\/90 { color: #825300 !important; }
+  html.light .fn-scenario-ticker :is(.text-slate-300,.text-emerald-400) { color: var(--ws-text) !important; }
+  @media (min-width: 1051px) {
+    .fn-workspace main > div:has(> .fn-scenario-stage) { overflow: clip !important; }
+  }
+  @media (max-width: 1050px) {
+    .fn-workspace, .fn-workspace main, .fn-workspace main > div:has(> .fn-scenario-stage) {
+      height: auto !important;
+      max-height: none !important;
+      overflow: visible !important;
+    }
+  }
+}

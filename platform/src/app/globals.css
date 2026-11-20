@@ -1,14 +1,41 @@
 @import "tailwindcss";
 
-:root {
-  --fn-bg: #04070d;
-  --fn-bg-pattern: rgb(255 255 255 / 4%);
-  --fn-surface: rgb(15 23 42 / 72%);
-  --fn-surface-elevated: rgb(30 41 59 / 55%);
-  --fn-border: rgb(148 163 184 / 22%);
-  --fn-border-subtle: rgb(148 163 184 / 12%);
-  --fn-text: #f1f5f9;
-  --fn-text-muted: #94a3b8;
+@custom-variant light (&:where(.light, .light *));
+
+:root,
+html.dark {
+  --surface-canvas: #090c10;
+  --surface-1: #0f141b;
+  --surface-2: #161d27;
+  --surface-hover: rgba(255, 255, 255, 0.04);
+  --border-subtle: rgba(148, 163, 184, 0.12);
+  --border-default: rgba(148, 163, 184, 0.20);
+  --border-strong: rgba(52, 211, 153, 0.45);
+  --ink-primary: #f1f5f9;
+  --ink-secondary: #cbd5e1;
+  --ink-muted: #94a3b8;
+  --signal-positive: #34d399;
+  --signal-observed: #38bdf8;
+  --signal-warning: #fbbf24;
+  --signal-danger: #f87171;
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-heading), var(--font-inter), sans-serif;
+  --bg: var(--surface-canvas);
+  --surface: var(--surface-1);
+  --surface-strong: var(--surface-2);
+  --border: var(--border-default);
+  --text: var(--ink-primary);
+  --muted: var(--ink-muted);
+  --accent-emerald: var(--signal-positive);
+  --accent-cyan: var(--signal-observed);
+  --fn-bg: var(--surface-canvas);
+  --fn-bg-pattern: var(--surface-hover);
+  --fn-surface: var(--surface-1);
+  --fn-surface-elevated: var(--surface-2);
+  --fn-border: var(--border-default);
+  --fn-border-subtle: var(--border-subtle);
+  --fn-text: var(--ink-primary);
+  --fn-text-muted: var(--ink-muted);
   --fn-accent: #22c55e;
   --fn-accent-soft: rgb(34 197 94 / 12%);
   --fn-accent-hover: #16a34a;
@@ -26,7 +53,13 @@
   --fn-shadow: 0 0 0 1px rgb(255 255 255 / 6%), 0 24px 48px rgb(0 0 0 / 45%);
   --fn-radius: 1rem;
   --fn-blur: 18px;
+  --fn-map-stroke: #060a12;
+  --fn-map-stroke-active: #6ee7b7;
+  --fn-map-ocean-0: #0b1220;
+  --fn-map-ocean-1: #111827;
+  --fn-map-ocean-2: #1e293b;
 }
+
 
 @theme inline {
   --color-fn-bg: var(--fn-bg);
@@ -47,13 +80,19 @@
   --color-fn-sidebar: var(--fn-sidebar);
   --color-fn-sidebar-muted: var(--fn-sidebar-muted);
   --color-fn-sidebar-active: var(--fn-sidebar-active);
-  --font-sans: var(--font-inter);
-  --font-display: var(--font-heading);
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-heading), var(--font-inter), sans-serif;
   --font-mono: var(--font-mono);
 }
 
+.font-mono,
+.fn-kpi-number,
+table {
+  font-variant-numeric: tabular-nums;
+}
+
 body {
-  font-family: var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-sans);
   background-color: var(--fn-bg);
   color: var(--fn-text);
   min-height: 100%;
@@ -61,6 +100,112 @@ body {
     radial-gradient(circle at 50% 45%, rgba(16, 185, 129, 0.08), transparent 65%),
     radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   background-size: auto, 24px 24px;
+}
+
+/* Film grain cinematografico — elimina banding */
+body::after {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  opacity: 0.022;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 180px 180px;
+}
+
+.glass-panel {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(8, 12, 20, 0.88);
+  backdrop-filter: blur(18px);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+    0 18px 48px rgba(0, 0, 0, 0.45);
+}
+
+.glass-panel::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 0;
+  border-top: 1px solid var(--border-subtle);
+  pointer-events: none;
+  background: none;
+  z-index: 2;
+}
+
+html.light .glass-panel {
+  border-color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 10px 28px rgba(15, 23, 42, 0.08);
+}
+
+html.light .glass-panel::before {
+  background: none;
+  border-top-color: var(--border-subtle);
+}
+
+.hud-brackets::before,
+.hud-brackets::after {
+  content: none;
+  background: transparent;
+  opacity: 0;
+}
+
+.tactical-spotlight::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(
+    380px circle at var(--mouse-x, 50%) var(--mouse-y, 40%),
+    rgba(16, 185, 129, 0.08),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.tactical-spotlight:hover::after {
+  opacity: 1;
+}
+
+html.light {
+  --surface-canvas: #f1f5f9;
+  --surface-1: #ffffff;
+  --surface-2: #f8fafc;
+  --surface-hover: rgba(15, 23, 42, 0.04);
+  --border-subtle: #e2e8f0;
+  --border-default: #cbd5e1;
+  --border-strong: #059669;
+  --ink-primary: #0f172a;
+  --ink-secondary: #334155;
+  --ink-muted: #475569;
+  --signal-positive: #047857;
+  --signal-observed: #0369a1;
+  --signal-warning: #b45309;
+  --signal-danger: #dc2626;
+  --bg: var(--surface-canvas);
+  --surface: var(--surface-1);
+  --surface-strong: var(--surface-2);
+  --border: var(--border-default);
+  --text: var(--ink-primary);
+  --muted: var(--ink-muted);
+  --fn-bg: var(--surface-canvas);
+  --fn-surface: var(--surface-1);
+  --fn-surface-elevated: var(--surface-2);
+  --fn-text: var(--ink-primary);
+  --fn-text-muted: var(--ink-muted);
+  --fn-border: var(--border-default);
+  --fn-border-subtle: var(--border-subtle);
+  --fn-accent: var(--signal-positive);
 }
 
 .fn-display {
@@ -285,8 +430,8 @@ body {
   position: absolute;
   border-radius: 50%;
   filter: blur(80px);
-  opacity: 0.55;
-  animation: fn-float 22s ease-in-out infinite;
+  opacity: 0.35;
+  animation: none;
 }
 
 .fn-orb-a {
@@ -627,7 +772,8 @@ body {
 }
 
 .fn-kpi-value {
-  font-family: var(--font-ibm-plex-mono), ui-monospace, monospace;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
   font-size: 1.125rem;
   font-weight: 500;
   color: var(--fn-text);
@@ -729,7 +875,8 @@ body {
 }
 
 .fn-hero-kpi-value {
-  font-family: var(--font-ibm-plex-mono), ui-monospace, monospace;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
   font-size: 1rem;
   font-weight: 500;
   margin-top: 0.2rem;
@@ -843,7 +990,8 @@ body {
 .fn-map-zoom-level {
   min-width: 3rem;
   text-align: center;
-  font-family: var(--font-ibm-plex-mono), ui-monospace, monospace;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
   font-size: 0.6875rem;
   color: var(--fn-text-muted);
 }
@@ -880,7 +1028,8 @@ body {
 
 .fn-map-tooltip-value {
   margin-top: 0.25rem;
-  font-family: var(--font-ibm-plex-mono), ui-monospace, monospace;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--fn-text);
@@ -1332,7 +1481,66 @@ body {
 }
 
 .fn-live-ticker {
-  animation: fn-marquee 48s linear infinite;
+  animation: fn-marquee 72s linear infinite;
+  color: var(--ink-secondary);
+}
+.fn-live-ticker-fade:hover .fn-live-ticker,
+.fn-live-ticker-fade:focus-within .fn-live-ticker {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fn-live-ticker {
+    animation: none;
+  }
+}
+.fn-italy-map {
+  --map-stroke: rgba(203, 213, 225, 0.55);
+  --map-stroke-active: var(--signal-positive);
+  --map-canvas: var(--surface-canvas);
+}
+html.light .fn-italy-map {
+  --map-stroke: #475569;
+  --map-stroke-active: var(--signal-positive);
+}
+
+.fn-live-ticker-fade {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 6%,
+    black 94%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 6%,
+    black 94%,
+    transparent
+  );
+}
+
+@keyframes fn-reticle-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fn-reticle-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    r: 2.2;
+  }
+  50% {
+    opacity: 1;
+    r: 3.2;
+  }
+}
+
+.fn-map-reticle-ring,
+.fn-map-reticle-dot {
+  animation: none;
 }
 
 @keyframes fn-arc-flow {
@@ -1343,4 +1551,183 @@ body {
 
 .fn-arc-network path {
   animation: fn-arc-flow 3.2s linear infinite;
+}
+
+@property --fn-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes fn-forecast-spin {
+  to {
+    --fn-angle: 360deg;
+  }
+}
+
+@keyframes fn-forecast-rail {
+  to {
+    background-position: 0 22px;
+  }
+}
+
+.fn-forecast-rail {
+  width: 2px;
+  border-radius: 999px;
+  background-color: rgb(34 211 238 / 0.45);
+  box-shadow: 0 0 12px rgb(34 211 238 / 0.55);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgb(34 211 238 / 0) 0 7px,
+    rgb(224 255 255 / 0.95) 7px 11px
+  );
+  background-size: 2px 22px;
+  animation: fn-forecast-rail 0.85s linear infinite;
+}
+
+.fn-forecast-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.fn-forecast-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    112deg,
+    transparent 32%,
+    rgb(165 243 252 / 0.14),
+    transparent 68%
+  );
+  transform: translateX(-130%);
+  transition: transform 0.7s ease;
+  pointer-events: none;
+}
+
+.fn-forecast-card:hover::before {
+  transform: translateX(130%);
+}
+
+.fn-forecast-card-live {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(180deg, rgb(12 20 34 / 0.96), rgb(7 12 20 / 0.94)) padding-box,
+    conic-gradient(from var(--fn-angle), #22d3ee, #34d399, #a78bfa, #22d3ee) border-box;
+  animation: fn-forecast-spin 7s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fn-forecast-rail,
+  .fn-forecast-card-live {
+    animation: none;
+  }
+
+  .fn-forecast-card::before {
+    display: none;
+  }
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.25);
+  border-radius: 99px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.obj-stage {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse 48% 62% at 50% 52%, rgba(52, 211, 153, 0.11), transparent 72%),
+    radial-gradient(ellipse 80% 60% at 50% 120%, rgba(34, 211, 238, 0.06), transparent 70%),
+    var(--surface-1);
+}
+.obj-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--border-subtle) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+  background-size: 44px 44px;
+  opacity: 0.5;
+  mask-image: radial-gradient(ellipse 62% 70% at 50% 50%, #000 25%, transparent 78%);
+}
+.dark .obj-stage {
+  box-shadow: inset 0 0 160px rgba(0, 0, 0, 0.5);
+}
+.dark .obj-hero-num {
+  text-shadow: 0 0 48px rgba(52, 211, 153, 0.22);
+}
+
+@keyframes obj-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes obj-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes obj-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+.obj-rise {
+  animation: obj-rise 640ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.obj-region {
+  animation: obj-fade 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition: fill 320ms ease-out, fill-opacity 320ms ease-out;
+}
+.obj-draw {
+  stroke-dasharray: 1;
+  animation: obj-draw 1400ms cubic-bezier(0.65, 0, 0.35, 1) 520ms both;
+}
+.obj-press {
+  transition: transform 150ms ease-out, background-color 150ms ease-out, color 150ms ease-out;
+}
+.obj-press:active {
+  transform: scale(0.97);
+}
+@media (prefers-reduced-motion: reduce) {
+  .obj-rise,
+  .obj-region,
+  .obj-draw {
+    animation: none;
+  }
+  .obj-draw {
+    stroke-dasharray: none;
+  }
+}
+
+/* Telefono: niente scroll orizzontale di pagina, contenuti che vanno a capo, dock sopra la home indicator. */
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+img,
+video,
+canvas {
+  max-width: 100%;
+}
+@media (max-width: 767px) {
+  .fn-workspace-header > div {
+    min-width: 0;
+  }
+  [role="dialog"] {
+    max-width: 100vw;
+  }
 }

@@ -84,8 +84,7 @@ export function computeMobilizationContext(row: ScenarioRow): MobilizationContex
     astenuti > 0 ? (iscrittiFn / astenuti) * 100 : null;
 
   let band: MobilizationContext["band"] = "contesto_misto";
-  let nota =
-    "Lettura organizzativa: non sostituisce sondaggi né converte fabbisogni in voti.";
+  let nota = "Lettura organizzativa su tesseramento e astensione 2024.";
 
   if (iscrittiFn < 500 && astenutiPct > 55) {
     band = "base_organizzativa_limitata";

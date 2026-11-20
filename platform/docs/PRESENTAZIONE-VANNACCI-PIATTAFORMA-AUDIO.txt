@@ -1,0 +1,177 @@
+Buongiorno. So che il tuo tempo vale più di un’ora di slide. Non ti chiedo di credere alla tecnologia: ti chiedo se domani mattina, per decidere dove mettere il tuo volto e le risorse del movimento, preferisci la sensazione o una mappa dove ogni numero ha origine e livello di fiducia.
+
+Per tutto questo audio userò sempre due domande insieme: come ricaviamo il dato, e perché possiamo considerarlo affidabile — oppure perché non è certo al cento per cento e come lo usiamo lo stesso in modo corretto.
+
+Legenda veloce. Certo al cento per cento: solo dati ufficiali pubblici, elezioni o statistiche ISTAT e AGENAS alla data di pubblicazione. Alta: fonti istituzionali o documenti del partito verificabili internamente. Media: aggregatori, RSS, segnali Google. Stimata: modelli e simulazioni, utili per decisione interna, non da vendere come sondaggio.
+
+Questa piattaforma è stata costruita per te e per Futuro Nazionale. Il costo di ignorarla è allocare energie nella regione sbagliata mentre Google e la stampa urlano su un altro tema. Con la tracciabilità dei numeri, in televisione non ti chiedono solo da dove lo sapete: tu hai già risposto.
+
+Partiamo dalla tab Scenario. Venti regioni colorate: colore uguale stima percentuale regionale FN e voti di scenario.
+
+Come ricaviamo stima e voti. Il motore elettorale versione tre punto due, funzione calculate, parte da quattro indici per regione, mescolati con pesi che puoi modificare in dashboard. Primo indice: flussi elettorali. Secondo: preferenze di circoscrizione. Terzo: iscritti FN da anagrafe. Quarto: presenze istituzionali, sindaci assessori consiglieri, dal registro Locali. Poi integriamo il consenso nazionale S che imposti in alto e moltiplichiamo per i validi regionali alle Europee duemilaventiquattro.
+
+Perché è affidabile come processo. Non è un Excel aggiornato a mano: ogni ricalcolo passa dalla stessa formula, registrabile negli snapshot. Però l’output stima percentuale e voti è STIMATA: cambia se cambi S, pesi o flussi. Affidabile per coerenza interna e audit, non certo al cento per cento come pronostico elettorale ufficiale.
+
+Validi e voti Fratelli d’Italia e Lega duemilaventiquattro per regione.
+
+Come li ricaviamo. File dati eu2024 nel progetto, allineato al tabellario Ministero dell’Interno, Elezioni Europee otto nove giugno duemilaventiquattro.
+
+Perché sono affidabili al cento per cento. Sono il risultato elettorale proclamato, pubblico, controverificabile da chiunque sul sito del Ministero. Sono la spina dorsale del modello: non inventiamo l’elettorato di partenza.
+
+Ricostruzione elettori e astenuti duemilaventiquattro.
+
+Come la ricaviamo. Dal totale nazionale votanti e validi per regione ricaviamo rapporti e applichiamo le affluenze regionali note in config, per stimare elettori e astenuti per ogni regione.
+
+Perché è affidabile. ALTA, non certa al cento per cento al singolo comune, ma coerente con i vincoli ufficiali su validi e affluenza. Serve al modello per parlare di bacino e astensione, non per citare in tv un numero di astenuti come fatto ISTAT di ieri.
+
+Preferenze di circoscrizione.
+
+Come le ricaviamo. Dove il config ha preferenze osservate per circoscrizione le usiamo; dove mancano, le ricostruiamo in proporzione alla Lega duemilaventiquattro sul residuo, con regole esplicite nel motore.
+
+Perché è affidabile. ALTA dove il dato è osservato; STIMATA dove ricostruito. In entrambi i casi la regola è scritta nel codice, non decisa a voce in riunione.
+
+Consenso nazionale S, default sette virgola venti per cento.
+
+Come lo ricaviamo. Non è output del motore: è input. Il default lo prendiamo dalla Supermedia YouTrend con AGI, media delle rilevazioni pubblicate online.
+
+Perché è affidabile. MEDIA per il valore puntuale: non è una tua inchiesta dedicata certificata oggi. È affidabile come punto di partenza condiviso e aggiornabile. Se la segreteria ti passa un altro S, lo inserisci: tutta la mappa si riallinea a quella premessa e la congeli nello snapshot. Affidabilità del processo: alta. Certezza al cento per cento sul numero default: no.
+
+Flussi Ipsos e matrice provenienza voti.
+
+Come li ricaviamo. Matrice default da analisi Ipsos Doxa luglio duemilaventisei nel file config. Opzione matrice Sky TG24 ottobre duemilaventisei per flussi di provenienza. Il motore traduce quelle quote in contributo regionale insieme a preferenze, iscritti e istituzioni.
+
+Perché è affidabile. ALTA per ciò che Ipsos e Sky hanno effettivamente pubblicato: sono metodologie note. STIMATA per il passaggio da flusso nazionale a quota FN regionale: dipende dai pesi che scegli. In tv puoi citare Ipsos; non puoi dire il motore ha certificato sette virgola venti in Lombardia senza aggiungere che è scenario.
+
+Iscritti per regione.
+
+Come li ricaviamo. Campo iscritti_regione in config versione tre punto due, aggiornabile importando CSV dalla tab Storico iscritti.
+
+Perché è affidabile. ALTA operativa per il partito: è il dato anagrafe che voi gestite. Non certo al cento per cento da auditor esterno. Affidabile perché tracciabile e modificabile solo con upload esplicito, non nascosto nel modello.
+
+Presenze istituzionali e punteggio cariche.
+
+Come le ricaviamo. Registro Locali in locali_registry. Ogni carica ha regole di punteggio in localInstitutions: aggregate presences, compute delta, merge opzionale nello Scenario quando attivi l’override istituzioni.
+
+Perché è affidabile. ALTA sul conteggio: puoi aprire Locali e vedere comune per comune. STIMATA sull’effetto sulla percentuale regionale: dipende dal peso istituzioni nel mix. Affidabile per responsabilizzare i coordinatori: chi mette radici vede l’effetto, non è folklore.
+
+Monte Carlo, intervallo dal decimo al novantesimo percentile.
+
+Come lo ricaviamo. Simulazione, tipicamente ventimila run, campionando pesi con distribuzione Dirichlet e rumore su S, con generatore allineato al motore storico Python.
+
+Perché è affidabile. STIMATA per predizione, ALTA per utilità. Non misura errore di un sondaggio reale: misura quanto lo scenario si muove se le premesse oscillano. Affidabile per rispondere siamo robusti o sul filo, pericoloso se lo vendi come probabilità di vittoria al novanta per cento.
+
+Poll regionale simulato, classi TARGET e WATCH.
+
+Come lo ricaviamo. Modulo regionalPoll: prende lo scenario già calcolato, deriva margini, contributi dei quattro indici, probabilità di superamento soglia con simulazione gaussiana.
+
+Perché è affidabile. STIMATA, solo staff. Affidabile per ordinare la giornata del tour, non per titolo giornale abbiamo un sondaggio in Piemonte. Separare i due usi è ciò che ti rende credibile.
+
+Perché adottare la mappa. Ancoraggio visivo, venti regioni calcolate con la stessa formula, tu controlli S e pesi. Non arbitrarietà: leve esplicite.
+
+Quadro FN. Tabella venti regioni: stima, voti scenario, iscritti, stress fabbisogni Modulo B, eventi.
+
+Stress su sanità, lavoro, abitare, entropia.
+
+Come lo ricaviamo. Catalogo fabbisogni_catalog: quattro indicatori per venti regioni, valori da ISTAT BesT, AGENAS, OpenCivitas dove indicato in scheda. Poi territorialIntelligence calcola uno score stress zero cento, per esempio occupazione bassa uguale stress alto.
+
+Perché è affidabile. CERTO al cento per cento sui valori grezzi ISTAT e AGENAS alla data di pubblicazione ufficiale. STIMATA sullo score zero cento: è una regola di sintesi nostra, non un indicatore ISTAT preconfezionato. Affidabile per dire il territorio soffre misurato dallo Stato; non per dire soffrono quindi voteranno FN.
+
+Ordine regioni per voti guadagnabili.
+
+Come lo ricaviamo. Ranking interno: elasticità storica da Europee duemilaventiquattro, permeabilità del bacino verso messaggio FN, stima scenario corrente, segnali problema.
+
+Perché è affidabile. STIMATA come priorità di campagna. CERTO al cento per cento solo sulle quote storiche di input. Affidabile per decidere dove andare prima, non come promessa di seggi.
+
+Osservatorio, cockpit zero scroll. KPI regionali coerenti con S nazionale.
+
+Come li ricaviamo. Stessa pipeline Scenario per quota regionale; validi regionali sempre da eu2024; organizational flags da config e Locali.
+
+Perché è affidabile. Coerenza tra tab: non due Excel diversi. Stima percentuale resta STIMATA; validi restano CERTI.
+
+Menu venti regioni ordinato per potenziale seggi.
+
+Come lo ricaviamo. Resolver territory issues e ranking display: storico partiti regionalPartyStrength, impatto score problema, boost Trends opzionale, permeabilità Vannacci score da storico.
+
+Perché è affidabile. STIMATA sull’ordine. ALTA sullo storico elettorale sottostante da fonte certa. Affidabile per allineare staff su priorità, non per annunciare sondaggio.
+
+Passo due, radar problemi. Notizie etichetta Dato live.
+
+Come le ricaviamo. newsIngest: query Google News disambiguate per regione, RSS, fino a circa centoventi titoli, filtri sport e off-topic, classificazione su sei macro-temi allineati al motore fabbisogni. API territory issues con cache quindici minuti; warm cron opzionale per pre-caricare le venti regioni.
+
+Perché è affidabile. MEDIA. Affidabile come radar dell’attenzione e della cronaca recente con link alla fonte. Non certo al cento per cento come fatto giudiziario: titolo giornalistico, va verificato prima di accusa in diretta. Perché lo usiamo: perché il cittadino e i media si muovono oggi, non quando usciamo noi dal catalogo.
+
+Schede catalogo quando manca cronaca.
+
+Come le ricaviamo. territoryIssuesCatalog più Modulo B regionale da fabbisogni e testi curati; merge hybrid nel resolver.
+
+Perché è affidabile. ALTA sul dato strutturale BesT e AGENAS collegato. STIMATA su impatto elettorale e rank. Affidabile per non lasciare buchi quando Google News è silenzioso.
+
+Simulatore promesse FN, più punti percentuali e più voti, massimo tre temi.
+
+Come lo ricaviamo. FN_PROMISES_CATALOG, computeIssueConversionGain: storico elettorale regionale, categoria problema, intensità, validi regionali per tradurre in voti.
+
+Perché è affidabile. STIMATA esplicita. Affidabile per confrontare tema A versus tema B nella stessa regione con la stessa formula, non per garantire zero virgola quattro punti percentuali in tv. Il perché: evita che la campagna scelga a sentimento tra due promesse equivalenti sul piano emotivo ma diverse sul piano storico elettorale.
+
+Passo tre, Google Trends e B.I.P. Query exactQuery diverse per ognuna delle venti regioni.
+
+Come le ricaviamo. Catalogo curato REGIONAL_GOOGLE_TRENDS_CATALOG: per ogni regione sei cluster, query e quattro correlate, surge e indice didattico, dato oggettivo Modulo B, soluzione con capitolo e pagina B.I.P. duemilaventisette-trentasette. Alla selezione regione la UI carica subito quel catalogo. Poi API google-trends: fetch RSS ufficiale Google Trends geo IT o codice regione IT-XX, merge con template, badge Ultim’ora se match fuzzy con capitolo B.I.P.
+
+Perché è affidabile. Soluzione B.I.P.: ALTA, è il vostro documento programmatico, citabile. Query catalogo: ALTA come rappresentazione curata di ricerche reali del territorio, non export automatico Google in bulk. Indici cento su cento e percentuali surge in catalogo: STIMATA didattica per ordinare la lista. Picco Ultim’ora da RSS: MEDIA, segnale reale di tendenza Google, non sondaggio e non voto. Affidabile per collegare attenzione del momento a risposta già scritta nel programma.
+
+Rassegna stampa defezioni.
+
+Come la ricaviamo. Catalogo politici verificato, merge SPARQL open data Camera dati punto camera punto it dove risponde, RSS Google News, filtri solo cambi gruppo esterni, simulatore beneficio ingresso FN da regole elettorali collegio.
+
+Perché è affidabile. Gruppo parlamentare e mandato da open data Camera: ALTA, certa sullo stato anagrafico al momento della query. Voci rumor escluse o separate dove previsto. Beneficio simulato ingresso: STIMATA. Affidabile per opportunità politica interna, non per annunciare seggi acquisiti.
+
+Locali e News. Delta istituzionale verso Scenario.
+
+Come lo ricaviamo. Inserimento comune e cariche in Locali, computeIstituzioniDelta, merge con quick dock, POST scenario con istituzioniDelta se attivo.
+
+Perché è affidabile. ALTA sul fatto che la carica c’è perché l’avete registrata. STIMATA sull’incremento percentuale regionale. Affidabile per cultura della responsabilità territoriale.
+
+Scansione notizie tab Locali.
+
+Come la ricaviamo. POST news scan su feed configurati, collegamento al territorio e alimentazione Osservatorio.
+
+Perché è affidabile. MEDIA, come cronaca RSS. Utile per velocity, non per certezza giuridica.
+
+Snapshot congelato diciotto ottobre duemilaventisei.
+
+Come lo ricaviamo. File scenario_congelato: output calculate con config e S di quella data.
+
+Perché è affidabile. CERTO al cento per cento che quello era lo scenario congelato in quella riunione. STIMATA sul valore predittivo. Affidabile per audit interno e post-voto, prova che i numeri non cambiano a piacere senza traccia.
+
+Storico iscritti CSV.
+
+Come lo ricaviamo. Import CSV in HistoryPanel, aggiornamento config iscritti per regione.
+
+Perché è affidabile. ALTA come dato di partito tracciato. Non certo esterno. Affidabile perché ogni upload è un evento reversibile e documentabile.
+
+Metriche H, entropia scenario versus iscritti.
+
+Come le ricaviamo. Calcolo metriche nel result scenario, visualizzate in intelligence panel.
+
+Perché è affidabile. STIMATA, indicatore di dispersione interna al modello. Non confondere con consenso elettorale. Affidabile per diagnostica organizzativa, non per headline.
+
+Chiusura operativa. Non chiedo di abbandonare il tuo istinto. Chiedo di sovrapporre questo strato prima di un weekend in un capoluogo.
+
+Ripasso televisione, sempre con come e perché.
+
+Validi Europee per regione: ricavati da Ministero Interno, affidabili al cento per cento.
+
+Indicatori ISTAT BesT in scheda: ricavati da pubblicazioni ISTAT, affidabili al cento per cento alla data fonte.
+
+S sette virgola venti default: ricavato da Supermedia aggregatore, affidabilità media, sostituibile.
+
+Voti scenario Lombardia: ricavati da motore v3.2 con premesse esplicite, stimati, affidabili per coerenza non per certezza elettorale.
+
+Più zero virgola quattro punti percentuali su promessa: ricavati da simulatore conversione, stimati, affidabili solo per priorità interna.
+
+Query Trenord Lombardia: ricavate da catalogo regionale più RSS Google Trends live, media, affidabili per attenzione cittadini non per intenzione di voto.
+
+Quindici minuti di demo. Lombardia, Campania, Simula intervento, Locali con una carica. Se non ti senti più padrone della mappa, abbiamo fallito noi.
+
+Hai il B.I.P., ricavato dal vostro processo programmatico, alta fedeltà. Hai ISTAT e Camera dove indicato, certi. Hai modelli stimati dove serve scenario. Questa combinazione è affidabile perché non mescola i livelli: in public dici la certezza, in staff usi la stima.
+
+Grazie. Dimmi una regione a caso e la apriamo adesso.

@@ -43,22 +43,22 @@ export function buildMonthlyScheda(
 
   return [
     {
-      dimensione: "Scenario elettorale (Modulo A)",
+      dimensione: "Scenario elettorale",
       indicatoreStato: stima,
       nota: "Output modello territoriale; non sondaggio regionale campionario",
     },
     {
-      dimensione: "Fabbisogni oggettivi (Modulo B)",
+      dimensione: "Fabbisogni oggettivi",
       indicatoreStato: fabOggettivi,
       nota: "Periodi distinti per indicatore; vedi metadati fonte",
     },
     {
-      dimensione: "Priorità dichiarate (Modulo B)",
+      dimensione: "Priorità dichiarate",
       indicatoreStato: prioritaStato,
       nota: prioritaNota,
     },
     {
-      dimensione: "Eventi (Modulo C)",
+      dimensione: "Eventi & attenzione mediatica",
       indicatoreStato:
         eventiRegione.length > 0
           ? `${eventiRegione.length} episodi in registro`

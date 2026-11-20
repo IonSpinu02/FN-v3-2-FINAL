@@ -2,22 +2,23 @@
 
 import { ItaliaHeroStage } from "@/components/ItaliaHeroStage";
 import { ItalyMap, type MapColorMode } from "@/components/ItalyMap";
-import { MethodologyStatusBar } from "@/components/MethodologyStatusBar";
 import { NationalIntelligencePanel } from "@/components/NationalIntelligencePanel";
 import { QuickControlDock } from "@/components/QuickControlDock";
 import { RegionalPollTable } from "@/components/RegionalPollTable";
-import { Segmented } from "@/components/ui/FnUi";
 import type { InstitutionalRow } from "@/lib/engine/calculate";
 import type { Region } from "@/lib/engine/constants";
 import type { FlussiIpsos } from "@/lib/engine/defaults";
+import type { FlussiMatrixId, GrowthRegimeId, RegionalGrowthForecast } from "@/lib/politicalModel";
 import type {
   RegionPollResult,
   RegionalPollConfig,
 } from "@/lib/engine/regionalPollShared";
 import type { FnConfig, ScenarioResult } from "@/lib/engine/types";
 import type { CalculateOverrides } from "@/lib/engine/calculate";
+import type { TerritoryIssueCategory } from "@/lib/engine/territoryIssuesTypes";
 import { pct, pp } from "@/lib/format";
 import type { WeightUi } from "@/components/SensitivityControls";
+import type { LiveConsensoPayload } from "@/lib/engine/pollTypes";
 import { motion } from "framer-motion";
 import { useMemo, useRef, useState, type ReactNode } from "react";
 
@@ -86,14 +87,12 @@ function KpiBento({
 export function ScenarioTerritoryStage({
   immersive,
   hideRegionalTable = false,
-  onOpenMatrixView,
   scenario,
   baselineGolden,
   baselineForTable,
   poll,
   mapValues,
   mapMode,
-  onMapModeChange,
   selectedRegion,
   onSelectRegion,
   customAlert,
@@ -104,6 +103,11 @@ export function ScenarioTerritoryStage({
   S,
   weights,
   flussiIpsos,
+  flussiMatrixId,
+  onSelectFlussiMatrix,
+  growthRegime,
+  onGrowthRegimeChange,
+  regionalGrowthByRegion,
   onSChange,
   onWeightsChange,
   onFlussiChange,
@@ -122,6 +126,11 @@ export function ScenarioTerritoryStage({
   busy,
   fnConfig,
   quickInstDelta,
+  sLiveEnabled,
+  onSLiveEnabledChange,
+  liveConsenso,
+  liveConsensoLoading,
+  onOpenDossier,
 }: {
   scenario: ScenarioResult;
   baselineGolden: ScenarioResult;
@@ -129,7 +138,6 @@ export function ScenarioTerritoryStage({
   poll: RegionPollResult[];
   mapValues: Record<string, number>;
   mapMode: MapColorMode;
-  onMapModeChange: (m: MapColorMode) => void;
   selectedRegion: string | null;
   onSelectRegion: (r: string | null) => void;
   customAlert?: ReactNode;
@@ -140,6 +148,11 @@ export function ScenarioTerritoryStage({
   S: number;
   weights: WeightUi;
   flussiIpsos: FlussiIpsos;
+  flussiMatrixId: FlussiMatrixId;
+  onSelectFlussiMatrix: (id: FlussiMatrixId) => void;
+  growthRegime: GrowthRegimeId;
+  onGrowthRegimeChange: (r: GrowthRegimeId) => void;
+  regionalGrowthByRegion: Record<string, RegionalGrowthForecast>;
   onSChange: (s: number) => void;
   onWeightsChange: (w: WeightUi) => void;
   onFlussiChange: (f: FlussiIpsos) => void;
@@ -158,10 +171,14 @@ export function ScenarioTerritoryStage({
   busy?: boolean;
   immersive: boolean;
   hideRegionalTable?: boolean;
-  onOpenMatrixView?: () => void;
   onImmersiveChange?: (v: boolean) => void;
   fnConfig?: FnConfig;
   quickInstDelta?: CalculateOverrides["istituzioniDelta"];
+  sLiveEnabled?: boolean;
+  onSLiveEnabledChange?: (enabled: boolean) => void;
+  liveConsenso?: LiveConsensoPayload | null;
+  liveConsensoLoading?: boolean;
+  onOpenDossier?: (region: Region, category: TerritoryIssueCategory) => void;
 }) {
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
   const [classFilter, setClassFilter] = useState<
@@ -207,7 +224,6 @@ export function ScenarioTerritoryStage({
           poll={poll}
           mapValues={mapValues}
           mapMode={mapMode}
-          onMapModeChange={onMapModeChange}
           selectedRegion={selectedRegion}
           onSelectRegion={onSelectRegion}
           hoveredRegion={hoveredRegion}
@@ -216,10 +232,12 @@ export function ScenarioTerritoryStage({
           onClassFilterChange={setClassFilter}
           pollByRegion={pollByRegion}
           votesByRegion={votesByRegion}
-          S={S}
           flussiIpsos={flussiIpsos}
-          onSChange={onSChange}
-          onFlussiPreset={onFlussiChange}
+          flussiMatrixId={flussiMatrixId}
+          onSelectFlussiMatrix={onSelectFlussiMatrix}
+          growthRegime={growthRegime}
+          onGrowthRegimeChange={onGrowthRegimeChange}
+          regionalGrowthByRegion={regionalGrowthByRegion}
           onAdjustInst={
             selectedRegion && onAdjustInst
               ? (c, d) => onAdjustInst(selectedRegion, c, d)
@@ -230,13 +248,6 @@ export function ScenarioTerritoryStage({
               ? () => onResetInstRegion(selectedRegion)
               : undefined
           }
-          onScrollToTable={() => {
-            if (hideRegionalTable && onOpenMatrixView) {
-              onOpenMatrixView();
-              return;
-            }
-            tableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-          }}
           fnConfig={fnConfig}
           regionQuickDelta={
             selectedRegion
@@ -244,6 +255,11 @@ export function ScenarioTerritoryStage({
               : undefined
           }
           baselineScenario={baselineGolden}
+          sLiveEnabled={sLiveEnabled}
+          onSLiveEnabledChange={onSLiveEnabledChange}
+          liveConsenso={liveConsenso}
+          liveConsensoLoading={liveConsensoLoading}
+          onOpenDossier={onOpenDossier}
         />
       )}
 
@@ -251,7 +267,6 @@ export function ScenarioTerritoryStage({
 
       {!immersive && (
       <section className="fn-bento-grid-above-fold" aria-label="Command center scenario">
-        {!immersive && <MethodologyStatusBar />}
         <div className="fn-bento-col-left space-y-3">
           <div className="grid grid-cols-2 gap-2 lg:grid-cols-1">
             <KpiBento
@@ -285,19 +300,6 @@ export function ScenarioTerritoryStage({
             />
           </div>
 
-          <div className="fn-bento p-3">
-            <p className="fn-label mb-2">Layer mappa</p>
-            <Segmented
-              value={mapMode}
-              onChange={onMapModeChange}
-              options={[
-                { value: "stima", label: "Stima %" },
-                { value: "probSoglia", label: "Prob. soglia" },
-                { value: "scartoBenchmark", label: "Scarto bench." },
-              ]}
-            />
-          </div>
-
           <QuickControlDock
             S={S}
             weights={weights}
@@ -309,6 +311,10 @@ export function ScenarioTerritoryStage({
             onFlussiChange={onFlussiChange}
             onPollConfigChange={onPollConfigChange}
             onReset={onResetOfficial}
+            sLiveEnabled={sLiveEnabled}
+            onSLiveEnabledChange={onSLiveEnabledChange}
+            liveConsenso={liveConsenso}
+            liveConsensoLoading={liveConsensoLoading}
           />
         </div>
 
@@ -363,11 +369,12 @@ export function ScenarioTerritoryStage({
       </section>
       )}
 
+      {!immersive && (
       <details className="fn-bento fn-scenario-details mt-4">
-        <summary className="fn-scenario-details-summary">Snapshot &amp; congelamento</summary>
+        <summary className="fn-scenario-details-summary">Salva la situazione attuale</summary>
         <div className="fn-scenario-details-body grid gap-3 sm:grid-cols-2">
           <div>
-            <label className="fn-label block">Nome snapshot</label>
+            <label className="fn-label block">Nome del salvataggio</label>
             <input
               className="fn-input mt-1 text-sm"
               value={freezeName}
@@ -384,6 +391,7 @@ export function ScenarioTerritoryStage({
           </div>
         </div>
       </details>
+      )}
 
       {!hideRegionalTable && (
       <section

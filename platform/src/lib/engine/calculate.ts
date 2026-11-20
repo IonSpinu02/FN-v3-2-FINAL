@@ -9,6 +9,7 @@ import {
   quantile,
 } from "./math";
 import { PythonRandom } from "./pythonDistributions";
+import { flussiAltri } from "@/lib/politicalModel";
 import type { EuRegion, FnConfig, ScenarioResult, ScenarioRow } from "./types";
 
 type Weights = FnConfig["pesi"];
@@ -23,7 +24,7 @@ export type InstitutionalRow = {
 export type CalculateOverrides = {
   S?: number;
   pesi?: Weights;
-  flussi_ipsos?: { FdI: number; Lega: number; ast: number };
+  flussi_ipsos?: { FdI: number; Lega: number; ast: number; altri?: number };
   istituzioniDelta?: Partial<Record<Region, Partial<InstitutionalRow>>>;
 };
 
@@ -196,9 +197,7 @@ export function calculate(
   const xle = norm(lega);
   const xast = norm(ast);
 
-  const flussiSum =
-    working.flussi_ipsos.FdI + working.flussi_ipsos.Lega + working.flussi_ipsos.ast;
-  const altri = 1 - flussiSum;
+  const altri = flussiAltri(working.flussi_ipsos);
   const f = {} as RegionMap;
   for (const r of REGIONS) {
     f[r] =

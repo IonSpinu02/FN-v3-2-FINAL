@@ -1,7 +1,10 @@
 "use client";
 
 import {
-  FLUSSI_PRESETS,
+  FLUSSI_MATRICES,
+  flussiFromMatrix,
+} from "@/lib/politicalModel";
+import {
   WEIGHT_PRESETS,
   type FlussiIpsos,
 } from "@/lib/engine/defaults";
@@ -11,7 +14,9 @@ import {
   uiFromPesi,
   type WeightUi,
 } from "@/components/SensitivityControls";
+import { LiveConsensoControlBar } from "@/components/LiveConsensoControlBar";
 import { Btn, StatusDot } from "@/components/ui/FnUi";
+import type { LiveConsensoPayload } from "@/lib/engine/pollTypes";
 import { useState } from "react";
 
 type DockTab = "pesi" | "flussi" | "sondaggio";
@@ -43,6 +48,10 @@ export function QuickControlDock({
   onFlussiChange,
   onPollConfigChange,
   onReset,
+  sLiveEnabled,
+  onSLiveEnabledChange,
+  liveConsenso,
+  liveConsensoLoading,
 }: {
   S: number;
   weights: WeightUi;
@@ -54,6 +63,10 @@ export function QuickControlDock({
   onFlussiChange: (f: FlussiIpsos) => void;
   onPollConfigChange: (c: RegionalPollConfig) => void;
   onReset: () => void;
+  sLiveEnabled?: boolean;
+  onSLiveEnabledChange?: (enabled: boolean) => void;
+  liveConsenso?: LiveConsensoPayload | null;
+  liveConsensoLoading?: boolean;
 }) {
   const [tab, setTab] = useState<DockTab>("pesi");
   const normalized = pesiFromUi(weights);
@@ -100,11 +113,22 @@ export function QuickControlDock({
       <div className="mt-3 min-h-[140px]">
         {tab === "pesi" && (
           <div className="space-y-2">
+            {onSLiveEnabledChange != null ? (
+              <LiveConsensoControlBar
+                enabled={sLiveEnabled ?? false}
+                onEnabledChange={onSLiveEnabledChange}
+                liveConsenso={liveConsenso ?? null}
+                loading={liveConsensoLoading}
+                compact
+              />
+            ) : null}
             <label className="block text-xs">
               <span className="text-fn-text-muted">
                 Quota S{" "}
                 <span className="font-mono tabular-nums text-fn-text">
-                  {(S * 100).toFixed(1)}%
+                  {liveConsensoLoading && !liveConsenso
+                    ? "Caricamento…"
+                    : `${(S * 100).toFixed(1)}%`}
                 </span>
               </span>
               <input
@@ -113,8 +137,9 @@ export function QuickControlDock({
                 max={20}
                 step={0.1}
                 value={S * 100}
+                disabled={sLiveEnabled}
                 onChange={(e) => onSChange(Number(e.target.value) / 100)}
-                className="fn-range mt-1"
+                className="fn-range mt-1 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </label>
             {(
@@ -196,14 +221,14 @@ export function QuickControlDock({
               </label>
             ))}
             <div className="flex flex-wrap gap-1">
-              {Object.entries(FLUSSI_PRESETS).map(([name, f]) => (
+              {FLUSSI_MATRICES.map((m) => (
                 <Btn
-                  key={name}
+                  key={m.id}
                   variant="secondary"
                   className="px-2 py-1 text-[10px]"
-                  onClick={() => onFlussiChange({ ...f })}
+                  onClick={() => onFlussiChange(flussiFromMatrix(m.id))}
                 >
-                  {name.includes("Ex-Lega") ? "Ex-Lega Nord" : name.slice(0, 12)}
+                  {m.title}
                 </Btn>
               ))}
             </div>

@@ -71,7 +71,7 @@ export function compareTrendSeries(
     mediaPre > 0 ? ((mediaPost - mediaPre) / mediaPre) * 100 : 0;
 
   let interpretazione =
-    "Variazione dell'indice di attenzione relativa (Google Trends); non misura gradimento né intenzioni di voto.";
+    "Variazione dell'indice di attenzione relativa (Google Trends 0–100).";
   if (preValues.length === 0 || postValues.length === 0) {
     interpretazione =
       "Dati insufficienti per confronto pre/post; conservare estrazione originale Trends.";

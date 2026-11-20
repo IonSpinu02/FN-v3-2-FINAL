@@ -15,12 +15,11 @@ export function useAnimatedNumber(targetValue: number, duration = 420): number {
 
   useEffect(() => {
     if (!Number.isFinite(targetValue)) return;
-    if (Math.abs(targetValue - fromRef.current) < 1e-9) {
-      setDisplay(targetValue);
+    const from = fromRef.current;
+    if (Math.abs(targetValue - from) < 1e-9) {
       return;
     }
 
-    const from = fromRef.current;
     startRef.current = null;
 
     const tick = (now: number) => {
@@ -28,7 +27,8 @@ export function useAnimatedNumber(targetValue: number, duration = 420): number {
       const elapsed = now - startRef.current;
       const t = Math.min(1, elapsed / duration);
       const eased = easeOutQuart(t);
-      setDisplay(from + (targetValue - from) * eased);
+      const next = from + (targetValue - from) * eased;
+      setDisplay(next);
       if (t < 1) {
         rafRef.current = requestAnimationFrame(tick);
       } else {
@@ -42,10 +42,6 @@ export function useAnimatedNumber(targetValue: number, duration = 420): number {
 
     return () => cancelAnimationFrame(rafRef.current);
   }, [targetValue, duration]);
-
-  useEffect(() => {
-    fromRef.current = display;
-  }, [display]);
 
   return display;
 }

@@ -1,21 +1,24 @@
 "use client";
 
 import { CinematicBackground } from "@/components/CinematicBackground";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { CoverageTelemetryPanel } from "@/components/CoverageTelemetryPanel";
+import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "framer-motion";
 import {
-  Archive,
   Building2,
-  LayoutGrid,
   Map,
   Radar,
+  Target,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import "./dashboard-experience.css";
 
 export type ShellNavItem = {
   id: string;
   label: string;
+  /** Etichetta corta per la barra inferiore del telefono. */
+  short?: string;
   desc: string;
   href: string;
   icon?: LucideIcon;
@@ -23,11 +26,12 @@ export type ShellNavItem = {
 
 const NAV_ICONS: Record<string, LucideIcon> = {
   scenario: Map,
-  quadro: LayoutGrid,
   osservatorio: Radar,
   locali: Building2,
-  audit: Archive,
+  obiettivo: Target,
 };
+
+const SPRING = { type: "spring" as const, stiffness: 420, damping: 32 };
 
 export function DashboardShell({
   nav,
@@ -55,42 +59,68 @@ export function DashboardShell({
 
   return (
     <div
-      className={`screen-only relative w-full max-w-full overflow-x-hidden bg-[#02040A] ${
-        lockViewport ? "h-screen max-h-screen overflow-hidden" : "min-h-screen"
+      className={`fn-workspace screen-only relative w-full max-w-full overflow-x-hidden bg-[#02040A] ${
+        lockViewport
+          ? "min-h-dvh overflow-x-hidden max-lg:overflow-y-auto lg:h-dvh lg:max-h-dvh lg:overflow-hidden"
+          : "min-h-dvh overflow-x-hidden"
       }`}
     >
       <CinematicBackground />
 
       {topHud}
 
-      <nav
-        className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-0.5 rounded-xl border border-white/15 bg-[#070D19]/90 px-1 py-1 shadow-[0_16px_48px_rgba(0,0,0,0.85),0_0_24px_rgba(16,185,129,0.1)] backdrop-blur-2xl"
-        aria-label="Navigazione principale"
-      >
-        {nav.map((item) => {
-          const active = tab === item.id;
-          const Icon = item.icon ?? NAV_ICONS[item.id] ?? Map;
-          return (
-            <Link
-              key={item.id}
-              href={item.href}
-              title={item.desc}
-              aria-current={active ? "page" : undefined}
-              className={`group relative flex flex-col items-center gap-0.5 rounded-lg px-3 py-1.5 transition-all hover:-translate-y-0.5 ${
-                active
-                  ? "bg-emerald-500 text-slate-950 shadow-[0_0_20px_rgba(16,185,129,0.45)]"
-                  : "text-slate-300 hover:bg-white/10 hover:text-white"
-              }`}
-            >
-              <Icon className="h-4 w-4 shrink-0" aria-hidden />
-              <span className="text-[10px] font-semibold leading-none">{item.label}</span>
-              {overrideActive && item.id === "scenario" && (
-                <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-amber-400" />
-              )}
-            </Link>
-          );
-        })}
-      </nav>
+      <LayoutGroup id="fn-dock-nav">
+        <nav
+          className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-4 border-t border-[var(--border-subtle)] bg-[var(--surface-1)]/95 px-1 pb-[max(0.25rem,env(safe-area-inset-bottom))] pt-1 backdrop-blur-md lg:hidden"
+          aria-label="Navigazione principale"
+          data-workspace-nav
+        >
+          {nav.map((item) => {
+            const active = tab === item.id;
+            const Icon = item.icon ?? NAV_ICONS[item.id] ?? Map;
+            return (
+              <Link
+                key={item.id}
+                href={item.href}
+                title={item.desc}
+                aria-current={active ? "page" : undefined}
+                className={`group relative flex min-h-11 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1.5 transition-colors sm:px-3 ${
+                  active
+                    ? "text-emerald-100"
+                    : "text-slate-300 hover:text-white"
+                }`}
+              >
+                {active && !reduce ? (
+                  <motion.span
+                    layoutId="fn-dock-pill"
+                    className="absolute inset-0 rounded-xl border border-emerald-400/50 bg-emerald-500/18 shadow-[0_0_28px_-4px_rgba(16,185,129,0.55)]"
+                    transition={SPRING}
+                    aria-hidden
+                  />
+                ) : active ? (
+                  <span
+                    className="absolute inset-0 rounded-xl border border-emerald-400/50 bg-emerald-500/18 shadow-[0_0_28px_-4px_rgba(16,185,129,0.55)]"
+                    aria-hidden
+                  />
+                ) : null}
+                {active ? (
+                  <span
+                    className="absolute left-2 right-2 top-0 h-[2px] rounded-full bg-emerald-300/90 shadow-[0_0_10px_rgba(52,211,153,0.9)]"
+                    aria-hidden
+                  />
+                ) : null}
+                <Icon className="relative z-10 h-4 w-4 shrink-0" aria-hidden />
+                <span className="relative z-10 max-w-full truncate px-0.5 text-center text-[10px] font-semibold leading-tight">
+                  {item.short ?? item.label}
+                </span>
+                {overrideActive && item.id === "scenario" && (
+                  <span className="absolute -right-0.5 -top-0.5 z-10 h-2 w-2 rounded-full bg-amber-400" />
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+      </LayoutGroup>
 
       <AnimatePresence mode="wait">
         <motion.main
@@ -114,30 +144,24 @@ export function DashboardShell({
 
 export function DashboardSubtitle({
   busy,
-  metaDate,
-  dbCloudConnected,
+  newsConsidered,
+  newsDetected,
+  calendarSource,
+  calendarUsedFallback,
 }: {
   busy: boolean;
-  metaDate: string;
-  dbCloudConnected: boolean | null;
+  newsConsidered?: number;
+  newsDetected?: number;
+  calendarSource?: "official-calendar" | "local-catalog";
+  calendarUsedFallback?: boolean;
 }) {
   return (
-    <>
-      <span
-        className={`inline-flex h-2 w-2 rounded-full ${busy ? "animate-pulse bg-emerald-400" : "bg-emerald-500"}`}
-        aria-hidden
-      />
-      Base {metaDate}
-      {busy ? " · sync" : ""}
-      <span
-        className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${
-          dbCloudConnected
-            ? "border-cyan-400/40 bg-cyan-500/10 text-cyan-200"
-            : "border-emerald-400/30 bg-emerald-500/10 text-emerald-200"
-        }`}
-      >
-        {dbCloudConnected ? "Cloud Neon" : "Modalità Locale"}
-      </span>
-    </>
+    <CoverageTelemetryPanel
+      busy={busy}
+      newsConsidered={newsConsidered}
+      newsDetected={newsDetected}
+      calendarSource={calendarSource}
+      calendarUsedFallback={calendarUsedFallback}
+    />
   );
 }

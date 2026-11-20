@@ -3,12 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
+    "docs:metodologia-pdf": "npx --yes md-to-pdf docs/METODOLOGIA-NUMERI-E-SIMULAZIONI.md --stylesheet docs/metodologia-pdf.css && node -e \"require('fs').copyFileSync('docs/METODOLOGIA-NUMERI-E-SIMULAZIONI.pdf','public/METODOLOGIA-NUMERI-E-SIMULAZIONI-FN-v3-2.pdf')\"",
+    "docs:vannacci-pdf": "npx --yes md-to-pdf docs/PRESENTAZIONE-VANNACCI-PIATTAFORMA.md --stylesheet docs/metodologia-pdf.css && node -e \"require('fs').copyFileSync('docs/PRESENTAZIONE-VANNACCI-PIATTAFORMA.pdf','public/PRESENTAZIONE-VANNACCI-PIATTAFORMA-FN-v3-2.pdf')\"",
+    "docs:presentazione-pdf": "npx --yes md-to-pdf docs/PRESENTAZIONE-PIATTAFORMA-FN-v3-2.md --stylesheet docs/metodologia-pdf.css && node -e \"require('fs').copyFileSync('docs/PRESENTAZIONE-PIATTAFORMA-FN-v3-2.pdf','public/PRESENTAZIONE-PIATTAFORMA-FN-v3-2.pdf')\"",
+    "docs:presentazione-tecnica-pdf": "npx --yes md-to-pdf docs/PRESENTAZIONE-TECNICA-FN-v3-2.md --stylesheet docs/metodologia-pdf.css && node -e \"require('fs').copyFileSync('docs/PRESENTAZIONE-TECNICA-FN-v3-2.pdf','public/PRESENTAZIONE-TECNICA-FN-v3-2.pdf')\"",
     "deploy": "vercel deploy",
     "deploy:prod": "vercel deploy --prod",
     "db:schema": "node scripts/apply-neon-schema.mjs",
@@ -17,7 +21,10 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.7.0",
+    "@fontsource/inter": "^5.3.0",
     "@neondatabase/serverless": "^1.2.0",
+    "@react-pdf/renderer": "^4.9.0",
     "ai": "^7.0.146",
     "d3-scale": "^4.0.2",
     "drizzle-orm": "^0.45.4",
@@ -32,6 +39,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.4",
     "@tailwindcss/turbopack": "^4",
     "@types/d3-scale": "^4.0.9",
     "@types/node": "^20",

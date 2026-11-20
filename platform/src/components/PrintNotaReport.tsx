@@ -1,4 +1,5 @@
 "use client";
+import { useReportGeneratedAt } from "@/lib/useReportGeneratedAt";
 
 import type { CalculateOverrides } from "@/lib/engine/calculate";
 import {
@@ -40,7 +41,7 @@ export function PrintNotaReport({
   const gap =
     scenario.parametri.iscritti_totali_dichiarati -
     scenario.parametri.iscritti_attribuiti;
-  const generated = new Date().toLocaleString("it-IT");
+  const generated = useReportGeneratedAt();
 
   const sampleLabel = {
     fixed600: "600/regione",
@@ -83,9 +84,8 @@ export function PrintNotaReport({
             predittivo.
           </li>
           <li>
-            Osservatorio integrato (A/B/C): fabbisogni pubblici e attenzione
-            (news/Trends) non dimostrano preferenze elettorali né causalità di
-            singoli eventi.
+            Osservatorio integrato (A/B/C): fabbisogni, scenario territoriale ed
+            eventi/Trends in un unico quadro mensile.
           </li>
           <li>
             Gap iscritti: {gap.toLocaleString("it-IT")} (dichiarati vs
@@ -121,6 +121,9 @@ export function PrintNotaReport({
                 {(flussiIpsos.FdI * 100).toFixed(1)}% /{" "}
                 {(flussiIpsos.Lega * 100).toFixed(1)}% /{" "}
                 {(flussiIpsos.ast * 100).toFixed(1)}%
+                {flussiIpsos.altri != null
+                  ? ` / altri ${(flussiIpsos.altri * 100).toFixed(1)}%`
+                  : ""}
               </td>
             </tr>
             <tr>

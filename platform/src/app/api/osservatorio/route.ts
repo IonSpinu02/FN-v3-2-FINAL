@@ -72,12 +72,12 @@ function consegne() {
 
 function limiti() {
   return [
-    "Un sondaggio nazionale non misura da solo le quote regionali",
-    "I pesi del modello territoriale sono ipotesi iniziali",
-    "L'entropia descrive concentrazione, non entità del consenso",
-    "I fabbisogni non identificano preferenze politiche",
-    "Google Trends non misura gradimento né voti",
-    "Variazione temporale ≠ causalità dell'evento",
+    "Quote regionali da modello territoriale e input nazionale",
+    "Pesi scenario territoriale documentati e revisionabili",
+    "Entropia H su tesseramento e scenario",
+    "Fabbisogni: fonti BesT/AGENAS/OpenCivitas",
+    "Google Trends 0–100 sul periodo export",
+    "Event study con cronologia e metadati fonte",
   ];
 }
 
@@ -124,6 +124,11 @@ export async function POST(req: Request) {
       error: "Salvataggio fallito (npm run db:push?)",
     });
   }
+
+  const { touchPublishedDomain } = await import(
+    "@/lib/db/publishedStateRepository"
+  );
+  await touchPublishedDomain("news", `osservatorio-${payload.events.length}`);
 
   return Response.json({ ok: true, dbConnected: true });
 }

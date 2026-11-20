@@ -1,223 +1,450 @@
 "use client";
 
-import type { InstitutionalRow } from "@/lib/engine/calculate";
 import type { Region } from "@/lib/engine/constants";
+import {
+  PRIMARY_SOCIAL_ISSUE,
+  buildExposurePriorityCards,
+} from "@/lib/engine/exposurePriorityEngine";
+import { REGION_FABBISOGNO_DISPLAY } from "@/lib/engine/fabbisogniCatalogFallback";
+import { categoryStressForRegion } from "@/lib/engine/territoryIssueStress";
+import {
+  categoryLabel,
+  type TerritoryIssueCategory,
+} from "@/lib/engine/territoryIssuesTypes";
 import type { RegionPollResult } from "@/lib/engine/regionalPollShared";
 import type { FnConfig, ScenarioRow } from "@/lib/engine/types";
-import { pct } from "@/lib/format";
-import { Btn } from "@/components/ui/FnUi";
-import { motion, useReducedMotion } from "framer-motion";
+import { getBipMessaging } from "@/lib/bipProgramCatalog";
+import {
+  buildRegionalCampaignSummary,
+  cdxSharePct,
+  computeIssueConversionGain,
+  getRegionalPartyHistory,
+  validVotesFromScenarioRow,
+} from "@/lib/fnProgramAndAffinityEngine";
+import { formatDecimalIt, formatIntIt, formatPpSignedIt } from "@/lib/formatIt";
+import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 
-const CARICHE: { key: keyof InstitutionalRow; label: string }[] = [
-  { key: "dep", label: "Deputati" },
-  { key: "creg", label: "Cons. Regionali" },
-  { key: "sind", label: "Sindaci" },
-  { key: "com", label: "Cons. Comunali" },
-];
+const INST_KEYS = ["dep", "creg", "sind", "com"] as const;
 
-const TESSERE_LABEL: Record<RegionPollResult["statoTesseramento"], string> = {
-  equilibrato: "Equilibrato",
-  da_strutturare: "Aprire sedi (alti flussi)",
-  anomalia_tessere: "Verifica conversione",
-};
+function urgencyTone(stress: number): string {
+  if (stress >= 72) return "text-rose-300";
+  if (stress >= 55) return "text-amber-300";
+  return "text-cyan-300";
+}
+
+function urgencyLabel(stress: number): string {
+  if (stress >= 72) return "CRITICO";
+  if (stress >= 55) return "ALTO";
+  return "ATTIVO";
+}
+
+function socialIssuesForRegion(region: Region): {
+  label: string;
+  category: TerritoryIssueCategory;
+  stress: number;
+}[] {
+  const primary = PRIMARY_SOCIAL_ISSUE[region];
+  const display = REGION_FABBISOGNO_DISPLAY[region];
+  const secondCat: TerritoryIssueCategory =
+    primary.category === "SANITA"
+      ? "LAVORO"
+      : primary.category === "SICUREZZA"
+        ? "COSTO_VITA"
+        : primary.category === "COSTO_VITA"
+          ? "SICUREZZA"
+          : primary.category === "LAVORO"
+            ? "SANITA"
+            : "SANITA";
+  const thirdCat: TerritoryIssueCategory =
+    secondCat === "LAVORO"
+      ? "COSTO_VITA"
+      : secondCat === "COSTO_VITA"
+        ? "SANITA"
+        : secondCat === "SANITA"
+          ? "TRASPORTI"
+          : "LAVORO";
+  return [
+    {
+      label: primary.label,
+      category: primary.category,
+      stress: categoryStressForRegion(region, primary.category),
+    },
+    {
+      label: display[0] ?? categoryLabel(secondCat),
+      category: secondCat,
+      stress: categoryStressForRegion(region, secondCat),
+    },
+    {
+      label: display[1] ?? categoryLabel(thirdCat),
+      category: thirdCat,
+      stress: categoryStressForRegion(region, thirdCat),
+    },
+  ];
+}
+
+function PartyBar({
+  label,
+  pctValue,
+  detail,
+  color,
+}: {
+  label: string;
+  pctValue: number;
+  detail: string;
+  color: string;
+}) {
+  return (
+    <div>
+      <div className="flex items-baseline justify-between gap-2">
+        <p className="text-[11px] font-medium text-slate-200">{label}</p>
+        <p className="font-mono text-[12px] tabular-nums text-emerald-300">
+          {formatDecimalIt(pctValue, 1)}%
+        </p>
+      </div>
+      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#162032]">
+        <div
+          className={`h-full rounded-full ${color}`}
+          style={{ width: `${Math.min(100, pctValue)}%` }}
+        />
+      </div>
+      <p className="mt-1 font-mono text-[10px] text-slate-500">{detail}</p>
+    </div>
+  );
+}
 
 export function RegionPollDrawer({
   poll,
   row,
   fnConfig,
   region,
-  quickDelta,
-  mergedDelta,
-  onAdjustInst,
-  onResetRegion,
+  nationalS,
+  allRows,
   onClose,
+  onOpenOsservatorio,
 }: {
   poll: RegionPollResult;
   row: ScenarioRow;
   fnConfig: FnConfig;
   region: Region;
-  quickDelta?: Partial<InstitutionalRow>;
-  mergedDelta?: Partial<InstitutionalRow>;
-  onAdjustInst: (carica: keyof InstitutionalRow, delta: number) => void;
-  onResetRegion: () => void;
+  nationalS: number;
+  allRows: ScenarioRow[];
   onClose: () => void;
+  onOpenOsservatorio: (region: Region, category: TerritoryIssueCategory) => void;
 }) {
-  const reduce = useReducedMotion();
-  const classLabel = {
-    sicura: "Sicura (≥90% prob. sopra soglia)",
-    contesa: "Contesa / In bilico (35–89%)",
-    critica: "Sotto soglia / Critica (<35%)",
-  }[poll.classificazione];
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
-  function displayCount(k: keyof InstitutionalRow): number {
-    const b = fnConfig.presenze_istituzionali[k]?.[region] ?? 0;
-    const d = mergedDelta?.[k] ?? 0;
-    return b + d;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [onClose]);
+
+  const history = getRegionalPartyHistory(region);
+  const primary = PRIMARY_SOCIAL_ISSUE[region];
+  const socialIssues = useMemo(() => socialIssuesForRegion(region), [region]);
+  const validVotes = validVotesFromScenarioRow(row.voti_di_scenario, row.stima);
+  const sharePct = poll.piHat * 100;
+  const nationalPct = nationalS * 100;
+  const gapPp = sharePct - nationalPct;
+  const campaign = buildRegionalCampaignSummary(region, sharePct, validVotes);
+
+  const exposure = useMemo(() => {
+    const cards = buildExposurePriorityCards({
+      rows: allRows.map((item) => ({
+        regione: item.regione as Region,
+        stima: item.stima,
+        voti_di_scenario: item.voti_di_scenario,
+        elettori_ricostruiti: item.elettori_ricostruiti,
+      })),
+    });
+    return cards.find((card) => card.regione === region) ?? {
+      conversionScore: history.permeabilitaVannacciScore,
+      exposurePriorityScore: history.permeabilitaVannacciScore,
+      primaryCategory: primary.category,
+    };
+  }, [allRows, region, history.permeabilitaVannacciScore, primary.category]);
+
+  const totaleEletti = INST_KEYS.reduce(
+    (sum, key) => sum + (fnConfig.presenze_istituzionali[key]?.[region] ?? 0),
+    0,
+  );
+
+  const immigrationHot = /msna|migrat|balcan|sbarchi|flussi/i.test(primary.label);
+  const leverCategories = useMemo(() => {
+    const second =
+      socialIssues.find((issue) => issue.category !== primary.category)?.category ??
+      "SANITA";
+    return [primary.category, second] as const;
+  }, [primary.category, socialIssues]);
+
+  const levers = leverCategories.map((category, index) => {
+    const issue = socialIssues.find((item) => item.category === category) ?? socialIssues[index]!;
+    const subTheme =
+      immigrationHot && category === "SICUREZZA" ? ("immigrazione" as const) : null;
+    const gain = computeIssueConversionGain(
+      region,
+      category,
+      Math.max(70, issue.stress),
+      validVotes,
+      0.36,
+      subTheme,
+      { title: issue.label },
+    );
+    const messaging = getBipMessaging(category, subTheme);
+    return {
+      index: index + 1,
+      category,
+      issueLabel: issue.label,
+      gain,
+      messaging,
+      badge:
+        gain.conversionBadge === "ALTA"
+          ? "CONVERSIONE ALTA"
+          : gain.conversionBadge === "MIRATA"
+            ? "CONVERSIONE MIRATA"
+            : "CONVERSIONE LIMITATA",
+    };
+  });
+
+  const cdx = cdxSharePct(history);
+  const cdxCore = history.fdiPct + history.legaPct;
+
+  async function copyText(key: string, text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedKey(key);
+      window.setTimeout(() => setCopiedKey(null), 1600);
+    } catch {
+      setCopiedKey(null);
+    }
   }
 
-  const margineFmt =
-    poll.margineVotiSoglia >= 0
-      ? `+${poll.margineVotiSoglia.toLocaleString("it-IT")}`
-      : poll.margineVotiSoglia.toLocaleString("it-IT");
+  if (!mounted) return null;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex justify-end bg-fn-text/40 screen-only backdrop-blur-sm"
       role="dialog"
-      aria-label={`Sondaggio ${poll.regione}`}
+      aria-modal="true"
+      aria-label={`Dossier operativo ${region}`}
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 p-4 backdrop-blur-md md:p-6"
       onClick={onClose}
     >
-      <motion.div
-        className="fn-panel fn-drawer-panel h-full w-full max-w-md overflow-y-auto border-l border-white/10 p-6 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-        initial={reduce ? false : { x: "100%", opacity: 0.8 }}
-        animate={{ x: 0, opacity: 1 }}
-        exit={reduce ? undefined : { x: "100%", opacity: 0 }}
-        transition={{ type: "spring", stiffness: 340, damping: 34 }}
+      <div
+        className="flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-emerald-500/25 bg-[#070b12] text-slate-100 shadow-2xl"
+        onClick={(event) => event.stopPropagation()}
       >
-        <div className="mb-4 flex items-start justify-between gap-2">
-          <div>
-            <p className="fn-label">Bollettino regionale</p>
-            <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold">
-              {poll.regione}
-            </h2>
+        <header className="flex items-start justify-between gap-4 border-b border-[#1B2436] px-5 py-4 md:px-6">
+          <div className="min-w-0">
+            <p className="font-mono text-[10px] tracking-[0.16em] text-cyan-300/90">
+              DOSSIER OPERATIVO REGIONALE · QUADRO TATTICO PER L&apos;ESPOSIZIONE
+            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold tracking-tight text-white md:text-3xl">
+                {region}
+              </h2>
+              <span className="rounded border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 font-mono text-[10px] tabular-nums text-emerald-300">
+                Priorità Esposizione: {exposure.exposurePriorityScore}/100
+              </span>
+              <span className="rounded border border-cyan-500/30 bg-cyan-500/10 px-2 py-0.5 font-mono text-[10px] tabular-nums text-cyan-300">
+                Affinità Bacino: {exposure.conversionScore}/100
+              </span>
+            </div>
           </div>
-          <Btn variant="secondary" className="text-sm" onClick={onClose}>
+          <button
+            type="button"
+            onClick={onClose}
+            className="shrink-0 font-mono text-[10px] uppercase tracking-wide text-slate-400 hover:text-white"
+          >
             Chiudi
-          </Btn>
-        </div>
+          </button>
+        </header>
 
-        <p className="fn-alert mb-4 text-xs">
-          Simulazione interna — non sondaggio certificato.
-        </p>
-
-        <div className="mb-6 rounded-xl bg-fn-accent-soft px-4 py-4">
-          <p className="font-mono text-3xl font-medium text-fn-accent">
-            {pct(poll.piHat)}{" "}
-            <span className="text-lg text-fn-text-muted">
-              ± {(poll.moe * 100).toFixed(1)} pp
-            </span>
-          </p>
-          <p className="mt-1 text-sm text-fn-text-muted">
-            Forbice {pct(poll.icLow, 2)} – {pct(poll.icHigh, 2)} · N=
-            {poll.Nr.toLocaleString("it-IT")}
-          </p>
-        </div>
-
-        <dl className="grid grid-cols-2 gap-2 text-sm">
-          <Stat label="Prob. ≥ soglia" value={`${(poll.probAboveThreshold * 100).toFixed(1)}%`} />
-          <Stat label="Classificazione" value={classLabel} />
-          <Stat
-            label="Voti stimati sondaggio"
-            value={poll.votiStimatiSondaggio.toLocaleString("it-IT")}
-          />
-          <Stat label="Voti soglia" value={poll.votiSoglia.toLocaleString("it-IT")} />
-          <Stat label="Margine soglia (voti)" value={margineFmt} />
-          <Stat label="Validi attesi" value={poll.validiAttesi.toLocaleString("it-IT")} />
-          <Stat
-            label="Salute tessere"
-            value={TESSERE_LABEL[poll.statoTesseramento]}
-          />
-          <Stat
-            label="Voti / iscritto"
-            value={`${poll.votiPerIscritto.toFixed(1)} voti attesi per iscritto`}
-          />
-          <Stat label="Scarto vs benchmark" value={`${(poll.scartoVsBenchmark * 100).toFixed(2)} pp`} />
-          <Stat label="Sensibilità pesi" value={`${pct(row.lo10, 2)} – ${pct(row.hi90, 2)}`} />
-        </dl>
-
-        <h3 className="fn-label mb-2 mt-8">
-          What-If Istituzionale Rapido (Campagna Acquisti)
-        </h3>
-        <p className="mb-3 text-xs text-fn-text-muted">
-          Modifica i delta istituzionali per {region} (si sommano al registro
-          Locali se applicato). Conteggi mostrati = config v3.2 + delta totale.
-        </p>
-        <ul className="space-y-2 text-sm">
-          {CARICHE.map(({ key, label }) => (
-            <li
-              key={key}
-              className="flex items-center justify-between rounded-lg border border-fn-border-subtle px-3 py-2"
-            >
-              <span>
-                {label}:{" "}
-                <span className="font-mono font-medium">{displayCount(key)}</span>
-                {quickDelta?.[key] ? (
-                  <span className="ml-1 text-xs text-fn-accent">
-                    (Δ rapido {quickDelta[key]! > 0 ? "+" : ""}
-                    {quickDelta[key]})
+        <div className="min-h-0 flex-1 overflow-y-auto p-5 [scrollbar-width:none] md:p-6 [&::-webkit-scrollbar]:hidden">
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
+            <div className="space-y-4 lg:col-span-5">
+              <section className="rounded-xl border border-[#1B2436] bg-[#0a1018] p-4">
+                <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-slate-500">
+                  01 · Forza attuale & struttura reale FN
+                </p>
+                <p className="mt-3 font-mono text-4xl font-bold tabular-nums text-emerald-400">
+                  {formatDecimalIt(sharePct, 2)}%
+                </p>
+                <p className="mt-1 font-mono text-[11px] text-slate-400">
+                  Consenso FN stimato ·{" "}
+                  <span
+                    className={
+                      gapPp >= 0 ? "text-emerald-300" : "text-amber-300"
+                    }
+                  >
+                    {formatPpSignedIt(gapPp, 2)} vs media Italia
                   </span>
-                ) : null}
-              </span>
-              <span className="flex gap-1">
-                <Btn
-                  variant="secondary"
-                  className="px-2 py-0.5 text-xs"
-                  onClick={() => onAdjustInst(key, -1)}
+                </p>
+                <div className="mt-4 grid grid-cols-2 gap-3 border-t border-[#1B2436] pt-3">
+                  <div>
+                    <p className="font-mono text-[9px] uppercase tracking-wide text-slate-500">
+                      Tesserati FN
+                    </p>
+                    <p className="mt-1 font-mono text-lg tabular-nums text-slate-100">
+                      {formatIntIt(row.iscritti)}
+                    </p>
+                    <p className="text-[10px] text-slate-500">iscritti in regione</p>
+                  </div>
+                  <div>
+                    <p className="font-mono text-[9px] uppercase tracking-wide text-slate-500">
+                      Rete istituzionale
+                    </p>
+                    <p className="mt-1 font-mono text-lg tabular-nums text-slate-100">
+                      {formatIntIt(totaleEletti)}
+                    </p>
+                    <p className="text-[10px] text-slate-500">
+                      amministratori/eletti (sola lettura)
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+              <section className="rounded-xl border border-[#1B2436] bg-[#0a1018] p-4">
+                <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-slate-500">
+                  02 · Bacino elettorale reale · Europee 2024
+                </p>
+                <p className="mt-1 text-[10px] text-slate-500">
+                  Ministero dell&apos;Interno · Stima · Score 0–100 conversione{" "}
+                  {history.permeabilitaVannacciScore}
+                </p>
+                <div className="mt-4 space-y-3.5">
+                  <PartyBar
+                    label="Bacino Centrodestra (FdI + Lega)"
+                    pctValue={cdxCore}
+                    detail={`FdI ${formatDecimalIt(history.fdiPct, 1)}% · Lega ${formatDecimalIt(history.legaPct, 1)}% · FI ${formatDecimalIt(history.fiPct, 1)}% · CDX tot. ${formatDecimalIt(cdx, 1)}%`}
+                    color="bg-emerald-500/80"
+                  />
+                  <PartyBar
+                    label="Area avversa (PD + M5S)"
+                    pctValue={history.pdPct + history.m5sPct}
+                    detail={`PD ${formatDecimalIt(history.pdPct, 1)}% · M5S ${formatDecimalIt(history.m5sPct, 1)}% · Astensione ${formatDecimalIt(history.astensionePct, 1)}%`}
+                    color="bg-rose-500/70"
+                  />
+                </div>
+                <p className="mt-3 text-[11px] leading-snug text-slate-400">
+                  {campaign.strategicExplanation}
+                </p>
+              </section>
+
+              <section className="rounded-xl border border-[#1B2436] bg-[#0a1018] p-4">
+                <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-slate-500">
+                  03 · Emergenze e disagi sociali critici
+                </p>
+                <ul className="mt-3 space-y-2.5">
+                  {socialIssues.map((issue, index) => (
+                    <li
+                      key={`${issue.category}-${index}`}
+                      className="rounded-lg border border-[#1B2436] bg-[#070b12]/80 px-3 py-2.5"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-[9px] text-slate-500">
+                          #{index + 1} · {categoryLabel(issue.category)}
+                        </span>
+                        <span
+                          className={`font-mono text-[9px] uppercase tracking-wide ${urgencyTone(issue.stress)}`}
+                        >
+                          {urgencyLabel(issue.stress)} · {issue.stress}/100
+                        </span>
+                      </div>
+                      <p className="mt-1 text-[12px] leading-snug text-amber-100/90">
+                        {issue.label}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            </div>
+
+            <div className="flex flex-col gap-4 lg:col-span-7">
+              <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-slate-500">
+                Cosa dichiarare in {region} · Leve B.I.P. prioritarie
+              </p>
+              {levers.map((lever) => (
+                <section
+                  key={lever.category}
+                  className="rounded-xl border border-emerald-500/20 bg-[#0a1018] p-4"
                 >
-                  −
-                </Btn>
-                <Btn
-                  variant="secondary"
-                  className="px-2 py-0.5 text-xs"
-                  onClick={() => onAdjustInst(key, 1)}
-                >
-                  +
-                </Btn>
-              </span>
-            </li>
-          ))}
-        </ul>
-        <Btn
-          variant="ghost"
-          className="mt-2 text-xs"
-          onClick={onResetRegion}
-        >
-          Azzera modifiche regione
-        </Btn>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded border border-emerald-500/35 bg-emerald-500/10 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wide text-emerald-300">
+                      Leva #{lever.index} · {lever.badge}
+                    </span>
+                    <span className="font-mono text-[10px] text-cyan-300/90">
+                      Cap. {lever.messaging.chapterNum} · {lever.messaging.pages}
+                    </span>
+                  </div>
+                  <h3 className="mt-2 text-[15px] font-semibold leading-snug text-slate-50">
+                    {lever.gain.fnPromise.shortTitle}
+                  </h3>
+                  <p className="mt-2 text-[11px] leading-snug text-amber-200/85">
+                    <span className="font-mono uppercase tracking-wide text-slate-500">
+                      Problema territoriale ·{" "}
+                    </span>
+                    {lever.issueLabel}
+                  </p>
+                  <p className="mt-2 text-[12px] leading-relaxed text-slate-300">
+                    <span className="font-mono text-[10px] uppercase tracking-wide text-slate-500">
+                      Atto / soluzione ·{" "}
+                    </span>
+                    {lever.messaging.provvedimento.attoConcreto}
+                  </p>
+                  <div className="mt-3 rounded-lg border border-[#1B2436] bg-[#070b12] p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-mono text-[9px] uppercase tracking-wide text-slate-500">
+                        [Bozza per lo staff] · Dichiarazione stampa / comizio
+                      </p>
+                      <button
+                        type="button"
+                        className="shrink-0 font-mono text-[10px] uppercase tracking-wide text-emerald-300 hover:text-cyan-300"
+                        onClick={() =>
+                          void copyText(
+                            `lever-${lever.index}`,
+                            lever.messaging.pressDeclaration,
+                          )
+                        }
+                      >
+                        {copiedKey === `lever-${lever.index}`
+                          ? "Copiato"
+                          : "[ Copia dichiarazione ]"}
+                      </button>
+                    </div>
+                    <p className="mt-2 text-[12px] leading-relaxed text-slate-200">
+                      «{lever.messaging.pressDeclaration}»
+                    </p>
+                  </div>
+                </section>
+              ))}
 
-        <h3 className="fn-label mb-2 mt-8">Origine consenso (mix)</h3>
-        <ul className="space-y-2 text-sm">
-          <Bar label="Flussi" pct={poll.contribFlussi} color="bg-orange-500" />
-          <Bar label="Preferenze" pct={poll.contribPreferenze} color="bg-emerald-600" />
-          <Bar label="Iscritti" pct={poll.contribIscritti} color="bg-fn-accent" />
-          <Bar label="Istituzioni" pct={poll.contribIstituzioni} color="bg-violet-600" />
-        </ul>
-      </motion.div>
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-fn-border-subtle bg-fn-surface px-2 py-2">
-      <dt className="text-xs text-fn-text-muted">{label}</dt>
-      <dd className="font-mono text-sm">{value}</dd>
-    </div>
-  );
-}
-
-function Bar({
-  label,
-  pct: share,
-  color,
-}: {
-  label: string;
-  pct: number;
-  color: string;
-}) {
-  return (
-    <li>
-      <div className="flex justify-between text-xs">
-        <span>{label}</span>
-        <span className="font-mono">{(share * 100).toFixed(1)}%</span>
+              <button
+                type="button"
+                className="mt-auto w-full rounded-xl border border-emerald-400/40 bg-emerald-500/15 px-4 py-3.5 font-mono text-[11px] font-semibold uppercase tracking-wide text-emerald-200 transition hover:border-cyan-400/50 hover:bg-emerald-500/25 hover:text-white"
+                onClick={() =>
+                  onOpenOsservatorio(region, levers[0]?.category ?? primary.category)
+                }
+              >
+                [ Apri dossier completo in Osservatorio → ]
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-      <div className="mt-1 h-2 rounded-full bg-fn-border-subtle">
-        <div
-          className={`h-2 rounded-full ${color}`}
-          style={{ width: `${share * 100}%` }}
-        />
-      </div>
-    </li>
+    </div>,
+    document.body,
   );
 }

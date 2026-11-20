@@ -1,0 +1,87 @@
+/* Decorative edge treatments. They carry no data and never receive input. */
+.forecast-material :is(
+ .forecast-strategist-tesi-block,.forecast-strategist-row,
+ .forecast-strategist-risks-block,.forecast-declare-card,
+ .forecast-sim-control-col,.forecast-factors-quadratura,
+ .forecast-factors-table,.forecast-simulation-box,.forecast-credibility-strip
+) {
+ position:relative;
+ isolation:isolate;
+ overflow:hidden;
+ --surface-ink:color-mix(in srgb,var(--forecast-accent) 10%,transparent);
+ --surface-faint:color-mix(in srgb,var(--forecast-accent) 4%,transparent);
+}
+.forecast-material :is(
+ .forecast-strategist-tesi-block,.forecast-strategist-row,
+ .forecast-strategist-risks-block,.forecast-declare-card,
+ .forecast-sim-control-col,.forecast-factors-quadratura,
+ .forecast-factors-table,.forecast-simulation-box,.forecast-credibility-strip
+)::before {
+ content:""; position:absolute; z-index:-1; pointer-events:none;
+ width:180px; height:150px; right:-28px; top:-28px;
+ background:repeating-linear-gradient(135deg,transparent 0 19px,var(--surface-ink) 19px 20px,transparent 20px 30px);
+ mask-image:linear-gradient(225deg,#000,transparent 82%);
+}
+/* Reading panels: corner lattice, offset frames, then a soft contour. */
+.forecast-material .forecast-strategist-tesi-block:nth-child(1)::before {
+ background:linear-gradient(var(--surface-ink) 1px,transparent 1px),linear-gradient(90deg,var(--surface-ink) 1px,transparent 1px);
+ background-size:22px 22px; width:145px; height:145px; right:0; top:0;
+}
+.forecast-material .forecast-strategist-tesi-block:nth-child(2)::before {
+ width:120px; height:120px; top:-55px; right:-55px; border:1px solid var(--surface-ink);
+ background:none; border-radius:18px; transform:rotate(32deg); mask-image:none;
+ box-shadow:0 0 0 16px var(--surface-faint),0 0 0 32px var(--surface-faint);
+}
+.forecast-material .forecast-strategist-tesi-block:nth-child(3)::before {
+ width:200px; height:110px; right:-120px; top:10px; background:none;
+ border:1px solid var(--surface-ink); border-radius:50%; mask-image:none;
+ box-shadow:0 0 0 16px var(--surface-faint),0 0 0 32px var(--surface-faint);
+}
+/* Long rows use small edge details rather than a pattern behind the prose. */
+.forecast-material .forecast-strategist-row::before {
+ width:100px; height:100px; right:-20px; top:-20px;
+ background:radial-gradient(circle,var(--surface-ink) 1px,transparent 1.5px);
+ background-size:10px 10px;
+}
+.forecast-material .forecast-strategist-row:nth-child(even)::before {
+ background:repeating-linear-gradient(135deg,transparent 0 12px,var(--surface-ink) 12px 13px,transparent 13px 22px);
+}
+.forecast-material .forecast-strategist-risks-block::before {
+ width:130px; height:100%; top:0; right:0;
+ background:repeating-linear-gradient(135deg,transparent 0 17px,var(--surface-ink) 17px 18px,transparent 18px 29px);
+}
+/* Editorial cards: fine paper rules and an offset page-corner frame. */
+.forecast-material .forecast-declare-card::before {
+ width:160px; height:100px; top:auto; bottom:0; right:0;
+ background:repeating-linear-gradient(0deg,transparent 0 13px,var(--surface-ink) 13px 14px,transparent 14px 23px);
+ mask-image:linear-gradient(315deg,#000,transparent 80%);
+}
+.forecast-material .forecast-declare-card:nth-child(even)::before {
+ width:100px; height:100px; top:-48px; bottom:auto; right:-48px;
+ border:1px solid var(--surface-ink); background:none; transform:rotate(45deg); mask-image:none;
+ box-shadow:0 0 0 14px var(--surface-faint),0 0 0 28px var(--surface-faint);
+}
+/* Control panels: oblique lines on one side, a restrained point lattice on the other. */
+.forecast-material .forecast-sim-control-col[data-col="network"]::before {
+ width:145px; height:120px; background:radial-gradient(circle,var(--surface-ink) 1px,transparent 1.5px); background-size:12px 12px;
+}
+.forecast-material .forecast-factors-quadratura::before {
+ width:180px; height:100%; top:0; right:0;
+ background:repeating-linear-gradient(115deg,transparent 0 24px,var(--surface-ink) 24px 25px,transparent 25px 40px);
+}
+.forecast-material .forecast-factors-table::before {
+ width:110px; height:100px; top:-15px; right:-10px;
+ background:linear-gradient(var(--surface-ink) 1px,transparent 1px),linear-gradient(90deg,var(--surface-ink) 1px,transparent 1px); background-size:18px 18px;
+}
+.forecast-material .forecast-simulation-box::before {
+ width:160px; height:80px; right:0; top:0;
+ background:repeating-linear-gradient(135deg,transparent 0 16px,var(--surface-ink) 16px 17px,transparent 17px 28px);
+}
+.forecast-material .forecast-credibility-strip::before {
+ width:170px; height:170px; top:-115px; right:-60px; background:none;
+ border:1px solid var(--surface-ink); border-radius:50%; mask-image:none;
+ box-shadow:0 0 0 16px var(--surface-faint),0 0 0 32px var(--surface-faint);
+}
+@media(max-width:700px) {
+ .forecast-material :is(.forecast-strategist-tesi-block,.forecast-strategist-row,.forecast-declare-card,.forecast-sim-control-col)::before { opacity:.65; }
+}

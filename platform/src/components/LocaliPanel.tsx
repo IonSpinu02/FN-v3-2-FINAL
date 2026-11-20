@@ -13,6 +13,7 @@ import {
   loadRegistryFromBrowser,
   saveRegistryToBrowser,
 } from "@/lib/engine/localiStorage";
+import { useRealtimeSync } from "@/components/realtime/RealtimeSyncProvider";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Btn, Segmented } from "@/components/ui/FnUi";
 import {
@@ -22,6 +23,7 @@ import {
 import { LocaliDeltaBanner } from "./LocaliDeltaBanner";
 import { LocaliRegistryTable } from "./LocaliRegistryTable";
 import { NewsReviewPanel } from "./NewsReviewPanel";
+import { RassegnaStampaDefezioniPanel } from "./RassegnaStampaDefezioniPanel";
 
 function cleanComuneLabel(name: string): string {
   return name
@@ -102,6 +104,7 @@ export function LocaliPanel({
   /** Tab dashboard 04: solo rassegna stampa (registro istituzionale nascosto). */
   newsOnly?: boolean;
 }) {
+  const { requestDomainRefresh } = useRealtimeSync();
   const [entries, setEntries] = useState<LocalRegistryEntry[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [browserSaved, setBrowserSaved] = useState(false);
@@ -191,8 +194,9 @@ export function LocaliPanel({
           setCloudSaved(true);
           setCloudMeta({
             updatedAt: new Date().toISOString(),
-            updatedBy: "interno@fn",
+            updatedBy: data.updatedBy ?? "dashboard",
           });
+          void requestDomainRefresh("locali");
         }
       })
       .catch(() => {});
@@ -241,7 +245,13 @@ export function LocaliPanel({
   const showNews = newsOnly || view === "news";
 
   return (
-    <div className="flex flex-col gap-5 pb-32">
+    <div
+      className={
+        newsOnly
+          ? "flex min-h-0 flex-1 flex-col gap-4"
+          : "flex flex-col gap-5 pb-32"
+      }
+    >
       {!newsOnly ? (
         <Segmented
           value={view}
@@ -253,7 +263,7 @@ export function LocaliPanel({
             },
             {
               value: "news",
-              label: "02 · Rassegna Stampa & Scanner 3D (Typeflow)",
+              label: "02 · Rassegna stampa e ricerca notizie",
             },
           ]}
         />
@@ -326,9 +336,12 @@ export function LocaliPanel({
           />
         </>
       ) : null}
-      {showNews && (
-        <NewsReviewPanel entries={entries} onApplyToRegistry={handleEntriesChange} />
-      )}
+      {showNews &&
+        (newsOnly ? (
+          <RassegnaStampaDefezioniPanel />
+        ) : (
+          <NewsReviewPanel entries={entries} onApplyToRegistry={handleEntriesChange} />
+        ))}
     </div>
   );
 }

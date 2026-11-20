@@ -9,6 +9,11 @@ import {
   normalizeTitleKey,
   sanitizeNewsText,
 } from "./newsInstitutionalAnalyzer";
+import {
+  isBankingOrCommercialSpam,
+  isDomesticPrivateMispaired,
+  looksForeignEnglish,
+} from "./osservatorioNewsSanitizer";
 
 export { HARD_BLACKLIST_REGEX, matchesNewsSearch, analyzeInstitutionalArticle };
 
@@ -27,17 +32,25 @@ export const DEFAULT_NEWS_KEYWORDS = [
   "comune",
 ];
 
-function decodeEntities(s: string): string {
+/** Testo RSS/HTML → plain text per UI (Google News usa spesso &nbsp; tra titolo e testata). */
+export function decodeRssPlainText(s: string): string {
   return s
     .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/gi, "$1")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;|&#160;|&#xA0;/gi, " ")
     .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/<[^>]+>/g, " ")
+    .replace(/&#39;|&#039;|&apos;/g, "'")
+    .replace(/&rsquo;|&#8217;/gi, "'")
+    .replace(/&ldquo;|&rdquo;/gi, '"')
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function decodeEntities(s: string): string {
+  return decodeRssPlainText(s);
 }
 
 function extractTag(block: string, tag: string): string {
@@ -122,7 +135,11 @@ function hashStr(s: string): string {
 }
 
 export function isNewsJunkText(titolo: string, snippet = ""): boolean {
-  return HARD_BLACKLIST_REGEX.test(sanitizeNewsText(titolo, snippet));
+  if (HARD_BLACKLIST_REGEX.test(sanitizeNewsText(titolo, snippet))) return true;
+  if (looksForeignEnglish(titolo, snippet)) return true;
+  if (isBankingOrCommercialSpam(titolo)) return true;
+  if (isDomesticPrivateMispaired(titolo, snippet)) return true;
+  return false;
 }
 
 export function hasInstitutionalNewsSignals(

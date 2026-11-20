@@ -55,13 +55,13 @@ export function PostVotePanel({
   return (
     <div className="flex flex-col gap-5">
       <p className="fn-alert text-xs">
-        Modulo A — validazione ex post vs baseline snapshot. Non confondere con
-        Modulo C (eventi): una variazione temporale non prova causalità.
+        Confronto dei risultati effettivi con la previsione salvata. Da distinguere da
+        l’analisi degli eventi: una variazione nel tempo non dimostra un rapporto di causa ed effetto.
         Comparabilità esito FN con simbolo proprio, 20 regioni.
       </p>
 
       <label className="flex flex-wrap items-center gap-2 text-sm">
-        Baseline snapshot
+        Previsione di riferimento
         <select
           className="rounded border border-fn-border-subtle px-2 py-1"
           value={baselineId}
@@ -144,11 +144,11 @@ export function PostVotePanel({
         <>
           <KpiGrid>
             <Kpi
-              label="MAE scenario (pp)"
+              label="Errore medio della previsione (punti)"
               value={result.validazione_predittiva.mae_punti_scenario.toFixed(3)}
             />
             <Kpi
-              label="MAE benchmark (pp)"
+              label="Errore medio del riferimento (punti)"
               value={result.validazione_predittiva.mae_punti_benchmark.toFixed(3)}
             />
             <Kpi
@@ -160,7 +160,7 @@ export function PostVotePanel({
               }
             />
             <Kpi
-              label="Copertura lo10–hi90"
+              label="Risultati entro la fascia stimata"
               value={`${(result.validazione_predittiva.copertura_regioni_sensibilita * 100).toFixed(0)}%`}
             />
             <Kpi

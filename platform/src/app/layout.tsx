@@ -1,5 +1,5 @@
 import { Providers } from "@/components/Providers";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import {
   DM_Serif_Display,
   Inter,
@@ -33,6 +33,12 @@ const dmSerifDisplay = DM_Serif_Display({
   style: ["normal", "italic"],
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export const metadata: Metadata = {
   title: "Futuro Nazionale — Scenario territoriale",
   description:
@@ -43,7 +49,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="it"
-      className={`${inter.variable} ${plusJakarta.variable} ${jetbrains.variable} ${dmSerifDisplay.variable} h-full antialiased`}
+      className={`dark ${inter.variable} ${plusJakarta.variable} ${jetbrains.variable} ${dmSerifDisplay.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col text-fn-text tabular-nums">
         <Providers>{children}</Providers>

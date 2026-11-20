@@ -1,4 +1,5 @@
 "use client";
+import { useReportGeneratedAt } from "@/lib/useReportGeneratedAt";
 
 import type { Region } from "@/lib/engine/constants";
 import type { SchedaMensileRiga } from "@/lib/engine/osservatorioTypes";
@@ -29,7 +30,7 @@ export function PrintOsservatorioReport({
   priorita?: PrioritaDichiarateRilevazione;
 }) {
   const row = scenario.righe.find((r) => r.regione === regione);
-  const generated = new Date().toLocaleString("it-IT");
+  const generated = useReportGeneratedAt();
 
   return (
     <div id="osservatorio-print" className="nota-print hidden">
@@ -44,20 +45,18 @@ export function PrintOsservatorioReport({
       </header>
 
       <section className="nota-print-box">
-        <strong>Regola metodologica (Sez. 1 e 11)</strong>
+        <strong>Sintesi moduli</strong>
         <ul>
           <li>
-            <strong>Modulo A</strong> — consenso modellato (scenario territoriale);
-            non sondaggio regionale validato; <code>predizione_validata: false</code>.
+            <strong>Scenario territoriale</strong>;{" "}
+            <code>predizione_validata: false</code>.
           </li>
           <li>
-            <strong>Modulo B</strong> — indicatori di contesto e priorità dichiarate;
-            medie territoriali ≠ comportamento elettorale individuale (no errore
-            ecologico).
+            <strong>Fabbisogni</strong> — indicatori BesT/AGENAS/OpenCivitas e priorità
+            dichiarate.
           </li>
           <li>
-            <strong>Modulo C</strong> — attenzione mediatica (Trends/news) ed eventi;
-            variazione temporale ≠ causalità (no fallacia post-hoc).
+            <strong>Eventi &amp; Trends</strong> — Google Trends (0–100), cronologia ±14 gg.
           </li>
         </ul>
       </section>
@@ -85,7 +84,7 @@ export function PrintOsservatorioReport({
       </section>
 
       <section>
-        <h2>Consegna 1 — Quadro aggiornato (Modulo A)</h2>
+        <h2>Consegna 1 — Quadro aggiornato (scenario)</h2>
         <ul>
           <li>S nazionale (input): {pct(scenario.parametri.S)}</li>
           <li>
@@ -98,7 +97,7 @@ export function PrintOsservatorioReport({
       </section>
 
       <section>
-        <h2>Consegna 2 — Scheda fabbisogni pubblici (Modulo B)</h2>
+        <h2>Consegna 2 — Scheda fabbisogni pubblici</h2>
         <table className="nota-print-table nota-print-table-full">
           <thead>
             <tr>
@@ -133,7 +132,7 @@ export function PrintOsservatorioReport({
       </section>
 
       <section>
-        <h2>Consegna 3 — Nota eventi (Modulo C)</h2>
+        <h2>Consegna 3 — Nota eventi &amp; attenzione mediatica</h2>
         <table className="nota-print-table">
           <thead>
             <tr>

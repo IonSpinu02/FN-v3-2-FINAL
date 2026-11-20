@@ -3,16 +3,25 @@
 import {
   isOfficialFlussi,
   isOfficialParams,
-  OFFICIAL_FLUSSI,
   OFFICIAL_PESI,
   OFFICIAL_S,
   type FlussiIpsos,
 } from "@/lib/engine/defaults";
 import {
+  buildRegionalGrowthMap,
+  DEFAULT_FLUSSI_MATRIX_ID,
+  detectFlussiMatrixId,
+  flussiFromMatrix,
+  type FlussiMatrixId,
+  type GrowthRegimeId,
+} from "@/lib/politicalModel";
+import { scenarioToRegionalGrowthInputs } from "@/lib/regionalGrowthInputs";
+import {
   hasNonZeroIstituzioniDelta,
   mergeIstituzioniDeltas,
 } from "@/lib/engine/mergeIstituzioniDelta";
 import type { Region } from "@/lib/engine/constants";
+import type { TerritoryIssueCategory } from "@/lib/engine/territoryIssuesTypes";
 import type { InstitutionalRow } from "@/lib/engine/calculate";
 import {
   DEFAULT_POLL_CONFIG,
@@ -25,34 +34,38 @@ import type { FnConfig, ScenarioResult } from "@/lib/engine/types";
 import { pesiFromUi, uiFromPesi } from "@/components/SensitivityControls";
 import { DashboardShell, DashboardSubtitle } from "@/components/DashboardShell";
 import { AwwwardsLandingHero } from "@/components/AwwwardsLandingHero";
+import { CommandPalette } from "@/components/command/CommandPalette";
 import { StageTopHud } from "@/components/StageTopHud";
 import { appPath, tabFromPathname, type AppTab } from "@/lib/appRoutes";
+import { StrategicGoalWorkspace } from "@/components/obiettivo/StrategicGoalWorkspace";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { MethodologyStatusBar } from "./MethodologyStatusBar";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
-import { AnimatePresence } from "framer-motion";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useLiveConsenso } from "@/components/useLiveConsenso";
+import {
+  getConsensoLivePrefSnapshot,
+  getServerConsensoLivePrefSnapshot,
+  subscribeConsensoLivePref,
+  writeConsensoLivePref,
+} from "@/lib/consensoLiveClient";
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import type { MapColorMode } from "./ItalyMap";
 import { ScenarioTerritoryStage } from "./ScenarioTerritoryStage";
-import { exportNotaPdf, PrintNotaReport } from "./PrintNotaReport";
+import { PrintNotaReport } from "./PrintNotaReport";
 import { RegionPollDrawer } from "./RegionPollDrawer";
-import type { SnapshotParams } from "@/lib/engine/snapshotDiff";
 import { loadLocalSnapshots } from "@/lib/engine/snapshotStorage";
 
 const LocaliPanel = dynamic(
   () => import("./LocaliPanel").then((m) => m.LocaliPanel),
   { ssr: false, loading: () => <p className="text-sm text-fn-text-muted">Caricamento tab…</p> },
-);
-const AuditWorkspacePanel = dynamic(
-  () =>
-    import("./AuditWorkspacePanel").then((m) => m.AuditWorkspacePanel),
-  {
-    ssr: false,
-    loading: () => (
-      <p className="text-sm text-fn-text-muted">Caricamento audit…</p>
-    ),
-  },
 );
 const OsservatorioPanel = dynamic(
   () =>
@@ -64,50 +77,36 @@ const OsservatorioPanel = dynamic(
     ),
   },
 );
-const FuturoNazionaleQuadroPanel = dynamic(
-  () =>
-    import("./FuturoNazionaleQuadroPanel").then(
-      (m) => m.FuturoNazionaleQuadroPanel,
-    ),
-  {
-    ssr: false,
-    loading: () => (
-      <p className="text-sm text-fn-text-muted">Caricamento tab…</p>
-    ),
-  },
-);
 type Tab = AppTab;
 
-const NAV: { id: Tab; label: string; desc: string; href: string }[] = [
+const NAV: { id: Tab; label: string; short: string; desc: string; href: string }[] = [
   {
     id: "scenario",
     label: "01 · Scenario",
-    desc: "Mappa tattica e command center",
+    short: "Scenario",
+    desc: "Mappa e quadro nazionale",
     href: appPath("scenario"),
   },
   {
-    id: "quadro",
-    label: "02 · Quadro FN",
-    desc: "Matrice integrata 20 regioni (Moduli A · B · C)",
-    href: appPath("quadro"),
-  },
-  {
     id: "osservatorio",
-    label: "03 · Osservatorio",
-    desc: "Moduli A/B/C, scheda mensile, storico iscritti",
+    label: "02 · Osservatorio",
+    short: "Osservatorio",
+    desc: "Dati territoriali, scheda mensile e storico iscritti",
     href: appPath("osservatorio"),
   },
   {
     id: "locali",
-    label: "04 · Rassegna stampa",
-    desc: "Scanner RSS, NER istituzionale, dispacci certificati Typeflow",
+    label: "03 · Rassegna stampa",
+    short: "Rassegna",
+    desc: "Notizie, fonti e verifica delle informazioni",
     href: appPath("locali"),
   },
   {
-    id: "audit",
-    label: "05 · Audit & Post-Voto (WIP)",
-    desc: "Work in progress · anteprima snapshot, post-voto e audit trail",
-    href: appPath("audit"),
+    id: "obiettivo",
+    label: "04 · Obiettivo",
+    short: "Obiettivo",
+    desc: "Piano inverso sul consenso da raggiungere",
+    href: appPath("obiettivo"),
   },
 ];
 
@@ -124,6 +123,7 @@ export function DashboardClient({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const tabFromUrl = tabFromPathname(pathname);
   const tab: Tab = variant === "app" ? (tabFromUrl ?? "scenario") : "scenario";
 
@@ -139,22 +139,76 @@ export function DashboardClient({
     if (!pathname.startsWith("/app")) return;
     if (!tabFromUrl) router.replace(appPath("scenario"));
   }, [variant, pathname, tabFromUrl, router]);
+
+  useEffect(() => {
+    if (variant !== "app") return;
+    function onKey(e: KeyboardEvent) {
+      if (!(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== "k") return;
+      e.preventDefault();
+      setCommandOpen((open) => !open);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [variant]);
+
   const [scenario, setScenario] = useState(initialScenario);
   const [S, setS] = useState(OFFICIAL_S);
+  const sLiveEnabled = useSyncExternalStore(
+    subscribeConsensoLivePref,
+    getConsensoLivePrefSnapshot,
+    getServerConsensoLivePrefSnapshot,
+  );
+  const {
+    data: liveConsenso,
+    loading: liveConsensoLoading,
+  } = useLiveConsenso({
+    enabled: sLiveEnabled,
+    mode: "auto",
+  });
+
+  const setSLiveEnabledPersist = useCallback((next: boolean) => {
+    writeConsensoLivePref(next);
+  }, []);
+
+  useEffect(() => {
+    if (!sLiveEnabled) return;
+    if (liveConsenso?.s == null) return;
+    startTransition(() => {
+      setS((prev) =>
+        Math.abs(prev - liveConsenso.s) < 1e-9 ? prev : liveConsenso.s,
+      );
+    });
+  }, [sLiveEnabled, liveConsenso?.s]);
+
   const [weights, setWeights] = useState(uiFromPesi(OFFICIAL_PESI));
   const [pollConfig, setPollConfig] = useState<RegionalPollConfig>({
     ...DEFAULT_POLL_CONFIG,
   });
   const [poll, setPoll] = useState<RegionPollResult[]>([]);
-  const [mapMode, setMapMode] = useState<MapColorMode>("stima");
+  const mapMode: MapColorMode = "stima";
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
+  const [commandOpen, setCommandOpen] = useState(false);
   const [mcLoading, setMcLoading] = useState(false);
   const [pollLoading, setPollLoading] = useState(false);
   const mcTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reqId = useRef(0);
-  const [flussiIpsos, setFlussiIpsos] = useState<FlussiIpsos>({
-    ...OFFICIAL_FLUSSI,
-  });
+  const [growthRegime, setGrowthRegime] = useState<GrowthRegimeId>("organica");
+  const [flussiMatrixId, setFlussiMatrixId] = useState<FlussiMatrixId>(
+    DEFAULT_FLUSSI_MATRIX_ID,
+  );
+  const [flussiIpsos, setFlussiIpsos] = useState<FlussiIpsos>(() =>
+    flussiFromMatrix(DEFAULT_FLUSSI_MATRIX_ID),
+  );
+
+  const applyFlussiMatrix = useCallback((id: FlussiMatrixId) => {
+    setFlussiMatrixId(id);
+    setFlussiIpsos(flussiFromMatrix(id));
+  }, []);
+
+  const handleFlussiChange = useCallback((f: FlussiIpsos) => {
+    setFlussiIpsos(f);
+    setFlussiMatrixId((prev) => detectFlussiMatrixId(f) ?? prev);
+  }, []);
   const [applyInstitutional, setApplyInstitutional] = useState(false);
   const [registryIstituzioniDelta, setRegistryIstituzioniDelta] = useState<
     CalculateOverrides["istituzioniDelta"]
@@ -166,24 +220,20 @@ export function DashboardClient({
   const [baselineScenario, setBaselineScenario] =
     useState<ScenarioResult>(frozenSnapshot);
   const [baselineLabel, setBaselineLabel] = useState(
-    "Snapshot Ufficiale 18-10-2026",
+    "Situazione di riferimento del 18-10-2026",
   );
   const [baselineId, setBaselineId] = useState("file-frozen-18-10-2026");
-  const [dbCloudConnected, setDbCloudConnected] = useState<boolean | null>(
-    null,
-  );
   const [snapshotCatalog, setSnapshotCatalog] = useState<
     { id: string; label: string; scenario: ScenarioResult }[]
   >([
     {
       id: "file-frozen-18-10-2026",
-      label: "Snapshot Ufficiale 18-10-2026",
+      label: "Situazione di riferimento del 18-10-2026",
       scenario: frozenSnapshot,
     },
   ]);
   const [freezeName, setFreezeName] = useState("");
   const [freezeNotes, setFreezeNotes] = useState("");
-
   const handleDeltaChange = useCallback(
     (
       delta: CalculateOverrides["istituzioniDelta"] | undefined,
@@ -217,6 +267,17 @@ export function DashboardClient({
   );
   const busy = mcLoading || pollLoading;
 
+  const regionalGrowthByRegion = useMemo(
+    () =>
+      buildRegionalGrowthMap(
+        scenarioToRegionalGrowthInputs(scenario, poll),
+        S,
+        growthRegime,
+        flussiMatrixId,
+      ),
+    [scenario, poll, S, growthRegime, flussiMatrixId],
+  );
+
   const fetchScenario = useCallback(
     async (nSim: number) => {
       const id = ++reqId.current;
@@ -243,12 +304,14 @@ export function DashboardClient({
           | ScenarioResult
           | { scenario: ScenarioResult; poll: RegionPollResult[] };
         if (id !== reqId.current) return;
-        if ("scenario" in data && data.scenario) {
-          setScenario(data.scenario);
-          if (data.poll) setPoll(data.poll);
-        } else {
-          setScenario(data as ScenarioResult);
-        }
+        startTransition(() => {
+          if ("scenario" in data && data.scenario) {
+            setScenario(data.scenario);
+            if (data.poll) setPoll(data.poll);
+          } else {
+            setScenario(data as ScenarioResult);
+          }
+        });
       } finally {
         if (id === reqId.current) {
           if (nSim > 0) setMcLoading(false);
@@ -268,10 +331,15 @@ export function DashboardClient({
   );
 
   useEffect(() => {
-    fetchScenario(0);
+    const immediate = window.setTimeout(() => {
+      void fetchScenario(0);
+    }, 0);
     if (mcTimer.current) clearTimeout(mcTimer.current);
-    mcTimer.current = setTimeout(() => fetchScenario(20000), 250);
+    mcTimer.current = setTimeout(() => {
+      void fetchScenario(20000);
+    }, 250);
     return () => {
+      clearTimeout(immediate);
       if (mcTimer.current) clearTimeout(mcTimer.current);
     };
   }, [fetchScenario]);
@@ -288,7 +356,6 @@ export function DashboardClient({
             scenarioData: ScenarioResult;
           }[];
         }) => {
-          setDbCloudConnected(Boolean(data.dbConnected));
           const list = data.snapshots ?? [];
           const local = loadLocalSnapshots();
           const merged = [...list];
@@ -312,44 +379,21 @@ export function DashboardClient({
           }
         },
       )
-      .catch(() => setDbCloudConnected(false));
+      .catch(() => undefined);
   }, [tab]);
-
-  const loadSnapshotIntoDashboard = useCallback(
-    (s: ScenarioResult, params?: SnapshotParams) => {
-      setScenario(s);
-      if (params) {
-        setS(params.S);
-        setWeights(uiFromPesi(params.pesi));
-        if (params.flussi_ipsos) {
-          setFlussiIpsos({ ...params.flussi_ipsos });
-        }
-      }
-    },
-    [],
-  );
 
   const mapValues = useMemo(() => {
     if (!poll.length) {
       return Object.fromEntries(scenario.righe.map((r) => [r.regione, r.stima]));
     }
-    if (mapMode === "probSoglia") {
-      return Object.fromEntries(
-        poll.map((p) => [p.regione, p.probAboveThreshold]),
-      );
-    }
-    if (mapMode === "scartoBenchmark") {
-      return Object.fromEntries(
-        poll.map((p) => [p.regione, p.scartoVsBenchmark]),
-      );
-    }
     return Object.fromEntries(poll.map((p) => [p.regione, p.piHat]));
-  }, [poll, mapMode, scenario.righe]);
+  }, [poll, scenario.righe]);
 
   const resetOfficial = () => {
     setS(OFFICIAL_S);
     setWeights(uiFromPesi(OFFICIAL_PESI));
-    setFlussiIpsos({ ...OFFICIAL_FLUSSI });
+    applyFlussiMatrix(DEFAULT_FLUSSI_MATRIX_ID);
+    setGrowthRegime("organica");
     setPollConfig({ ...DEFAULT_POLL_CONFIG });
     setApplyInstitutional(false);
     setQuickInstDelta(undefined);
@@ -426,12 +470,7 @@ export function DashboardClient({
             scenario={scenario}
             poll={poll}
             mapValues={mapValues}
-            pesi={pesi}
-            onSChange={setS}
-            onFlussiChange={setFlussiIpsos}
             onOpenCommandCenter={() => router.push(appPath("scenario"))}
-            onOpenOsservatorio={() => router.push(appPath("osservatorio"))}
-            onExportPdf={() => exportNotaPdf()}
           />
         </div>
         <PrintNotaReport
@@ -452,28 +491,27 @@ export function DashboardClient({
       <DashboardShell
         nav={NAV}
         tab={tab}
-        fullBleed={tab === "scenario"}
+        fullBleed={tab === "scenario" || tab === "obiettivo"}
         contentClassName={
-          tab === "scenario"
-            ? "!m-0 !h-screen !max-h-screen !overflow-hidden !p-0 !pt-0"
-            : "space-y-4"
+          tab === "scenario" || tab === "obiettivo"
+            ? "!m-0 !p-0 !pt-0 max-lg:!h-auto max-lg:!max-h-none max-lg:!overflow-visible lg:!h-dvh lg:!max-h-dvh lg:!overflow-hidden"
+            : tab === "locali"
+              ? "flex min-h-[calc(100dvh-4rem)] flex-col !max-w-[1440px] !px-3 !pb-6 !pt-14 sm:!px-5 lg:!px-6"
+              : tab === "osservatorio"
+                ? "space-y-4 !max-w-[1420px] !px-3 !pt-14 sm:!px-5 lg:!px-6"
+                : "space-y-4"
         }
-        lockViewport={tab === "scenario"}
+        lockViewport={tab === "scenario" || tab === "obiettivo"}
         overrideActive={isCustom || hasInstitutional}
         topHud={
           <StageTopHud
             frostedBar={tab !== "scenario"}
             brandHref="/"
             brandExtra={
-              <DashboardSubtitle
-                busy={busy}
-                metaDate={scenario.metadati.data}
-                dbCloudConnected={dbCloudConnected}
-              />
+              <DashboardSubtitle busy={busy} />
             }
-            methodologyPill={<MethodologyStatusBar hudPill />}
-            onExportPdf={() => exportNotaPdf()}
-            busy={busy}
+            nav={NAV}
+            activeId={tab}
           />
         }
       >
@@ -481,14 +519,12 @@ export function DashboardClient({
             <ScenarioTerritoryStage
               immersive
               hideRegionalTable
-              onOpenMatrixView={() => navigateTab("quadro")}
               scenario={scenario}
               baselineGolden={frozenSnapshot}
               baselineForTable={baselineScenario}
               poll={poll}
               mapValues={mapValues}
               mapMode={mapMode}
-              onMapModeChange={setMapMode}
               selectedRegion={selectedRegion}
               onSelectRegion={setSelectedRegion}
               freezeName={freezeName}
@@ -498,9 +534,22 @@ export function DashboardClient({
               S={S}
               weights={weights}
               flussiIpsos={flussiIpsos}
+              flussiMatrixId={flussiMatrixId}
+              onSelectFlussiMatrix={applyFlussiMatrix}
+              growthRegime={growthRegime}
+              onGrowthRegimeChange={setGrowthRegime}
+              regionalGrowthByRegion={regionalGrowthByRegion}
               onSChange={setS}
+              sLiveEnabled={sLiveEnabled}
+              onSLiveEnabledChange={setSLiveEnabledPersist}
+              liveConsenso={liveConsenso}
+              liveConsensoLoading={liveConsensoLoading}
+              onOpenDossier={(region: Region, category: TerritoryIssueCategory) => {
+                const params = new URLSearchParams({ region, category });
+                router.push(`${appPath("osservatorio")}?${params.toString()}`);
+              }}
               onWeightsChange={setWeights}
-              onFlussiChange={setFlussiIpsos}
+              onFlussiChange={handleFlussiChange}
               onResetOfficial={resetOfficial}
               mcLoading={mcLoading}
               pollConfig={pollConfig}
@@ -533,29 +582,38 @@ export function DashboardClient({
             />
         ) : null}
 
-        {tab === "quadro" && (
-          <div className="pb-36">
-            <FuturoNazionaleQuadroPanel
-              scenario={scenario}
-              poll={poll}
-              onOpenTab={navigateTab}
-              onOpenScenarioRegion={(region) => {
-                setSelectedRegion(region);
-                navigateTab("scenario");
-              }}
-            />
-          </div>
-        )}
+        {tab === "obiettivo" ? (
+          <StrategicGoalWorkspace
+            scenario={scenario}
+            flussiIpsos={flussiIpsos}
+            poll={poll}
+            initialTarget={searchParams.get("target")}
+          />
+        ) : null}
 
-        {tab !== "scenario" && tab !== "quadro" && (
-          <div className="pb-36 space-y-4">
+        {tab !== "scenario" && tab !== "obiettivo" && (
+          <div
+            className={
+              tab === "osservatorio"
+                ? "space-y-4 pb-28"
+                : tab === "locali"
+                  ? "flex min-h-0 flex-1 flex-col pb-4"
+                  : "space-y-4 pb-36"
+            }
+          >
             {tab === "osservatorio" && (
               <OsservatorioPanel
                 scenario={scenario}
                 baselineScenario={baselineScenario}
                 liveS={S}
+                flussiIpsos={flussiIpsos}
+                flussiMatrixId={flussiMatrixId}
+                onSelectFlussiMatrix={applyFlussiMatrix}
+                regionalGrowthByRegion={regionalGrowthByRegion}
                 onRestoreBaselineS={() => setS(OFFICIAL_S)}
                 onOpenTab={navigateTab}
+                dossierRegion={searchParams.get("region")}
+                dossierCategory={searchParams.get("category")}
               />
             )}
 
@@ -568,53 +626,38 @@ export function DashboardClient({
                 onDeltaChange={handleDeltaChange}
               />
             )}
-            {tab === "audit" && (
-              <AuditWorkspacePanel
-                liveScenario={scenario}
-                onLoadScenario={loadSnapshotIntoDashboard}
-                baselineScenario={baselineScenario}
-                onBaselineChange={(s, label) => {
-                  setBaselineScenario(s);
-                  setBaselineLabel(label);
-                  const match = snapshotCatalog.find(
-                    (x) => x.label === label,
-                  );
-                  if (match) setBaselineId(match.id);
-                }}
-                snapshotCatalog={snapshotCatalog}
-                defaultBaselineId={
-                  snapshotCatalog.find((s) => s.label.includes("18-10"))
-                    ?.id ?? snapshotCatalog[0]!.id
-                }
-              />
-            )}
           </div>
         )}
       </DashboardShell>
+      <CommandPalette
+        open={commandOpen}
+        onOpenChange={setCommandOpen}
+        poll={poll}
+        onSelectRegion={setSelectedRegion}
+        onSelectFlussiMatrix={applyFlussiMatrix}
+        activeFlussiMatrixId={flussiMatrixId}
+      />
 
-      <AnimatePresence>
-        {pollRow &&
-          scenarioRow &&
-          selectedRegion &&
-          tab === "scenario" && (
+      {pollRow &&
+        scenarioRow &&
+        selectedRegion &&
+        tab === "scenario" && (
           <RegionPollDrawer
             key={selectedRegion}
             poll={pollRow}
             row={scenarioRow}
             fnConfig={fnConfig}
             region={selectedRegion as Region}
-            quickDelta={quickInstDelta?.[selectedRegion as Region]}
-            mergedDelta={effectiveIstituzioniDelta?.[selectedRegion as Region]}
-            onAdjustInst={(carica, d) =>
-              adjustQuickInst(selectedRegion as Region, carica, d)
-            }
-            onResetRegion={() =>
-              resetQuickInstRegion(selectedRegion as Region)
-            }
+            nationalS={S}
+            allRows={scenario.righe}
             onClose={() => setSelectedRegion(null)}
+            onOpenOsservatorio={(region, category) => {
+              setSelectedRegion(null);
+              const params = new URLSearchParams({ region, category });
+              router.push(`${appPath("osservatorio")}?${params.toString()}`);
+            }}
           />
         )}
-      </AnimatePresence>
 
       <PrintNotaReport
         scenario={scenario}

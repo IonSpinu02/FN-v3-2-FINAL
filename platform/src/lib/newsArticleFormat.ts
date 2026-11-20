@@ -272,7 +272,12 @@ export function formatNewsprintDate(isoOrDate: string): string {
   const d = new Date(
     isoOrDate.includes("T") ? isoOrDate : `${isoOrDate}T12:00:00`,
   );
-  if (Number.isNaN(d.getTime())) return "OTTOBRE 2026";
+  if (Number.isNaN(d.getTime())) {
+    return new Date().toLocaleDateString("it-IT", {
+      month: "long",
+      year: "numeric",
+    }).toUpperCase();
+  }
   return d
     .toLocaleDateString("it-IT", {
       weekday: "long",

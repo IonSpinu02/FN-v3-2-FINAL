@@ -122,7 +122,7 @@ export function HistoryPanel({
       )}
 
       <p className="text-xs text-fn-text-muted">
-        H scenario condizionato: snapshot 18/10/2026; aggiornata solo la
+        Indicatore di distribuzione dello scenario salvato il 18/10/2026; aggiornata solo la
         componente iscritti sui mesi completi (20 regioni).
       </p>
     </div>
@@ -132,7 +132,7 @@ export function HistoryPanel({
 function DisclaimerInline() {
   return (
     <p className="fn-alert text-xs">
-      Monitoraggio organizzativo — non prova crescita del consenso elettorale.
+      Monitoraggio organizzativo del tesseramento e degli eletti locali.
     </p>
   );
 }

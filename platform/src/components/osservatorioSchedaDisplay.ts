@@ -44,11 +44,10 @@ function formatScenarioRow(region: Region, scenario: ScenarioResult): DossierSch
   const inputS = (S * 100).toFixed(2).replace(".", ",");
 
   return {
-    dimensione: "Scenario elettorale (Modulo A)",
+    dimensione: "Scenario elettorale",
     statoCapitolo: `${stimaLabel} con S=${inputS}% · Forbice stimata: [${lo}% – ${hi}%] · Voti stimati: ${voti} · Iscritti: ${iscritti}`,
     misureMetadati: `Input nazionale ${inputS}% (Ott 2026) · Modello Territoriale FN · Ottobre 2026`,
-    notaMetodologica:
-      "Risultato del modello territoriale di ottobre; non sondaggio campionario regionale.",
+    notaMetodologica: "Output modello territoriale FN · ottobre 2026.",
     naturaBadge: "SIMULAZIONE / SCENARIO",
   };
 }
@@ -68,7 +67,7 @@ function formatFabbisogniRow(
     .join(" | ");
 
   return {
-    dimensione: "Fabbisogni oggettivi (Modulo B)",
+    dimensione: "Fabbisogni oggettivi",
     statoCapitolo: `Popolato per 3 temi chiave (Sanità, Lavoro, Abitare/Trasporti) · Indice sintesi Stress B: ${resolved.aggregate}/100`,
     misureMetadati: detail || "Catalogo BesT/AGENAS in caricamento",
     notaMetodologica:
@@ -82,20 +81,19 @@ function formatPrioritaRow(
 ): DossierSchedaRow {
   if (prioritaRilevazione) {
     return {
-      dimensione: "Priorità dichiarate (Modulo B)",
+      dimensione: "Priorità dichiarate",
       statoCapitolo: `Rilevato (N=${prioritaRilevazione.campioneN}, ±${prioritaRilevazione.margineIncertezzaPct} pp)`,
       misureMetadati: `Metodo: ${prioritaRilevazione.metodoSelezione} · MR ${prioritaRilevazione.mancataRispostaPct}% · Periodo: ${prioritaRilevazione.periodoRilevazione || "2026"}`,
-      notaMetodologica: "Indagine campionaria aggregata; non profilazione individuale.",
+      notaMetodologica: "Indagine campionaria aggregata · metadati §4.",
       naturaBadge: "RILEVAZIONE CAMPIONARIA",
     };
   }
   return {
-    dimensione: "Priorità dichiarate (Modulo B)",
+    dimensione: "Priorità dichiarate",
     statoCapitolo: "NON ANCORA RILEVATE (LACUNA INFORMATIVA DICHIARATA)",
     misureMetadati:
-      "Contesto ISTAT/BesT sugli ambiti critici in §04 Modulo B; nessun valore sostitutivo.",
-    notaMetodologica:
-      "I campi non rilevati non sono sostituiti con valori fittizi (§ 8 documento).",
+      "Contesto ISTAT/BesT sugli ambiti critici; nessun valore sostitutivo.",
+    notaMetodologica: "Dato da acquisire con indagine rappresentativa §4.",
     naturaBadge: "RICHIEDE INDAGINE RAPPRESENTATIVA",
   };
 }
@@ -108,11 +106,10 @@ function formatEventsRow(events: OsservatorioEvento[]): DossierSchedaRow {
   ).join(" · ");
 
   return {
-    dimensione: "Eventi (Modulo C)",
+    dimensione: "Eventi & attenzione mediatica",
     statoCapitolo: `${count} Casi Studio in Registro (Finestra ±14gg): ${lines}`,
     misureMetadati: "Protocollo event study § 5 · Fonti primarie da verificare",
-    notaMetodologica:
-      "Cronologia documentata — nessuna attribuzione automatica di voti guadagnati o persi.",
+    notaMetodologica: "Cronologia documentata · protocollo event study §5.",
     naturaBadge: "CRONOLOGIA DOCUMENTATA",
   };
 }
@@ -124,8 +121,7 @@ function formatTrendsRow(series: GoogleTrendsSeries | null): DossierSchedaRow {
       statoCapitolo: "Serie Acquisita / Baseline Attiva (0–100) · CHART.04",
       misureMetadati:
         'Query monitorate "Roberto Vannacci" / "Futuro Nazionale" · Area: Italia/Regione · Finestra: 30gg',
-      notaMetodologica:
-        "Indice normalizzato sul massimo del periodo; non misura intenzioni di voto.",
+      notaMetodologica: "Indice 0–100 normalizzato sul massimo del periodo.",
       naturaBadge: "ATTENZIONE RELATIVA (0–100)",
     };
   }
@@ -136,8 +132,7 @@ function formatTrendsRow(series: GoogleTrendsSeries | null): DossierSchedaRow {
     dimensione: "Google Trends (Scala 0–100)",
     statoCapitolo: `Serie Acquisita / Baseline Attiva (0–100) · Indice medio 30gg ${Math.round(avg)}/100 · Picco ${Math.round(peak)}/100 post-evento`,
     misureMetadati: `Query «${series.query}» · ${series.windowStart} → ${series.windowEnd} · Territorio: ${series.territory}`,
-    notaMetodologica:
-      "Indice normalizzato sul massimo del periodo; non misura intenzioni di voto.",
+    notaMetodologica: "Indice 0–100 normalizzato sul massimo del periodo.",
     naturaBadge: "ATTENZIONE RELATIVA (0–100)",
   };
 }

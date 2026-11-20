@@ -1,102 +1,98 @@
 "use client";
 
 import { ItalyMap, type MapColorMode } from "@/components/ItalyMap";
-import { NationalIntelligencePanel } from "@/components/NationalIntelligencePanel";
 import {
-  FLUSSI_PRESETS,
-  OFFICIAL_S,
+  NationalIntelligencePanel,
+  type ScenarioPriorityView,
+} from "@/components/NationalIntelligencePanel";
+import {
+  ScenarioGrowthForecastPanel,
+  SIDEBAR_SCROLL,
+} from "@/components/ScenarioGrowthForecastPanel";
+import { FlussiMatrix2026Panel } from "@/components/FlussiMatrix2026Panel";
+import {
+  OFFICIAL_S_SOURCE_LABEL,
+  OFFICIAL_S_SOURCE_URL,
   type FlussiIpsos,
 } from "@/lib/engine/defaults";
+import type { FlussiMatrixId } from "@/lib/politicalModel";
+import type { GrowthRegimeId, RegionalGrowthForecast } from "@/lib/politicalModel";
 import type { InstitutionalRow } from "@/lib/engine/calculate";
 import type { Region } from "@/lib/engine/constants";
 import type { RegionPollResult } from "@/lib/engine/regionalPollShared";
 import type { FnConfig, ScenarioResult } from "@/lib/engine/types";
-import { pp } from "@/lib/format";
-import { STIMA_LEGEND_BANDS } from "@/lib/mapDisplay";
+import { formatDecimalIt, formatIntIt } from "@/lib/formatIt";
+import { FN_SUPERMEDIA_CONSENSO_SERIES } from "@/lib/fnSupermediaConsensoSeries";
+import { ConsensoMovementInfo } from "@/components/ConsensoMovementInfo";
+import type { LiveConsensoPayload } from "@/lib/engine/pollTypes";
+import type { TerritoryIssueCategory } from "@/lib/engine/territoryIssuesTypes";
+import type { GrowthEvidence } from "@/lib/engine/growthTrajectory";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
+import { TacticalCard } from "@/components/ui/TacticalCard";
 import { useAnimatedNumber } from "@/lib/useAnimatedNumber";
-import { useMemo, useState } from "react";
+import type { ScenarioRegionalV4View } from "@/lib/scenarioRegionalV4";
+import { useCallback, useMemo, useState } from "react";
 
-const FLUSSI_UI: { key: string; label: string; match: FlussiIpsos }[] = [
-  {
-    key: "default",
-    label: "Default v3.2",
-    match: FLUSSI_PRESETS["Default Ipsos v3.2 (31% / 25% / 36%)"],
-  },
-  {
-    key: "lega",
-    label: "Spinta Ex-Lega Nord",
-    match: FLUSSI_PRESETS["Spinta Ex-Lega Nord (26% / 38% / 28%)"],
-  },
-  {
-    key: "ast",
-    label: "Recupero Astensione",
-    match: FLUSSI_PRESETS["Recupero Astensione (25% / 20% / 48%)"],
-  },
-];
+const SPARK_MARKS = ["2026-02-26", "2026-06-18", "2026-07-30", "2026-09-08"];
 
-const MAP_LAYER_MODES: { id: MapColorMode; label: string }[] = [
-  { id: "stima", label: "Stima %" },
-  { id: "probSoglia", label: "Prob. Soglia" },
-  { id: "scartoBenchmark", label: "Scarto" },
-];
-
-function flussiEqual(a: FlussiIpsos, b: FlussiIpsos): boolean {
-  return (
-    Math.abs(a.FdI - b.FdI) < 0.002 &&
-    Math.abs(a.Lega - b.Lega) < 0.002 &&
-    Math.abs(a.ast - b.ast) < 0.002
-  );
+function peakCaption(isoDate: string): string {
+  const months = ["gen", "feb", "mar", "apr", "mag", "giu", "lug", "ago", "set", "ott", "nov", "dic"];
+  const date = new Date(`${isoDate}T12:00:00Z`);
+  const month = months[date.getUTCMonth()] ?? "";
+  const year = String(date.getUTCFullYear()).slice(2);
+  return `${month} '${year}`;
 }
 
-const FLUSSI_PRESET_LABELS: Record<
-  string,
-  { title: string; f: FlussiIpsos; caption: string }
-> = {
-  default: {
-    title: "DEFAULT V3.2",
-    f: FLUSSI_PRESETS["Default Ipsos v3.2 (31% / 25% / 36%)"],
-    caption: "FdI 31 · Lega 25 · Ast 36",
-  },
-  lega: {
-    title: "SPINTA EX-LEGA NORD",
-    f: FLUSSI_PRESETS["Spinta Ex-Lega Nord (26% / 38% / 28%)"],
-    caption: "FdI 26 · Lega 38 · Ast 28",
-  },
-  ast: {
-    title: "RECUPERO ASTENSIONE",
-    f: FLUSSI_PRESETS["Recupero Astensione (25% / 20% / 48%)"],
-    caption: "FdI 25 · Lega 20 · Ast 48",
-  },
-};
-
-function EntropyGauge({ h }: { h: number }) {
-  const uniform = Math.min(1, Math.max(0, h)) * 100;
-  const circ = 2 * Math.PI * 34;
-  const dash = (uniform / 100) * circ;
+function ConsensoSparkline({ points }: { points: number[] }) {
+  const w = 118;
+  const h = 44;
+  const finite = points.filter((point) => Number.isFinite(point));
+  if (finite.length < 2) return null;
+  const min = Math.min(...finite) - 0.4;
+  const max = Math.max(...finite) + 0.4;
+  const span = max - min || 1;
+  const peak = Math.max(...finite);
+  const coords = finite.map((point, index) => {
+    const x = 2 + (index / (finite.length - 1)) * (w - 4);
+    const y = h - 4 - ((point - min) / span) * (h - 8);
+    return { x, y };
+  });
+  const last = coords[coords.length - 1]!;
+  const peakY = h - 4 - ((peak - min) / span) * (h - 8);
+  const area = `M ${coords[0]!.x},${h - 2} L ${coords
+    .map((c) => `${c.x},${c.y}`)
+    .join(" L ")} L ${last.x},${h - 2} Z`;
+  const line = coords.map((c) => `${c.x},${c.y}`).join(" ");
   return (
-    <svg width={76} height={76} className="shrink-0 -rotate-90" aria-hidden>
-      <circle cx={38} cy={38} r={34} fill="none" stroke="#162032" strokeWidth={6} />
-      <circle
-        cx={38}
-        cy={38}
-        r={34}
-        fill="none"
-        stroke="#10B981"
-        strokeWidth={6}
-        strokeDasharray={`${dash} ${circ}`}
-        strokeLinecap="butt"
+    <svg viewBox={`0 0 ${w} ${h}`} className="mt-1 h-11 w-[7.4rem]" aria-hidden>
+      <defs>
+        <linearGradient id="fn-consenso-area" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#34d399" stopOpacity="0.35" />
+          <stop offset="100%" stopColor="#34d399" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={area} fill="url(#fn-consenso-area)" />
+      <line
+        x1={2}
+        x2={w - 2}
+        y1={peakY}
+        y2={peakY}
+        stroke="#94a3b8"
+        strokeOpacity={0.45}
+        strokeDasharray="2 3"
+        strokeWidth={0.8}
       />
+      <polyline
+        points={line}
+        fill="none"
+        stroke="#34d399"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+      <circle cx={last.x} cy={last.y} r="5" fill="#22d3ee" fillOpacity={0.18} />
+      <circle cx={last.x} cy={last.y} r="2.3" fill="#22d3ee" className="fn-map-reticle-dot" />
     </svg>
-  );
-}
-
-function FlussiTripBar({ f }: { f: FlussiIpsos }) {
-  return (
-    <div className="mt-2 flex h-[3px] overflow-hidden bg-[#162032]">
-      <div className="bg-orange-500" style={{ width: `${f.FdI * 100}%` }} />
-      <div className="bg-sky-400" style={{ width: `${f.Lega * 100}%` }} />
-      <div className="bg-slate-500" style={{ width: `${f.ast * 100}%` }} />
-    </div>
   );
 }
 
@@ -124,18 +120,18 @@ function LiveTicker({ poll }: { poll: RegionPollResult[] }) {
       {sorted.map((p, i) => (
         <span key={p.regione} className="inline-flex items-center">
           <TickerStatusMark classificazione={p.classificazione} />
-          <span className="font-semibold text-slate-300">{p.regione.toUpperCase()}</span>
-          <span className="ml-1.5 font-mono text-emerald-400">
+          <span className="font-semibold text-[var(--ink-secondary)]">{p.regione.toUpperCase()}</span>
+          <span className="ml-1.5 font-mono tabular-nums text-[var(--signal-positive)]">
             {(p.piHat * 100).toFixed(2).replace(".", ",")}%
           </span>
-          {i < sorted.length - 1 && <span className="mx-3 text-slate-700">//</span>}
+          {i < sorted.length - 1 && <span className="mx-3 text-slate-700">{"//"}</span>}
         </span>
       ))}
     </span>
   );
   return (
-    <div className="flex min-w-0 flex-1 overflow-hidden">
-      <div className="fn-live-ticker flex whitespace-nowrap font-mono text-[10px]">
+    <div className="fn-live-ticker-fade flex min-w-0 flex-1 overflow-hidden" tabIndex={0}>
+      <div className="fn-live-ticker flex whitespace-nowrap font-mono text-[10px] tabular-nums">
         <span className="pr-12">{segment}</span>
         <span className="pr-12" aria-hidden>
           {segment}
@@ -150,7 +146,6 @@ export function ItaliaHeroStage({
   poll,
   mapValues,
   mapMode,
-  onMapModeChange,
   selectedRegion,
   onSelectRegion,
   hoveredRegion,
@@ -159,22 +154,26 @@ export function ItaliaHeroStage({
   onClassFilterChange,
   pollByRegion,
   votesByRegion,
-  S,
   flussiIpsos,
-  onSChange,
-  onFlussiPreset,
+  flussiMatrixId,
+  onSelectFlussiMatrix,
   onAdjustInst,
   onResetInstRegion,
-  onScrollToTable,
   fnConfig,
   regionQuickDelta,
   baselineScenario,
+  growthRegime,
+  onGrowthRegimeChange,
+  regionalGrowthByRegion,
+  sLiveEnabled,
+  liveConsenso,
+  liveConsensoLoading,
+  onOpenDossier,
 }: {
   scenario: ScenarioResult;
   poll: RegionPollResult[];
   mapValues: Record<string, number>;
   mapMode: MapColorMode;
-  onMapModeChange: (m: MapColorMode) => void;
   selectedRegion: string | null;
   onSelectRegion: (r: string | null) => void;
   hoveredRegion: string | null;
@@ -183,49 +182,60 @@ export function ItaliaHeroStage({
   onClassFilterChange: (f: "all" | RegionPollResult["classificazione"]) => void;
   pollByRegion: Record<string, RegionPollResult>;
   votesByRegion: Record<string, number>;
-  S: number;
   flussiIpsos: FlussiIpsos;
-  onSChange: (s: number) => void;
-  onFlussiPreset: (f: FlussiIpsos) => void;
+  flussiMatrixId: FlussiMatrixId;
+  onSelectFlussiMatrix: (id: FlussiMatrixId) => void;
   onAdjustInst?: (carica: keyof InstitutionalRow, delta: number) => void;
   onResetInstRegion?: () => void;
-  onScrollToTable: () => void;
   fnConfig?: FnConfig;
   regionQuickDelta?: Partial<InstitutionalRow>;
   baselineScenario?: ScenarioResult;
+  growthRegime: GrowthRegimeId;
+  onGrowthRegimeChange: (r: GrowthRegimeId) => void;
+  regionalGrowthByRegion: Record<string, RegionalGrowthForecast>;
+  sLiveEnabled?: boolean;
+  onSLiveEnabledChange?: (enabled: boolean) => void;
+  liveConsenso?: LiveConsensoPayload | null;
+  liveConsensoLoading?: boolean;
+  onOpenDossier?: (region: Region, category: TerritoryIssueCategory) => void;
 }) {
-  const { parametri, metriche } = scenario;
-  const totVoti = scenario.righe.reduce((s, r) => s + r.voti_di_scenario, 0);
-  const [showRegionLabels, setShowRegionLabels] = useState(true);
-  const [showCapitals, setShowCapitals] = useState(true);
-  const [showLatLonGrid, setShowLatLonGrid] = useState(false);
+  const { parametri } = scenario;
+  const sourceLabel =
+    sLiveEnabled && liveConsenso?.sourceLabel
+      ? liveConsenso.sourceLabel
+      : OFFICIAL_S_SOURCE_LABEL;
+  const sourceUrl =
+    sLiveEnabled && liveConsenso?.sourceUrl
+      ? liveConsenso.sourceUrl
+      : OFFICIAL_S_SOURCE_URL;
   const [surgeKey, setSurgeKey] = useState(0);
-
+  const [newsHeadlines, setNewsHeadlines] = useState<string[]>([]);
+  const [regionalV4ByRegion, setRegionalV4ByRegion] = useState<
+    Record<string, ScenarioRegionalV4View>
+  >({});
+  const [regionalV4AsOf, setRegionalV4AsOf] = useState(() => new Date());
+  const [priorityView, setPriorityView] = useState<ScenarioPriorityView>("oggi");
   const animS = useAnimatedNumber(parametri.S * 100);
-  const animVoti = useAnimatedNumber(totVoti);
-  const animH = useAnimatedNumber(metriche.H.scenario);
-  const animBench = useAnimatedNumber(metriche.differenza_media_ponderata_scenario_benchmark_punti);
+  const consensoPct = parametri.S * 100;
+  const peak = FN_SUPERMEDIA_CONSENSO_SERIES.reduce((best, point) =>
+    point.pct > best.pct ? point : best,
+  );
+  const spark = [
+    ...SPARK_MARKS.map(
+      (iso) => FN_SUPERMEDIA_CONSENSO_SERIES.find((point) => point.isoDate === iso)?.pct ?? consensoPct,
+    ),
+    consensoPct,
+  ];
+  const sopraSoglia = poll.filter((row) => row.piHat >= 0.03).length;
 
-  const handleSChange = (v: number) => {
+  const handleSelectMatrix = (id: FlussiMatrixId) => {
     setSurgeKey((k) => k + 1);
-    onSChange(v);
-  };
-
-  const handleFlussi = (f: FlussiIpsos) => {
-    setSurgeKey((k) => k + 1);
-    onFlussiPreset(f);
+    onSelectFlussiMatrix(id);
   };
 
   const handleAdjust = (carica: keyof InstitutionalRow, delta: number) => {
     onAdjustInst?.(carica, delta);
   };
-
-  const segBtn =
-    "px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wide transition-colors";
-  const toggle =
-    "border border-[#1B2436] px-2 py-1 text-[10px] font-medium uppercase tracking-wide transition-colors";
-  const toggleOn = "bg-[#162032] text-slate-100";
-  const toggleOff = "bg-transparent text-slate-500 hover:text-slate-200";
 
   const scenarioRow = selectedRegion
     ? scenario.righe.find((r) => r.regione === selectedRegion)
@@ -234,183 +244,164 @@ export function ItaliaHeroStage({
     ? baselineScenario?.righe.find((r) => r.regione === selectedRegion)
     : undefined;
 
+  const focusRegion = hoveredRegion ?? selectedRegion;
+
+  const handleRegionalV4Map = useCallback(
+    (payload: { map: Record<string, ScenarioRegionalV4View>; asOf: Date }) => {
+      setRegionalV4ByRegion(payload.map);
+      setRegionalV4AsOf(payload.asOf);
+    },
+    [],
+  );
+
+  const displayMapValues = useMemo(() => {
+    if (priorityView !== "mag27" || Object.keys(regionalV4ByRegion).length === 0) {
+      return mapValues;
+    }
+    return Object.fromEntries(
+      Object.entries(regionalV4ByRegion).map(([regione, row]) => [regione, row.mag27BasePct]),
+    );
+  }, [mapValues, priorityView, regionalV4ByRegion]);
+
+  const handleEvidence = useCallback((evidence: GrowthEvidence) => {
+    const next = evidence.newsHeadlines ?? [];
+    setNewsHeadlines((prev) => {
+      if (
+        prev.length === next.length &&
+        prev.every((line, i) => line === next[i])
+      ) {
+        return prev;
+      }
+      return next;
+    });
+  }, []);
+
   return (
     <section
-      className="relative flex h-screen min-h-[760px] w-full max-w-full overflow-hidden bg-[#070A10] bg-[linear-gradient(to_right,#111622_1px,transparent_1px),linear-gradient(to_bottom,#111622_1px,transparent_1px)] bg-[size:32px_32px]"
-      aria-label="Stage cartografico Italia"
+      className="fn-scenario-stage relative flex h-dvh w-full max-w-full flex-col gap-2.5 overflow-hidden bg-[#070A10] px-3 pb-2 pt-[calc(3.5rem+env(safe-area-inset-top))] max-lg:h-auto max-lg:min-h-dvh max-lg:overflow-y-auto max-lg:pb-[calc(5.5rem+env(safe-area-inset-bottom))]"
+      aria-label="Cabina di regia nazionale"
     >
-      <aside className="absolute bottom-28 left-6 top-20 z-20 w-[330px] overflow-y-auto">
-        <div className="overflow-hidden rounded-xl border border-[#1B2436] bg-[#080C14]/90 divide-y divide-[#1B2436]">
-          <div className="p-4">
-            <p className="font-mono text-[10px] tracking-[0.15em] text-slate-500">
-              01 // CONSENSO NAZIONALE (MODULO A)
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[300px_minmax(0,1fr)_360px] xl:grid-cols-[320px_minmax(0,1fr)_420px]">
+      <aside
+        aria-label="Consenso e previsione"
+        className={`fn-scenario-metrics order-2 flex h-full min-h-0 flex-col gap-2.5 overflow-y-auto lg:order-1 ${SIDEBAR_SCROLL}`}
+      >
+        <TacticalCard className="divide-y divide-[#1B2436] rounded-xl !p-0">
+          <div className="relative z-[2] p-4">
+            <p className="font-mono text-[10px] tracking-[0.15em] text-[var(--ink-muted)]">
+              CONSENSO NAZIONALE
             </p>
-            <div className="mt-3 flex items-start gap-3">
-              <p className="font-mono text-[44px] font-bold leading-none tracking-tighter tabular-nums text-white">
-                {animS.toFixed(2).replace(".", ",")}%
-              </p>
-              <div>
-                <p className="font-mono text-[9px] uppercase text-slate-500">Entropia H</p>
-                <EntropyGauge h={metriche.H.scenario} />
-                <p className="font-mono text-[10px] tabular-nums text-slate-400">
-                  {animH.toFixed(4).replace(".", ",")}
+            <div className="mt-2">
+              <div className="flex items-start gap-1.5">
+                <p className="font-mono text-[44px] font-bold leading-none tracking-tighter text-white">
+                  {liveConsensoLoading && !liveConsenso ? (
+                    <span className="text-[22px] text-slate-400">
+                      Caricamento dati in corso…
+                    </span>
+                  ) : (
+                    <AnimatedNumber value={animS} decimals={2} suffix="%" />
+                  )}
                 </p>
+                {sLiveEnabled && liveConsenso?.movementBrief ? (
+                  <ConsensoMovementInfo brief={liveConsenso.movementBrief} />
+                ) : null}
               </div>
-            </div>
-            <div className="mt-4 grid grid-cols-3 divide-x divide-[#1B2436] font-mono text-[10px] tabular-nums">
-              <div className="pr-2">
-                <p className="text-slate-500">VOTI SCENARIO</p>
-                <p className="mt-1 text-slate-100">
-                  {Math.round(animVoti).toLocaleString("it-IT")}
-                </p>
-              </div>
-              <div className="px-2">
-                <p className="text-slate-500">H ISCRITTI</p>
-                <p className="mt-1 text-slate-100">{animH.toFixed(4).replace(".", ",")}</p>
-              </div>
-              <div className="pl-2">
-                <p className="text-slate-500">SCARTO BENCH.</p>
-                <p className="mt-1 text-[#34D399]">{pp(animBench, 2)}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-4">
-            <p className="font-mono text-[10px] tracking-[0.15em] text-slate-500">
-              02 // CALIBRAZIONE S NAZIONALE
-            </p>
-            <input
-              type="range"
-              min={1}
-              max={20}
-              step={0.1}
-              value={S * 100}
-              onChange={(e) => handleSChange(Number(e.target.value) / 100)}
-              className="mt-3 h-1 w-full cursor-pointer appearance-none bg-[#162032] accent-emerald-500"
-            />
-            <div className="mt-1 flex justify-between font-mono text-[9px] text-slate-600">
-              <span>4%</span>
-              <span>6%</span>
-              <span>7,2%</span>
-              <span>9%</span>
-              <span>12%</span>
-            </div>
-            <div className="mt-3 grid grid-cols-3 gap-1">
-              <button
-                type="button"
-                className={`${toggle} ${toggleOff}`}
-                onClick={() => handleSChange(Math.max(0.01, S - 0.005))}
-              >
-                -0,5 pp
-              </button>
-              <button
-                type="button"
-                className={`${toggle} ${toggleOn}`}
-                onClick={() => handleSChange(OFFICIAL_S)}
-              >
-                BASE 7,20%
-              </button>
-              <button
-                type="button"
-                className={`${toggle} ${toggleOff}`}
-                onClick={() => handleSChange(Math.min(0.2, S + 0.005))}
-              >
-                +0,5 pp
-              </button>
-            </div>
-          </div>
-
-          <div className="p-4">
-            <p className="font-mono text-[10px] tracking-[0.15em] text-slate-500">
-              03 // MATRICE FLUSSI 2026
-            </p>
-            <div className="mt-2 space-y-1">
-              {FLUSSI_UI.map(({ key, match }) => {
-                const meta = FLUSSI_PRESET_LABELS[key]!;
-                const on = flussiEqual(flussiIpsos, match);
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => handleFlussi({ ...match })}
-                    className={`flex w-full items-center justify-between border px-2 py-2 text-left ${
-                      on ? "border-emerald-500/40 bg-[#162032]" : "border-[#1B2436] hover:bg-[#0C101A]"
-                    }`}
-                  >
-                    <div>
-                      <p className="font-mono text-[10px] font-semibold text-slate-200">
-                        {meta.title}
-                      </p>
-                      <p className="font-mono text-[9px] text-slate-500">{meta.caption}</p>
-                      <FlussiTripBar f={meta.f} />
-                    </div>
-                    <span
-                      className={`ml-2 h-2 w-2 shrink-0 ${on ? "bg-emerald-400" : "border border-slate-600"}`}
-                      aria-hidden
-                    />
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="p-4">
-            <p className="font-mono text-[10px] tracking-[0.15em] text-slate-500">
-              04 // STRATI CARTOGRAFICI
-            </p>
-            <div className="mt-2 grid grid-cols-3 border border-[#1B2436]">
-              {MAP_LAYER_MODES.map(({ id, label }) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => onMapModeChange(id)}
-                  className={`${segBtn} ${
-                    mapMode === id ? "bg-[#162032] text-white" : "text-slate-500 hover:text-slate-200"
-                  }`}
+              {sourceUrl ? (
+                <a
+                  href={sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1.5 inline-block font-mono text-[11px] leading-snug text-cyan-400/90 underline decoration-cyan-500/30 underline-offset-2 hover:text-cyan-300"
                 >
-                  {label.toUpperCase()}
-                </button>
-              ))}
+                  Fonti del consenso ↗
+                </a>
+              ) : (
+                <p className="mt-1.5 font-mono text-[11px] leading-snug text-cyan-400/90">
+                  Fonte: {sourceLabel}
+                </p>
+              )}
+              <div className="mt-3 flex items-end justify-between gap-3">
+                <p className="min-w-0 font-mono text-[12px] leading-snug text-[var(--ink-secondary)]">
+                  Picco {peakCaption(peak.isoDate)}
+                  <span className="mt-0.5 block text-[15px] font-semibold tabular-nums text-white">
+                    {formatDecimalIt(peak.pct, 2)}%
+                  </span>
+                </p>
+                <ConsensoSparkline points={spark} />
+              </div>
             </div>
-            <div className="mt-2 flex flex-wrap gap-1">
-              <button
-                type="button"
-                className={`${toggle} ${showRegionLabels ? toggleOn : toggleOff}`}
-                onClick={() => setShowRegionLabels((v) => !v)}
-              >
-                PODIO TOP 3
-              </button>
-              <button
-                type="button"
-                className={`${toggle} ${showCapitals ? toggleOn : toggleOff}`}
-                onClick={() => setShowCapitals((v) => !v)}
-              >
-                NODI CAPOLUOGHI
-              </button>
-              <button
-                type="button"
-                className={`${toggle} ${showLatLonGrid ? toggleOn : toggleOff}`}
-                onClick={() => setShowLatLonGrid((v) => !v)}
-              >
-                RETICOLO GEO
-              </button>
+            <div className="fn-consensus-stats mt-4 grid grid-cols-3 divide-x divide-[#1B2436] font-mono text-[10px] tabular-nums">
+              <div className="min-w-0 pr-2">
+                <p className="leading-tight text-[var(--ink-muted)]">TESSERATI</p>
+                <p className="mt-1 text-slate-100">{formatIntIt(parametri.iscritti_attribuiti)}</p>
+              </div>
+              <div className="min-w-0 px-2">
+                <p className="leading-tight text-[var(--ink-muted)]">COMITATI</p>
+                <p className="mt-1 text-slate-100">{formatIntIt(parametri.comitati)}</p>
+              </div>
+              <div className="min-w-0 pl-2">
+                <p className="leading-tight text-[var(--ink-muted)]">SOPRA 3%</p>
+                <p className="mt-1 text-emerald-300">
+                  {liveConsensoLoading && poll.length === 0
+                    ? "Fonte in aggiornamento"
+                    : poll.length === 0
+                      ? "Dato non disponibile"
+                      : `${sopraSoglia} / ${poll.length}`}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-        <button
-          type="button"
-          className="mt-2 text-left font-mono text-[10px] uppercase text-slate-500 hover:text-slate-300"
-          onClick={onScrollToTable}
-        >
-          Tabella 20 regioni
-        </button>
+
+          <ScenarioGrowthForecastPanel
+            scenario={scenario}
+            poll={poll}
+            flussiIpsos={flussiIpsos}
+            regime={growthRegime}
+            onRegimeChange={onGrowthRegimeChange}
+            focusRegion={focusRegion}
+            onRegionalV4Map={handleRegionalV4Map}
+            onEvidence={handleEvidence}
+            pollsLoading={Boolean(liveConsensoLoading && !liveConsenso)}
+          />
+
+          <details className="fn-source-disclosure">
+            <summary>Provenienza degli elettori <span aria-hidden="true">+</span></summary>
+            <FlussiMatrix2026Panel
+            flussiIpsos={flussiIpsos}
+            activeMatrixId={flussiMatrixId}
+            onSelectMatrix={handleSelectMatrix}
+            />
+          </details>
+        </TacticalCard>
       </aside>
 
-      <div className="absolute inset-x-[370px] top-20 bottom-36 z-10 flex min-w-0 flex-col overflow-hidden border-none bg-transparent px-2 shadow-none">
+      <div className="fn-scenario-map relative order-1 flex h-[min(58dvh,440px)] min-h-[300px] flex-col overflow-hidden rounded-xl border border-slate-800/70 bg-[#050912]/70 lg:order-2 lg:h-full lg:min-h-0">
+        <div className="flex flex-col gap-1 border-b border-white/[0.06] px-3 py-2 sm:flex-row sm:items-center sm:justify-between sm:px-3.5">
+          <p className="font-mono text-[11px] tracking-[0.08em] text-slate-300">
+            {selectedRegion ? selectedRegion.toUpperCase() : "ITALIA · 20 REGIONI"}
+          </p>
+          {selectedRegion ? (
+            <button
+              type="button"
+              onClick={() => onSelectRegion(null)}
+              className="w-fit rounded-md border border-white/15 px-2 py-1 text-[11px] text-slate-200 hover:bg-white/5"
+            >
+              Torna all&apos;Italia
+            </button>
+          ) : (
+            <p className="text-[11px] leading-snug text-[var(--ink-muted)] sm:text-right">
+              Tocca una regione per il focus
+              <span className="ml-2 font-mono tabular-nums">
+                {sopraSoglia}/{poll.length || 20} sopra soglia
+              </span>
+            </p>
+          )}
+        </div>
+        <div className="relative min-h-0 flex-1">
         <ItalyMap
           variant="hero"
           layout="holographic"
-          valuesByRegion={mapValues}
+          valuesByRegion={displayMapValues}
           colorMode={mapMode}
           selectedRegion={selectedRegion}
           highlightedRegion={hoveredRegion}
@@ -423,45 +414,52 @@ export function ItaliaHeroStage({
           onClassFilterChange={onClassFilterChange}
           zoomControls="none"
           hideStatusPills
-          showRegionLabels={showRegionLabels}
-          showCapitals={showCapitals}
-          showLatLonGrid={showLatLonGrid}
+          showRegionLabels={false}
+          showCapitals={false}
+          showLatLonGrid={false}
           energySurgeKey={surgeKey}
+          regionalV4ByRegion={regionalV4ByRegion}
+          regionalV4AsOf={regionalV4AsOf}
         />
+        </div>
       </div>
 
-      <aside className="absolute bottom-28 right-6 top-20 z-20 w-[350px] overflow-y-auto">
-        <NationalIntelligencePanel
-          poll={poll}
-          selectedRegion={selectedRegion}
-          onSelectRegion={onSelectRegion}
-          onAdjustInst={selectedRegion ? handleAdjust : undefined}
-          onResetRegion={selectedRegion ? onResetInstRegion : undefined}
-          variant="holographic"
-          fnConfig={fnConfig}
-          region={selectedRegion as Region | undefined}
-          regionQuickDelta={regionQuickDelta}
-          scenarioRow={scenarioRow}
-          baselineRow={baselineRow}
-          nationalS={parametri.S}
-        />
+      <aside
+        aria-label="Dettaglio territoriale"
+        className={`fn-scenario-detail order-3 h-full min-h-0 overflow-hidden rounded-xl lg:order-3`}
+      >
+        <TacticalCard className="h-full min-h-0 rounded-xl !p-0">
+          <div className="relative z-[2] h-full min-h-0">
+            <NationalIntelligencePanel
+              poll={poll}
+              scenario={scenario}
+              selectedRegion={selectedRegion}
+              hoveredRegion={hoveredRegion}
+              regionalV4ByRegion={regionalV4ByRegion}
+              priorityView={priorityView}
+              onPriorityViewChange={setPriorityView}
+              onSelectRegion={onSelectRegion}
+              onAdjustInst={selectedRegion ? handleAdjust : undefined}
+              onResetRegion={selectedRegion ? onResetInstRegion : undefined}
+              variant="holographic"
+              fnConfig={fnConfig}
+              region={selectedRegion as Region | undefined}
+              regionQuickDelta={regionQuickDelta}
+              scenarioRow={scenarioRow}
+              baselineRow={baselineRow}
+              nationalS={parametri.S}
+              newsHeadlines={newsHeadlines}
+              onOpenDossier={onOpenDossier}
+            />
+          </div>
+        </TacticalCard>
       </aside>
 
-      <div className="absolute bottom-20 left-6 right-6 z-30 flex max-w-full items-center gap-3 overflow-hidden border border-[#1B2436] bg-[#080C14]/95 px-4 py-2 shadow-lg backdrop-blur-sm">
-        <span className="shrink-0 font-mono text-[9px] uppercase tracking-wider text-emerald-400">
-          Stima %
-        </span>
-        <div className="hidden shrink-0 items-center gap-1 sm:flex">
-          {STIMA_LEGEND_BANDS.map((b) => (
-            <span
-              key={b.label}
-              className="h-2 w-6 rounded-sm"
-              style={{ background: b.color }}
-              title={b.label}
-            />
-          ))}
+      </div>
+      <div className="fn-scenario-ticker relative flex h-8 shrink-0 items-center overflow-hidden rounded-md border border-[#1B2436] bg-[#080C14]/95 px-3">
+        <div className="fn-live-ticker-fade min-w-0 flex-1">
+          <LiveTicker poll={poll} />
         </div>
-        <LiveTicker poll={poll} />
       </div>
     </section>
   );

@@ -87,6 +87,11 @@ async function saveRegistry(req: Request) {
     });
   }
 
+  const { touchPublishedDomain } = await import(
+    "@/lib/db/publishedStateRepository"
+  );
+  await touchPublishedDomain("locali", `locali-${entries.length}`);
+
   return Response.json({ ok: true, dbConnected: true });
 }
 

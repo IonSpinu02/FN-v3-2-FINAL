@@ -1,13 +1,13 @@
 "use client";
 
 import {
-  FLUSSI_PRESETS,
   OFFICIAL_FLUSSI,
   OFFICIAL_PESI,
   OFFICIAL_S,
   type FlussiIpsos,
   WEIGHT_PRESETS,
 } from "@/lib/engine/defaults";
+import { FLUSSI_MATRICES, flussiFromMatrix } from "@/lib/politicalModel";
 import type { FnConfig } from "@/lib/engine/types";
 import { Btn, Panel, PanelTitle, StatusDot } from "@/components/ui/FnUi";
 
@@ -209,14 +209,14 @@ export function SensitivityControls({
           </label>
         ))}
         <div className="mt-2 flex flex-wrap gap-2">
-          {Object.entries(FLUSSI_PRESETS).map(([name, f]) => (
+          {FLUSSI_MATRICES.map((m) => (
             <Btn
-              key={name}
+              key={m.id}
               variant="secondary"
               className="text-xs"
-              onClick={() => onFlussiChange({ ...f })}
+              onClick={() => onFlussiChange(flussiFromMatrix(m.id))}
             >
-              {name}
+              {m.title}
             </Btn>
           ))}
         </div>
@@ -224,7 +224,7 @@ export function SensitivityControls({
 
       <p className="mt-4 text-xs text-fn-text-muted">
         Golden: S={(OFFICIAL_S * 100).toFixed(1)}%, pesi 35/25/25/15, flussi
-        Ipsos 31/25/36.
+        Ipsos 31/25/36/8 (lug 2026).
       </p>
     </Panel>
   );

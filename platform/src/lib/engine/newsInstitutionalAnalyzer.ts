@@ -9,7 +9,7 @@ import { inferRegionFromFeedUrl } from "./italianGeoLookup";
 import { REGIONS } from "./constants";
 
 export const HARD_BLACKLIST_REGEX =
-  /\b(allerta\s+(?:gialla|arancione|rossa|meteo)|temporali|nubifragio|arpal|protezione\s+civile|meteo|pioggia|grandine|neve|vento\s+forte|sciopero|scioperano|sindacat[oi]|sindacalist[ai]|sindacal[ei]|cgil|cisl|uil|usb|cobas|funeral\s+house|funeral[ei]|esequie|necrologio|lutto|addio\s+a|mort[oa]\s+a|decedut[oa]|omicidio|arrestat[oi]|ferit[oi]\s+in\s+scontri|scontri\s+di\s+piazza|incidente\s+stradale|maxi\s+tamponamento|calcio|serie\s+[abc]|champions\s+league|calciomercato|oroscopo|lotto|superenalotto|gratta\s+e\s+vinci)\b/i;
+  /\b(allerta\s+(?:gialla|arancione|rossa|meteo)|temporali|nubifragio|arpal|protezione\s+civile|meteo|pioggia|grandine|neve|vento\s+forte|sciopero|scioperano|sindacat[oi]|sindacalist[ai]|sindacal[ei]|cgil|cisl|uil|usb|cobas|funeral\s+house|funeral[ei]|esequie|necrologio|lutto|addio\s+a|mort[oa]\s+a|decedut[oa]|omicidio|arrestat[oi]|ferit[oi]\s+in\s+scontri|scontri\s+di\s+piazza|incidente\s+stradale|maxi\s+tamponamento|calcio|serie\s+[abc]|champions\s+league|calciomercato|oroscopo|lotto|superenalotto|gratta\s+e\s+vinci|il\s+ricordo|commemorazion[ei]|anniversario\s+della\s+scomparsa|cerimonia\s+in\s+memoria|in\s+memoria\s+di|onorificenz[ae]|omaggio\s+(?:ai|alle)\s+caduti)\b/i;
 
 const ROLE_PATTERNS: {
   role: CaricaLocale;

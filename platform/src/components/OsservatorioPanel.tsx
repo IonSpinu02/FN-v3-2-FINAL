@@ -1,6 +1,7 @@
 "use client";
 
-import type { Region } from "@/lib/engine/constants";
+import { useRealtimeSync } from "@/components/realtime/RealtimeSyncProvider";
+import { REGIONS, type Region } from "@/lib/engine/constants";
 import { buildDemoTrendsSeries } from "@/lib/engine/demoTrendsSeries";
 import {
   isRegionScope,
@@ -24,14 +25,22 @@ import { parseGoogleTrendsCsv } from "@/lib/engine/parseGoogleTrendsCsv";
 import { parsePrioritaSurveyCsv } from "@/lib/engine/parsePrioritaSurveyCsv";
 import type { ScenarioResult } from "@/lib/engine/types";
 import { compareTrendSeries } from "@/lib/engine/eventStudyProtocol";
-import { OsservatorioOnePageDossier } from "@/components/OsservatorioOnePageDossier";
+import { saveCampaignIntervention } from "@/lib/engine/campaignIntervention";
+import { OsservatorioBentoLayout } from "@/components/osservatorio/OsservatorioBentoLayout";
+import type { TerritoryIssue, TerritoryIssueCategory } from "@/lib/engine/territoryIssuesTypes";
+import { categoryLabel } from "@/lib/engine/territoryIssuesTypes";
 import {
   exportOsservatorioPdf,
   PrintOsservatorioReport,
 } from "./PrintOsservatorioReport";
+import type { FlussiIpsos } from "@/lib/engine/defaults";
+import type {
+  FlussiMatrixId,
+  RegionalGrowthForecast,
+} from "@/lib/politicalModel";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-type DashboardTab = "scenario" | "quadro" | "osservatorio" | "locali" | "audit";
+type DashboardTab = "scenario" | "osservatorio" | "locali";
 
 function emptyCloud(): OsservatorioCloudPayload {
   return {
@@ -60,31 +69,61 @@ function normalizeOsservatorioEvents(
   });
 }
 
+const ORDER_THEMES = ["SANITA", "TRASPORTI", "LAVORO", "SICUREZZA", "COSTO_VITA", "TERRITORIO"] as const;
+
 export function OsservatorioPanel({
   scenario,
-  baselineScenario,
+  baselineScenario: _baselineScenario,
   liveS,
-  onRestoreBaselineS,
+  flussiIpsos: _flussiIpsos,
+  flussiMatrixId: _flussiMatrixId,
+  onSelectFlussiMatrix: _onSelectFlussiMatrix,
+  regionalGrowthByRegion,
+  onRestoreBaselineS: _onRestoreBaselineS,
   onOpenTab: _onOpenTab,
+  dossierRegion,
+  dossierCategory,
 }: {
   scenario: ScenarioResult;
   baselineScenario: ScenarioResult;
   liveS: number;
+  flussiIpsos: FlussiIpsos;
+  flussiMatrixId: FlussiMatrixId;
+  onSelectFlussiMatrix: (id: FlussiMatrixId) => void;
+  regionalGrowthByRegion: Record<string, RegionalGrowthForecast>;
   onRestoreBaselineS: () => void;
   onOpenTab: (tab: DashboardTab) => void;
+  dossierRegion?: string | null;
+  dossierCategory?: string | null;
 }) {
+  const { requestDomainRefresh } = useRealtimeSync();
   void _onOpenTab;
+  void _baselineScenario;
+  void _onRestoreBaselineS;
+  void _flussiIpsos;
+  void _flussiMatrixId;
+  void _onSelectFlussiMatrix;
   const [fabbisogni, setFabbisogni] = useState<FabbisogniCatalogFile | null>(
     null,
   );
   const [cloud, setCloud] = useState<OsservatorioCloudPayload>(emptyCloud());
+  const dossierIsRegion = REGIONS.includes(dossierRegion as Region);
   const [mainTerritory, setMainTerritory] = useState<TerritoryScope>(
-    TERRITORY_NAZIONALE,
+    dossierIsRegion ? (dossierRegion as Region) : TERRITORY_NAZIONALE,
   );
-  const [regione, setRegione] = useState<Region>("Lazio");
+  const [regione, setRegione] = useState<Region>(
+    dossierIsRegion ? (dossierRegion as Region) : "Veneto",
+  );
+  const [orderCategory, setOrderCategory] = useState<TerritoryIssueCategory | null>(null);
+
+  useEffect(() => {
+    if (!REGIONS.includes(dossierRegion as Region)) return;
+    const next = dossierRegion as Region;
+    setRegione(next);
+    setMainTerritory(next);
+  }, [dossierRegion]);
   const [activeTrendId, setActiveTrendId] = useState<string | null>(null);
   const [trendsNote, setTrendsNote] = useState("");
-  const [dataDrawerOpen, setDataDrawerOpen] = useState(false);
   const [dbConnected, setDbConnected] = useState(false);
   const [cloudMeta, setCloudMeta] = useState<{
     updatedAt: string | null;
@@ -222,9 +261,10 @@ export function OsservatorioPanel({
       setDbConnected(true);
       setCloudMeta({
         updatedAt: new Date().toISOString(),
-        updatedBy: "interno@fn",
+        updatedBy: data.updatedBy ?? "dashboard",
         source: "db",
       });
+      void requestDomainRefresh("news");
     }
   }
 
@@ -330,36 +370,67 @@ export function OsservatorioPanel({
     });
   }
 
+  const registerIssueAsEvent = useCallback(
+    (issue: TerritoryIssue) => {
+      const targetRegion =
+        issue.regione === "NAZIONALE" ? regione : issue.regione;
+      const nuovo: OsservatorioEvento = {
+        id: crypto.randomUUID(),
+        titolo: issue.titoloProblema,
+        data: new Date().toISOString().slice(0, 10),
+        tema: categoryLabel(issue.categoria),
+        livello: "attenzione",
+        fontePrimaria: issue.sourceUrl,
+        finestraPreGiorni: 14,
+        finestraPostGiorni: 14,
+        finestraExtraGiorni: [3, 7, 30],
+        statoVerifica: "draft",
+        sondaggioComparabile: "non_disponibile",
+        regione: targetRegion,
+        notaMetodologica: `Radar B.I.P.-driven · ${issue.bipSolutionBadge ?? "Cap. programma"}. ${issue.provinciaComune}. ${issue.azionePoliticaConsigliata.cosaDire.slice(0, 200)}`,
+      };
+      persistCloud({ ...cloud, events: [nuovo, ...events] });
+      saveCampaignIntervention({
+        region: targetRegion,
+        tema: categoryLabel(issue.categoria),
+        frase: issue.azionePoliticaConsigliata.cosaDire.slice(0, 240),
+        date: nuovo.data,
+        consensusPct: liveS * 100,
+      });
+    },
+    [cloud, events, persistCloud, regione, liveS],
+  );
+
+  void cloudMeta;
+
   return (
-    <>
-      <OsservatorioOnePageDossier
+    <div className="pb-32">
+      <OsservatorioBentoLayout
         scenario={scenario}
-        baselineScenario={baselineScenario}
         liveS={liveS}
-        onRestoreBaselineS={onRestoreBaselineS}
         mainTerritory={mainTerritory}
         setMainTerritory={setMainTerritory}
         regione={regione}
         setRegione={setRegione}
-        fabbisogni={fabbisogni}
+        regionalGrowthByRegion={regionalGrowthByRegion}
         fabRegione={fabRegione}
-        events={events}
         activeTrendSeries={activeTrendSeries}
-        prioritaRegione={prioritaRegione}
-        monthlyNote={monthlyNote}
-        setMonthlyNote={setMonthlyNote}
-        dataDrawerOpen={dataDrawerOpen}
-        setDataDrawerOpen={setDataDrawerOpen}
-        cloud={cloud}
+        eventCount={events.length}
         dbConnected={dbConnected}
-        cloudMeta={cloudMeta}
-        onSaveCloud={() => void saveToCloudDb()}
+        onRegisterIssueEvent={registerIssueAsEvent}
         onExportPdf={() => exportOsservatorioPdf()}
         onPrioritaCsv={onPrioritaCsv}
         onTrendsCsv={onTrendsCsv}
         onLoadDemoTrends={loadDemoTrends}
         onAddEvent={addDraftEvent}
         onSavePriorita={savePrioritaManuale}
+        onSaveCloud={() => void saveToCloudDb()}
+        focusCategory={
+          dossierCategory &&
+          (ORDER_THEMES as readonly string[]).includes(dossierCategory)
+            ? (dossierCategory as TerritoryIssueCategory)
+            : orderCategory
+        }
       />
 
       <PrintOsservatorioReport
@@ -371,6 +442,6 @@ export function OsservatorioPanel({
         trendsSeries={activeTrend}
         priorita={prioritaRegione}
       />
-    </>
+    </div>
   );
 }

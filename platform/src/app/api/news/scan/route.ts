@@ -2,112 +2,56 @@ import {
   requireSession,
   unauthorizedResponse,
 } from "@/lib/api/requireSession";
-import {
-  analyzeInstitutionalArticle,
-  dedupeNewsRaw,
-  enrichNewsCandidates,
-  fetchFeedXml,
-  filterRelevantCandidates,
-  isNewsJunkText,
-  parseNewsKeywordsEnv,
-  parseRssItems,
-  perFeedItemLimit,
-  resolveNewsRssUrls,
-} from "@/lib/engine/newsIngest";
-import {
-  getNewsScanCache,
-  registryEntriesKey,
-  setNewsScanCache,
-  type NewsScanCachePayload,
-} from "@/lib/engine/newsScanCache";
-import { mergeLiveWithCertifiedDispatches } from "@/lib/engine/certifiedNewsDispatches";
+import { filterRelevantCandidates } from "@/lib/engine/newsIngest";
+import { registryEntriesKey, type NewsScanCachePayload } from "@/lib/engine/newsScanCache";
 import type { LocalRegistryEntry } from "@/lib/engine/localiTypes";
+import { getStaleOrFresh } from "@/lib/db/domainCacheRepository";
+import { getPublishedState } from "@/lib/db/publishedStateRepository";
+import {
+  ifNoneMatchHit,
+  jsonWithEtag,
+  notModifiedResponse,
+  publishedEtag,
+} from "@/lib/api/etagRead";
+import { logStructured } from "@/lib/observability/logger";
 
+export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-const FEED_TIMEOUT_MS = 3500;
+type CacheEntry = {
+  cachedAt: number;
+  entriesKey: string;
+  payload: NewsScanCachePayload;
+};
 
-async function runLiveNewsScan(
-  entries: LocalRegistryEntry[],
-): Promise<NewsScanCachePayload> {
-  const { urls, fromDefaultCatalog } = resolveNewsRssUrls(
-    process.env.NEWS_RSS_URLS,
-  );
-  const maxItems = Math.min(
-    50,
-    Math.max(5, parseInt(process.env.NEWS_SCAN_MAX_ITEMS ?? "30", 10) || 30),
-  );
-  const perFeed = perFeedItemLimit(urls.length, maxItems);
-  const keywords = parseNewsKeywordsEnv(process.env.NEWS_KEYWORDS);
-  const comuni = entries.map((e) => e.comune);
+function domainKey(entriesKey: string): string {
+  return `news:scan:${entriesKey}`;
+}
 
-  const results = await Promise.allSettled(
-    urls.map(async (url) => {
-      const xml = await fetchFeedXml(url, FEED_TIMEOUT_MS);
-      return {
-        url,
-        items: parseRssItems(xml, url, perFeed),
-      };
-    }),
-  );
-
-  const allRaw: Parameters<typeof enrichNewsCandidates>[0] = [];
-  const errors: string[] = [];
-  let feedsOnline = 0;
-
-  for (const r of results) {
-    if (r.status === "fulfilled") {
-      feedsOnline += 1;
-      allRaw.push(...r.value.items);
-    } else {
-      errors.push(
-        r.reason instanceof Error ? r.reason.message : String(r.reason),
-      );
-    }
-  }
-
-  const rawItemsRead = allRaw.length;
-  const deduped = dedupeNewsRaw(allRaw);
-
-  let rejectedNoiseCount = 0;
-  for (const item of deduped) {
-    const ok =
-      !isNewsJunkText(item.titolo, item.snippet) &&
-      analyzeInstitutionalArticle({
-        titolo: item.titolo,
-        snippet: item.snippet,
-        feedUrl: item.feedUrl,
-      }) !== null;
-    if (!ok) rejectedNoiseCount += 1;
-  }
-
-  const enriched = enrichNewsCandidates(deduped, keywords, comuni);
-  const liveVerified = filterRelevantCandidates(enriched);
-  const candidates = mergeLiveWithCertifiedDispatches(liveVerified, maxItems);
-
+function emptyPayload(): NewsScanCachePayload {
   const timestamp = new Date().toISOString();
-  const meta = {
-    feedsChecked: urls.length,
-    feedsOnline,
-    rawItemsRead,
-    rejectedNoiseCount,
-    verifiedItemsCount: candidates.length,
-    timestamp,
-  };
-
   return {
-    candidates,
-    scannedFeeds: urls.length,
-    fromDefaultCatalog,
-    perFeedLimit: perFeed,
-    errors: errors.length ? errors : undefined,
-    meta,
+    candidates: [],
+    scannedFeeds: 0,
+    fromDefaultCatalog: true,
+    perFeedLimit: 10,
+    meta: {
+      feedsChecked: 0,
+      feedsOnline: 0,
+      rawItemsRead: 0,
+      rejectedNoiseCount: 0,
+      verifiedItemsCount: 0,
+      timestamp,
+      provider: "rss",
+    },
   };
 }
 
 export async function POST(req: Request) {
   const session = await requireSession();
   if (!session) return unauthorizedResponse();
+
+  const started = Date.now();
 
   try {
     const body = (await req.json().catch(() => ({}))) as {
@@ -116,29 +60,44 @@ export async function POST(req: Request) {
     };
     const entries = body.entries ?? [];
     const entriesKey = registryEntriesKey(entries);
-    const forceRefresh = body.forceRefresh === true;
+    const domain = entries.length > 0 ? "locali" : "news";
+    const published = await getPublishedState(domain);
+    const etag = publishedEtag(published, `"news-${entriesKey}"`);
 
-    if (!forceRefresh) {
-      const hit = getNewsScanCache(entriesKey);
-      if (hit) {
-        const candidates = filterRelevantCandidates(hit.payload.candidates);
-        return Response.json({
-          ...hit.payload,
-          candidates,
-          cached: true,
-          cachedAt: hit.cachedAt,
-        });
-      }
+    if (ifNoneMatchHit(req, etag)) {
+      return notModifiedResponse(etag);
     }
 
-    const payload = await runLiveNewsScan(entries);
-    setNewsScanCache(entriesKey, payload);
+    const row = await getStaleOrFresh<CacheEntry>(domainKey(entriesKey));
+    const bundle = row?.entry.payload;
+    const payload = bundle?.payload ?? emptyPayload();
+    const cachedAt = bundle
+      ? new Date(bundle.cachedAt).toISOString()
+      : payload.meta?.timestamp ?? new Date().toISOString();
 
-    return Response.json({
-      ...payload,
-      cached: false,
-      cachedAt: payload.meta?.timestamp ?? new Date().toISOString(),
+    const candidates = filterRelevantCandidates(payload.candidates);
+    const stale =
+      row != null &&
+      row.stale &&
+      row.entry.expiresAt != null &&
+      Date.now() > row.entry.expiresAt;
+
+    logStructured({
+      event: "read_news_scan",
+      domain,
+      durationMs: Date.now() - started,
+      usedFallback: stale || !bundle,
     });
+
+    return jsonWithEtag(
+      {
+        ...payload,
+        candidates,
+        cached: Boolean(bundle),
+        cachedAt,
+      },
+      etag,
+    );
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Errore scan news";
     return Response.json({ error: msg }, { status: 500 });

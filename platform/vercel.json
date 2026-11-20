@@ -1,0 +1,16 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/ingest-domains",
+      "schedule": "*/30 * * * *"
+    },
+    {
+      "path": "/api/consenso/sync",
+      "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/system-monitor",
+      "schedule": "0 6 * * *"
+    }
+  ]
+}

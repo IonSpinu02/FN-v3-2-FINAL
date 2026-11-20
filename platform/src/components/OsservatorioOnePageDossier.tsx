@@ -48,14 +48,16 @@ import {
   type TerritoryScope,
 } from "@/lib/engine/osservatorioTerritoryScope";
 import type { ScenarioResult } from "@/lib/engine/types";
+import { RegionalPartyHistoryBar } from "@/components/RegionalPartyHistoryBar";
+import { getRegionalPartyHistory } from "@/lib/fnProgramAndAffinityEngine";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 
 const NAV = [
   { id: "osservatorio-sec-1", num: "01", label: "Sintesi" },
   { id: "osservatorio-sec-2", num: "02", label: "Scheda" },
-  { id: "osservatorio-sec-3", num: "03", label: "Mod. A · Forza" },
-  { id: "osservatorio-sec-4", num: "04", label: "Mod. B" },
-  { id: "osservatorio-sec-5", num: "05", label: "Mod. C & Trends" },
+  { id: "osservatorio-sec-3", num: "03", label: "Consenso nei territori" },
+  { id: "osservatorio-sec-4", num: "04", label: "Bisogni del territorio" },
+  { id: "osservatorio-sec-5", num: "05", label: "Eventi e ricerche online" },
   { id: "osservatorio-sec-6", num: "06", label: "Piano '27" },
 ] as const;
 
@@ -74,13 +76,13 @@ const METADATA_POINTS = [
 ];
 
 const LIMITI_METODO = [
-  "Un sondaggio nazionale non misura da solo le quote di voto regionali.",
-  "Google Trends (0–100) misura attenzione relativa, non gradimento né consenso.",
-  "L'equilibrio del radicamento misura copertura territoriale, non percentuali di voto.",
-  "Il disagio sociale regionale non si traduce automaticamente in consenso elettorale individuale.",
-  "Eventi e picchi di attenzione non implicano causalità demoscopica senza sondaggi comparabili.",
-  "Scenari Monte Carlo restano simulazioni descrittive, non previsioni validate.",
-  "Lacune informative (priorità campionarie assenti) non vanno colmate con proxy fittizi.",
+  "Fonti ISTAT/BesT/AGENAS con periodi di pubblicazione distinti per indicatore.",
+  "Google Trends 0–100: scala relativa al picco del periodo selezionato.",
+  "Equilibrio H: copertura del tesseramento sulle 20 regioni.",
+  "Stress territoriale: sintesi su sanità, lavoro e abitare/trasporti.",
+  "Event study: finestre ±14 gg e serie Trends esportate a parametri bloccati.",
+  "Scenari Monte Carlo: esplorazione descrittiva con seme e ipotesi documentate.",
+  "Priorità campionarie: lacune lasciate esplicite fino a nuova rilevazione.",
 ];
 
 const QUESTIONARIO = [
@@ -88,7 +90,7 @@ const QUESTIONARIO = [
   "Quale difficoltà ha incontrato personalmente negli ultimi 12 mesi?",
   "Quanto è soddisfatto dei principali servizi pubblici locali?",
   "Quanto ritiene urgenti diverse possibili soluzioni, presentate in modo equilibrato?",
-  "Qual è la sua intenzione di voto oggi? (Facoltativa, con garanzie di riservatezza.)",
+  "Qual è la sua intenzione di voto oggi?",
 ];
 
 function scrollTo(id: string) {
@@ -229,6 +231,10 @@ type Props = {
   onLoadDemoTrends: () => void;
   onAddEvent: () => void;
   onSavePriorita: () => void;
+  /** Mostra solo piano operativo (Trends, scheda, questionario) sotto l'hub decisionale. */
+  operationalTailOnly?: boolean;
+  /** Con operationalTailOnly: nasconde Scheda §8 / Modulo A e Modulo C (solo drawer dati). */
+  hideSchedaAndModuloC?: boolean;
 };
 
 export function OsservatorioOnePageDossier(props: Props) {
@@ -257,7 +263,12 @@ export function OsservatorioOnePageDossier(props: Props) {
     onLoadDemoTrends,
     onAddEvent,
     onSavePriorita,
+    operationalTailOnly = false,
+    hideSchedaAndModuloC = false,
   } = props;
+
+  const showSchedaAndModuloC =
+    !operationalTailOnly || !hideSchedaAndModuloC;
 
   const [sec2Scope, setSec2Scope] = useState<TerritoryScope>(mainTerritory);
   const [sec3ColA, setSec3ColA] = useState<TerritoryScope>("Veneto");
@@ -270,15 +281,16 @@ export function OsservatorioOnePageDossier(props: Props) {
 
   useEffect(() => {
     setSec2Scope(mainTerritory);
+    setSec3ColA(mainTerritory);
     if (mainTerritory === TERRITORY_NAZIONALE) {
       setSec4Mode("nazionale");
       setSec5Scope(TERRITORY_NAZIONALE);
-      setSec3ColB("Lazio");
+      setSec3ColB("Veneto");
     } else {
       setSec4Mode("singola");
       setSec4Region(mainTerritory);
       setSec5Scope(mainTerritory);
-      setSec3ColB(mainTerritory);
+      setSec3ColB(TERRITORY_NAZIONALE);
     }
   }, [mainTerritory]);
 
@@ -322,8 +334,17 @@ export function OsservatorioOnePageDossier(props: Props) {
     sec2Fab?.indicatori ?? [],
     sec2Region,
   ).aggregate;
+  const effectiveSec3ColB: TerritoryScope =
+    sec3ColA === TERRITORY_NAZIONALE && sec3ColB === TERRITORY_NAZIONALE
+      ? "Veneto"
+      : sec3ColB;
   const colAData = moduloAForScope(sec3ColA, scenario, liveS, sec3ColA === "Veneto");
-  const colBData = moduloAForScope(sec3ColB, scenario, liveS, false);
+  const colBData = moduloAForScope(
+    effectiveSec3ColB,
+    scenario,
+    liveS,
+    effectiveSec3ColB === "Veneto",
+  );
 
   const sec4PrimaryRegion =
     sec4Mode === "confronto"
@@ -386,8 +407,8 @@ export function OsservatorioOnePageDossier(props: Props) {
       : row
         ? fmtPctIt(row.stima * 100, 2)
         : "—";
-  const docApproxBadge =
-    sec2Region === "Lazio" && Math.abs(liveS - OFFICIAL_S) < 0.001;
+  const docBadgeLazio = sec2Region === "Lazio";
+  const docBadgeVeneto = sec2Region === "Veneto";
 
   const sec5Events =
     sec5Scope === TERRITORY_NAZIONALE
@@ -396,9 +417,12 @@ export function OsservatorioOnePageDossier(props: Props) {
   const sec5RegionLabel =
     sec5Scope === TERRITORY_NAZIONALE ? "Italia (20 Regioni)" : sec5Scope;
 
+  const sec2Id = operationalTailOnly ? "osservatorio-sec-02" : "osservatorio-sec-2";
+  const sec5Id = operationalTailOnly ? "osservatorio-sec-05" : "osservatorio-sec-5";
+
   return (
-    <div className="space-y-8 pb-36">
-      {/* Sticky command bar — single row */}
+    <div className={operationalTailOnly ? "space-y-8" : "space-y-8 pb-36"}>
+      {!operationalTailOnly ? (
       <div className="sticky top-0 z-30 flex items-center justify-between gap-3 rounded-xl border border-white/[0.08] bg-[#070A12]/90 px-3 py-2 backdrop-blur-xl">
         <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto rounded-lg border border-white/[0.05] bg-white/[0.03] p-1 [scrollbar-width:none]">
           {NAV.map((n) => (
@@ -418,7 +442,7 @@ export function OsservatorioOnePageDossier(props: Props) {
             type="button"
             onClick={showRestore ? onRestoreBaselineS : undefined}
             className="rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 font-mono text-[11px] text-emerald-300"
-            title={showRestore ? "Ripristina baseline studio" : "Baseline attiva"}
+            title={showRestore ? "Ripristina il valore di riferimento" : "Valore di riferimento attivo"}
           >
             S {fmtPctIt(sLive, 2)}%
           </button>
@@ -445,20 +469,23 @@ export function OsservatorioOnePageDossier(props: Props) {
           </button>
         </div>
       </div>
+      ) : null}
 
-      <div className="rounded-xl border border-white/[0.08] bg-[#070A12]/80 px-4 py-3">
-        <p className="mb-2 font-mono text-[9px] uppercase tracking-wider text-slate-500">
-          Territorio globale · aggiorna tutte le sezioni (override locale in §02–§05)
-        </p>
-        <TerritoryScopeToolbar value={mainTerritory} onChange={setMainTerritory} />
-      </div>
+      {!operationalTailOnly ? (
+        <div className="rounded-xl border border-white/[0.08] bg-[#070A12]/80 px-4 py-3">
+          <p className="mb-2 font-mono text-[9px] uppercase tracking-wider text-slate-500">
+            Territorio globale · aggiorna tutte le sezioni (override locale in §02–§05)
+          </p>
+          <TerritoryScopeToolbar value={mainTerritory} onChange={setMainTerritory} />
+        </div>
+      ) : null}
 
       {dataDrawerOpen ? (
         <div
           className={`${MONO} grid divide-x divide-white/[0.06] md:grid-cols-3`}
         >
           <div className="p-4">
-            <p className="mb-2 font-mono text-[9px] uppercase text-slate-500">Mod. B · Priorità</p>
+            <p className="mb-2 font-mono text-[9px] uppercase text-slate-500">Bisogni del territorio</p>
             <CsvDropzone label="Import CSV" onText={onPrioritaCsv} />
             <button
               type="button"
@@ -469,7 +496,7 @@ export function OsservatorioOnePageDossier(props: Props) {
             </button>
           </div>
           <div className="p-4">
-            <p className="mb-2 font-mono text-[9px] uppercase text-slate-500">Mod. C · Trends</p>
+            <p className="mb-2 font-mono text-[9px] uppercase text-slate-500">Ricerche online</p>
             <CsvDropzone label="Import CSV" onText={onTrendsCsv} />
             <button
               type="button"
@@ -480,7 +507,7 @@ export function OsservatorioOnePageDossier(props: Props) {
             </button>
           </div>
           <div className="p-4">
-            <p className="mb-2 font-mono text-[9px] uppercase text-slate-500">Mod. C · Eventi</p>
+            <p className="mb-2 font-mono text-[9px] uppercase text-slate-500">Eventi</p>
             <button
               type="button"
               onClick={onAddEvent}
@@ -493,30 +520,31 @@ export function OsservatorioOnePageDossier(props: Props) {
         </div>
       ) : null}
 
-      {/* §01 */}
+      {!operationalTailOnly ? (
+      /* §01 */
       <section id="osservatorio-sec-1" className={`scroll-mt-28 ${MONO}`}>
         <SectionHeader
           badge="SEZIONE 01"
           title="Osservatorio Integrato — Sintesi Metodologica per la Dirigenza"
           right={
             <span className="font-mono text-[11px] text-slate-400">
-              DOCUMENTO DI LAVORO · 20 OTTOBRE 2026 | ORIZZONTE OTT 2026 – MAG 2027
+              DOCUMENTO DI LAVORO · {new Date().toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" }).toUpperCase()} | ORIZZONTE ODIERNO – MAG 2027
             </span>
           }
         />
         <div className="grid grid-cols-1 divide-y divide-white/[0.07] border-b border-white/[0.07] bg-[#0A0F1A]/60 md:grid-cols-3 md:divide-x md:divide-y-0">
           {[
             {
-              t: "01 // Bisogni ≠ Intenzioni di voto",
-              b: "Le informazioni sui fabbisogni territoriali non equivalgono automaticamente a intenzioni di voto.",
+              t: "01 // Bisogni del territorio",
+              b: "Indicatori oggettivi su servizi e condizioni di vita per territorio.",
             },
             {
-              t: "02 // Picchi di ricerca ≠ Gradimento",
-              b: "L'indice Google Trends (0–100) misura l'attenzione relativa, non il consenso né l'approvazione.",
+              t: "02 // Ricerche online",
+              b: "Indice Google Trends 0–100 sull'attenzione relativa nel periodo.",
             },
             {
-              t: "03 // Sequenza temporale ≠ Causalità",
-              b: "Una variazione demoscopica dopo un evento non dimostra che l'evento l'abbia causata.",
+              t: "03 // Event study",
+              b: "Cronologia eventi con finestre ±14 gg e serie Trends allineate.",
             },
           ].map((x) => (
             <div key={x.t} className="p-5">
@@ -573,12 +601,14 @@ export function OsservatorioOnePageDossier(props: Props) {
           ))}
         </div>
       </section>
+      ) : null}
 
-      {/* §02 */}
-      <section id="osservatorio-sec-2" className={`scroll-mt-28 ${MONO}`}>
+      {showSchedaAndModuloC ? (
+      /* §02 */
+      <section id={sec2Id} className={`scroll-mt-28 ${MONO}`}>
         <SectionHeader
           badge="SEZIONE 02"
-          title="Scheda Mensile Integrata & Incrocio Territorio × Tempo"
+          title="Quadro elettorale e scheda mensile"
           right={
             <div className="flex flex-wrap items-center gap-2">
               <button
@@ -668,6 +698,16 @@ export function OsservatorioOnePageDossier(props: Props) {
             </div>
           ))}
         </div>
+        {isRegionScope(sec2Scope) ? (
+          <div className="border-b border-white/[0.07] px-6 py-5">
+            <p className="font-mono text-[10px] uppercase tracking-wider text-violet-300">
+              Storico elettorale regionale · Verdetto campagna FN
+            </p>
+            <div className="mt-3 max-w-3xl">
+              <RegionalPartyHistoryBar history={getRegionalPartyHistory(sec2Region)} />
+            </div>
+          </div>
+        ) : null}
         <div className="overflow-x-auto">
           <table className="w-full min-w-[800px] text-left text-xs">
             <thead>
@@ -681,16 +721,21 @@ export function OsservatorioOnePageDossier(props: Props) {
             <tbody className="divide-y divide-white/[0.06]">
               <tr className="align-top">
                 <td className="px-4 py-4 font-medium text-slate-200">
-                  Scenario elettorale · Modulo A
+                  Stima del consenso
                 </td>
                 <td className="px-4 py-4">
                   <div className="flex flex-wrap items-baseline gap-2">
                     <span className="font-mono text-2xl font-bold text-emerald-400">
                       {stimaDisplay}%
                     </span>
-                    {docApproxBadge ? (
+                    {docBadgeLazio ? (
                       <span className="rounded border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[9px] text-emerald-300">
                         ≈ 6,6% doc §8
+                      </span>
+                    ) : null}
+                    {docBadgeVeneto ? (
+                      <span className="rounded border border-cyan-500/30 bg-cyan-500/10 px-1.5 py-0.5 font-mono text-[9px] text-cyan-300">
+                        9,21% doc §2
                       </span>
                     ) : null}
                   </div>
@@ -731,7 +776,7 @@ export function OsservatorioOnePageDossier(props: Props) {
               </tr>
               <tr className="align-top">
                 <td className="px-4 py-4 font-medium text-slate-200">
-                  Fabbisogni oggettivi · Modulo B
+                  Bisogni rilevati dai dati
                 </td>
                 <td className="px-4 py-4">
                   {sec2Scope === TERRITORY_NAZIONALE ? (
@@ -812,7 +857,7 @@ export function OsservatorioOnePageDossier(props: Props) {
               </tr>
               <tr className="align-top">
                 <td className="px-4 py-4 font-medium text-slate-200">
-                  Priorità dichiarate · Modulo B
+                  Priorità dichiarate
                 </td>
                 <td className="px-4 py-4" colSpan={2}>
                   {sec2Priorita ? (
@@ -833,7 +878,7 @@ export function OsservatorioOnePageDossier(props: Props) {
                 </td>
               </tr>
               <tr className="align-top">
-                <td className="px-4 py-4 font-medium text-slate-200">Eventi · Modulo C</td>
+                <td className="px-4 py-4 font-medium text-slate-200">Eventi</td>
                 <td className="px-4 py-4" colSpan={2}>
                   <div className="space-y-2">
                     {CASE_STUDY_EVENTS.map((ev) => (
@@ -889,18 +934,35 @@ export function OsservatorioOnePageDossier(props: Props) {
           <textarea
             rows={2}
             className="mt-1 w-full resize-y border-0 bg-transparent text-sm text-slate-300 placeholder:text-slate-600 focus:outline-none focus:ring-0"
-            placeholder="Annotazione dirigenziale (facoltativa)…"
+            placeholder="Annotazione dirigenziale…"
             value={monthlyNote ?? ""}
             onChange={(e) => setMonthlyNote(e.target.value)}
           />
         </div>
+        {operationalTailOnly ? (
+          <ModuloAComparePanel
+            sec3ColA={sec3ColA}
+            sec3ColB={sec3ColB}
+            effectiveSec3ColB={effectiveSec3ColB}
+            setSec3ColA={setSec3ColA}
+            setSec3ColB={setSec3ColB}
+            colAData={colAData}
+            colBData={colBData}
+            hIsc={hIsc}
+            hScen={hScen}
+            js={js}
+            embeddedInSec02
+          />
+        ) : null}
       </section>
+      ) : null}
 
-      {/* §03 */}
+      {!operationalTailOnly ? (
+      /* §03 */
       <section id="osservatorio-sec-3" className={`scroll-mt-28 ${MONO}`}>
         <SectionHeader
           badge="SEZIONE 03"
-          title="Modulo A · Confronto Dinamico tra 2 Territori + Base Nazionale"
+          title="Consenso: confronto tra due territori e dato nazionale"
           right={
             <div className="flex flex-wrap items-center gap-2 text-[11px]">
               <label className="text-slate-500">A</label>
@@ -962,45 +1024,22 @@ export function OsservatorioOnePageDossier(props: Props) {
               colA={colAData}
               colB={colBData}
               labelA={columnLabel(sec3ColA)}
-              labelB={columnLabel(sec3ColB)}
+              labelB={columnLabel(effectiveSec3ColB)}
             />
           </div>
           <div className="xl:col-span-5">
-            <div className="divide-y divide-white/[0.07] border-b border-white/[0.07] text-[11px]">
-              <div className="px-4 py-3">
-                <p className="font-semibold text-emerald-300">
-                  Equilibrio Radicamento Iscritti: {fmtPctIt(hIsc * 100, 1)}% ({fmtDecimalIt(hIsc, 4)})
-                </p>
-                <p className="mt-1 text-[10px] text-slate-500">
-                  Quanto il tesseramento FN è distribuito sulle 20 regioni senza lasciare territori scoperti.
-                </p>
-              </div>
-              <div className="px-4 py-3">
-                <p className="font-semibold text-cyan-300">
-                  Equilibrio Consenso Nazionale: {fmtPctIt(hScen * 100, 1)}% ({fmtDecimalIt(hScen, 4)})
-                </p>
-              </div>
-              <div className="px-4 py-3">
-                <p className="font-semibold text-violet-300">
-                  Scostamento dal Voto Storico: {fmtDecimalIt(js, 4)} (Allineamento Alto)
-                </p>
-              </div>
-            </div>
-            <div className="p-3">
-              <EntropyAndCalibrationChart
-                mode="entropy"
-                snapshotMetrics={{ hIsc, hScen, js }}
-              />
-            </div>
+            <ModuloAEquilibrioChart hIsc={hIsc} hScen={hScen} js={js} />
           </div>
         </div>
       </section>
+      ) : null}
 
-      {/* §04 */}
+      {!operationalTailOnly ? (
+      /* §04 */
       <section id="osservatorio-sec-4" className={`scroll-mt-28 ${MONO}`}>
         <SectionHeader
           badge="SEZIONE 04"
-          title="Modulo B · Fabbisogni con Vista Nazionale, Regione o Confronto"
+          title="Bisogni del territorio: Italia, regione o confronto"
           right={
             <div className="flex flex-wrap items-center gap-2">
               <button
@@ -1174,7 +1213,7 @@ export function OsservatorioOnePageDossier(props: Props) {
         <div className="grid divide-x divide-white/[0.07] md:grid-cols-12">
           <div className="px-6 py-5 md:col-span-5">
             <p className="font-mono text-[9px] uppercase text-slate-500">
-              Perché il disagio sociale non diventa automaticamente voto (§ 4)
+              Collegamento fabbisogni e scenario (§ 4)
             </p>
             <div className="mt-3 grid grid-cols-3 gap-2">
               {[
@@ -1189,7 +1228,7 @@ export function OsservatorioOnePageDossier(props: Props) {
               ))}
             </div>
             <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
-              Non dimostra causalità politica né che un intervento produca automaticamente voti.
+              Analisi su campioni rappresentativi e metadati di rilevazione documentati.
             </p>
           </div>
           <div className="divide-y divide-white/[0.06] md:col-span-7">
@@ -1204,12 +1243,14 @@ export function OsservatorioOnePageDossier(props: Props) {
           </div>
         </div>
       </section>
+      ) : null}
 
-      {/* §05 */}
-      <section id="osservatorio-sec-5" className={`scroll-mt-28 ${MONO}`}>
+      {showSchedaAndModuloC ? (
+      /* §05 */
+      <section id={sec5Id} className={`scroll-mt-28 ${MONO}`}>
         <SectionHeader
           badge="SEZIONE 05"
-          title="Modulo C · Eventi, Opinione & Google Trends"
+          title="Eventi, opinioni e ricerche su Google"
           right={
             <div className="flex flex-wrap items-center gap-2">
               <button
@@ -1303,14 +1344,17 @@ export function OsservatorioOnePageDossier(props: Props) {
             </div>
           </div>
         </div>
+        {operationalTailOnly ? <PianoOperativo2027Tail /> : null}
       </section>
+      ) : null}
 
-      {/* §06 */}
+      {!operationalTailOnly ? (
+      /* §06 */
       <section id="osservatorio-sec-6" className={`scroll-mt-28 ${MONO}`}>
         <SectionHeader badge="SEZIONE 06" title="Piano Ott 2026 – Mag 2027 · Governance & Limiti" />
         <div className="grid grid-cols-5 divide-x divide-white/[0.07] border-b border-white/[0.07]">
           {[
-            { p: "Ott 2026", active: true, a: "Baseline, fonti", c: "Quadro iniziale" },
+            { p: "Ott 2026", active: true, a: "Situazione iniziale e fonti", c: "Quadro iniziale" },
             { p: "Nov–Dic", active: false, a: "Raccolta mensile", c: "Confronti temporali" },
             { p: "Gen–Feb", active: false, a: "Coerenza, indagini", c: "Rapporti incertezza" },
             { p: "Mar–Apr", active: false, a: "Consolidamento", c: "Dashboard" },
@@ -1366,7 +1410,199 @@ export function OsservatorioOnePageDossier(props: Props) {
           </p>
         </div>
       </section>
+      ) : null}
     </div>
+  );
+}
+
+function ModuloAEquilibrioChart({
+  hIsc,
+  hScen,
+  js,
+}: {
+  hIsc: number;
+  hScen: number;
+  js: number;
+}) {
+  return (
+    <>
+      <div className="divide-y divide-white/[0.07] border-b border-white/[0.07] text-[11px]">
+        <div className="px-4 py-3">
+          <p className="font-semibold text-emerald-300">
+            Equilibrio Nazionale Tesseramento: {fmtPctIt(hIsc * 100, 1)}% (H ={" "}
+            {fmtDecimalIt(hIsc, 4)})
+          </p>
+          <p className="mt-1 text-[10px] text-slate-500">
+            Quanto il tesseramento FN è distribuito sulle 20 regioni senza lasciare territori scoperti.
+          </p>
+        </div>
+        <div className="px-4 py-3">
+          <p className="font-semibold text-cyan-300">
+            Equilibrio Consenso Nazionale: {fmtPctIt(hScen * 100, 1)}% ({fmtDecimalIt(hScen, 4)})
+          </p>
+        </div>
+        <div className="px-4 py-3">
+          <p className="font-semibold text-violet-300">
+            Scostamento dal Voto Storico: {fmtDecimalIt(js, 4)} (Allineamento Alto)
+          </p>
+        </div>
+      </div>
+      <div className="p-3">
+        <EntropyAndCalibrationChart mode="entropy" snapshotMetrics={{ hIsc, hScen, js }} />
+      </div>
+    </>
+  );
+}
+
+function ModuloAComparePanel({
+  sec3ColA,
+  sec3ColB,
+  effectiveSec3ColB,
+  setSec3ColA,
+  setSec3ColB,
+  colAData,
+  colBData,
+  hIsc,
+  hScen,
+  js,
+  embeddedInSec02,
+}: {
+  sec3ColA: TerritoryScope;
+  sec3ColB: TerritoryScope;
+  effectiveSec3ColB: TerritoryScope;
+  setSec3ColA: (v: TerritoryScope) => void;
+  setSec3ColB: (v: TerritoryScope) => void;
+  colAData: ReturnType<typeof moduloAForScope>;
+  colBData: ReturnType<typeof moduloAForScope>;
+  hIsc: number;
+  hScen: number;
+  js: number;
+  embeddedInSec02?: boolean;
+}) {
+  function setColB(v: TerritoryScope) {
+    if (sec3ColA === TERRITORY_NAZIONALE && v === TERRITORY_NAZIONALE) {
+      setSec3ColB("Veneto");
+      return;
+    }
+    setSec3ColB(v);
+  }
+
+  return (
+    <>
+      <div
+        className={`border-white/[0.07] bg-[#060910] px-6 py-4 ${embeddedInSec02 ? "border-t" : "border-b"}`}
+      >
+        <p className="font-mono text-[9px] uppercase text-cyan-400">
+          Confronto dei fattori usati nella stima nazionale
+        </p>
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px]">
+          <label className="text-slate-500">Territorio attivo (A)</label>
+          <ModuloATerritorySelect value={sec3ColA} onChange={setSec3ColA} />
+          <label className="text-slate-500">Confronta con (B)</label>
+          <ModuloATerritorySelect value={sec3ColB} onChange={setColB} />
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {[
+            {
+              label: "Italia vs Veneto (Roccaforte §2)",
+              a: TERRITORY_NAZIONALE,
+              b: "Veneto" as TerritoryScope,
+            },
+            {
+              label: "Doc §2: Veneto vs Italia",
+              a: "Veneto" as TerritoryScope,
+              b: TERRITORY_NAZIONALE,
+            },
+            {
+              label: "Grandi Bacini: Lombardia vs Lazio",
+              a: "Lombardia" as TerritoryScope,
+              b: "Lazio" as TerritoryScope,
+            },
+          ].map((p) => (
+            <button
+              key={p.label}
+              type="button"
+              onClick={() => {
+                setSec3ColA(p.a);
+                setSec3ColB(p.b);
+              }}
+              className="rounded-lg border border-white/[0.08] px-2.5 py-1 text-[11px] text-slate-400 hover:bg-white/[0.04] hover:text-white"
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="grid xl:grid-cols-12">
+        <div className="border-b border-white/[0.07] xl:col-span-7 xl:border-b-0 xl:border-r">
+          <ModuloACompareTable
+            colA={colAData}
+            colB={colBData}
+            labelA={columnLabel(sec3ColA)}
+            labelB={columnLabel(effectiveSec3ColB)}
+          />
+        </div>
+        <div className="xl:col-span-5">
+          <ModuloAEquilibrioChart hIsc={hIsc} hScen={hScen} js={js} />
+        </div>
+      </div>
+    </>
+  );
+}
+
+function PianoOperativo2027Tail() {
+  return (
+    <>
+      <div className="grid grid-cols-5 divide-x divide-white/[0.07] border-y border-white/[0.07]">
+        {[
+          { p: "Ott 2026", active: true, a: "Situazione iniziale e fonti", c: "Quadro iniziale" },
+          { p: "Nov–Dic", active: false, a: "Raccolta mensile", c: "Confronti temporali" },
+          { p: "Gen–Feb", active: false, a: "Coerenza, indagini", c: "Rapporti incertezza" },
+          { p: "Mar–Apr", active: false, a: "Consolidamento", c: "Dashboard" },
+          { p: "Mag 2027", active: false, a: "Sintesi periodo", c: "Dossier finale" },
+        ].map((step) => (
+          <div
+            key={step.p}
+            className={`px-3 py-4 ${step.active ? "bg-emerald-500/[0.06]" : ""}`}
+          >
+            <div
+              className={`mb-2 h-1.5 w-full rounded-full ${
+                step.active ? "bg-emerald-400" : "bg-white/[0.08]"
+              }`}
+            />
+            <p
+              className={`font-mono text-[10px] ${step.active ? "text-emerald-300" : "text-slate-500"}`}
+            >
+              {step.p}
+            </p>
+            <p className="mt-1 text-[10px] text-slate-600">{step.a}</p>
+            <p className="mt-1 text-[11px] text-slate-400">{step.c}</p>
+          </div>
+        ))}
+      </div>
+      <div className="grid divide-x divide-white/[0.07] border-b border-white/[0.07] md:grid-cols-2">
+        <div className="px-6 py-4 text-xs text-slate-400">
+          <p className="font-mono text-[9px] uppercase text-slate-500">Cadenza &amp; 4 Ruoli</p>
+          <ul className="mt-2 list-disc space-y-1 pl-4">
+            <li>Quotidiano: registro eventi</li>
+            <li>Settimanale: attenzione e fonti</li>
+            <li>Mensile: sondaggi, bisogni, relazione</li>
+            <li>Coordinatore metodo · Dati/audit · Statistico · Privacy</li>
+          </ul>
+        </div>
+        <div className="px-6 py-4 text-xs text-slate-400">
+          <p className="font-mono text-[9px] uppercase text-slate-500">7 Limiti metodologici · § 11–12</p>
+          <ol className="mt-2 list-decimal space-y-1 pl-5">
+            {LIMITI_METODO.map((l) => (
+              <li key={l}>{l}</li>
+            ))}
+          </ol>
+          <p className="mt-4 font-mono text-[9px] text-slate-600">
+            Fonti § 12: ISTAT, amministrazioni, Google Trends, registro eventi, Modello Territoriale FN.
+          </p>
+        </div>
+      </div>
+    </>
   );
 }
 

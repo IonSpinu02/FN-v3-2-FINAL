@@ -131,7 +131,7 @@ export function SnapshotsAuditPanel({
 
   const chartSubtitle = useMemo(() => {
     if (chartCompare === "benchmark2024") {
-      return "Snapshot vs benchmark 2024 · Δ stima pp per regione";
+      return "Situazione salvata e risultati 2024 · differenza in punti per regione";
     }
     if (chartCompare === "stress") {
       return "Stress test S 8,20% vs 7,20% · Δ stima pp per regione";
@@ -159,7 +159,7 @@ export function SnapshotsAuditPanel({
 
   function copyHash(hash: string) {
     void navigator.clipboard.writeText(hash);
-    setMsg("Hash SHA-256 copiato");
+    setMsg("Codice di integrità copiato");
   }
 
   return (
@@ -173,7 +173,7 @@ export function SnapshotsAuditPanel({
       {(focus === "all" || focus === "snapshots") && (
       <>
       <Panel className="p-4">
-        <h2 className="fn-label mb-3">Elenco snapshot</h2>
+        <h2 className="fn-label mb-3">Situazioni salvate</h2>
         <div className="fn-table-wrap">
           <table className="fn-table text-sm">
             <thead>
@@ -182,7 +182,7 @@ export function SnapshotsAuditPanel({
                 <th>Data</th>
                 <th>Autore</th>
                 <th>S</th>
-                <th>SHA-256</th>
+                <th>Codice di integrità</th>
                 <th>Azioni</th>
               </tr>
             </thead>
@@ -193,7 +193,7 @@ export function SnapshotsAuditPanel({
                     {s.name}
                     {s.isOfficialBaseline && (
                       <span className="fn-badge fn-badge-warn ml-1 px-1 text-[10px]">
-                        baseline
+                        riferimento
                       </span>
                     )}
                   </td>
@@ -225,7 +225,7 @@ export function SnapshotsAuditPanel({
                         onBaselineChange(s.scenarioData, s.name)
                       }
                     >
-                      Baseline
+                      Usa come riferimento
                     </Btn>
                     <Btn
                       variant="secondary"
@@ -288,7 +288,7 @@ export function SnapshotsAuditPanel({
             [
               ["benchmark2024", "CONFRONTA CON BENCHMARK 2024 (Δ pp)"],
               ["stress", "SIMULA STRESS TEST +1,0 pp (8,20% vs 7,20%)"],
-              ["snapshot", "SNAPSHOT BASE vs SCENARIO LIVE"],
+              ["snapshot", "SITUAZIONE SALVATA E SITUAZIONE ATTUALE"],
             ] as const
           ).map(([mode, label]) => (
             <button
@@ -351,7 +351,7 @@ export function SnapshotsAuditPanel({
 
       {(focus === "all" || focus === "audit") && (
       <Panel className="p-4">
-        <h2 className="fn-label mb-3">Audit trail</h2>
+        <h2 className="fn-label mb-3">Registro delle modifiche</h2>
         {auditLogs.length === 0 ? (
           <p className="text-sm text-fn-text-muted">
             Nessun evento cloud (DB non connesso o nessuna operazione).
@@ -374,7 +374,7 @@ export function SnapshotsAuditPanel({
       )}
 
       <p className="text-xs text-fn-text-muted">
-        Baseline attiva per confronti:{" "}
+        Riferimento usato per i confronti:{" "}
         <strong>{baselineScenario.metadati.data}</strong>
       </p>
     </div>
